@@ -22,7 +22,7 @@ $blank = array
 	'fname' => "user_balance",
 	'start' => "log/main/page/1",
 	'format' => "float",
-	'version' => "0.7.4",
+	'version' => "0.7.5",
 	//'url_catalog' => "https://dle-billing.ru/engine/ajax/extras/plugins.php",
 	'urls' => "refund-cashback"
 );
