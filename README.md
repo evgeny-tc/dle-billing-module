@@ -1,6 +1,6 @@
 # DLE Billing
 
-[![Version](https://img.shields.io/badge/Version-0.7.4-blue.svg?style=flat-square "Version")](https://github.com/Japing/dle-billing/releases)
+[![Version](https://img.shields.io/badge/Version-0.7.5-blue.svg?style=flat-square "Version")](https://github.com/Japing/dle-billing/releases)
 ![DLE](https://img.shields.io/badge/DLE-13.0--16.0-green.svg?style=flat-square "DLE")
 ![Charset](https://img.shields.io/badge/Charset-utf--8-red.svg?style=flat-square "Charset")
 ![jQuery](https://img.shields.io/badge/jQuery-1.11+-yellow.svg?style=flat-square "jQuery")
@@ -11,13 +11,7 @@
 - mr_Evgen (evgeny.tc@gmail.com)  
 - Japing (https://github.com/Japing/DLE-Billing)
 
-### **Системные требования**
-- Версия DataLife Engine 13.0+
-- jQuery v1.11 и выше
-- ЧПУ (mod_rewrite)
-- Кодировка по умолчанию: UTF-8
-
-### **Установка и настройка модуля:**
+### **Установка:**
 1. [Скачать архив](https://github.com/evgeny-tc/dle-billing-module/releases "Скачать архив") с модулем
 2. Войти в **Админ панель** -> **Утилиты** -> **Управление плагинами** и загрузить скачанный архив
 3. Открыть страницу Ваш_Сайт.ру/admin.php?mod=billing
