@@ -1,0 +1,151 @@
+/* Личный кабинет */
+.billing-panel
+{
+	padding-bottom: 10px;
+	border-bottom: 1px solid #ededed;
+}
+
+.billing-foto
+{
+	width: 50px;
+	margin-right: 10px;
+    border-radius: 100px;
+    border: 1px solid #f0f0f0;
+	float: left;
+}
+
+.billing-balance
+{
+	font-size: 1.2em;
+}
+
+.billing-menu
+{
+	float: right;
+	font-size: 1.2em;
+	margin: 14px;
+}
+
+.billing-menu a
+{
+	margin-right: 10px;
+	text-decoration: none !important;
+}
+
+.billing-item
+{
+	color: #3394e6;
+}
+
+.billing-item-active
+{
+	color: #5a5a5a;
+	padding-bottom: 5px;
+	border-bottom: 1px solid #ededed;
+}
+
+.billing-content
+{
+	margin-top: 20px;
+}
+
+/* Таблица */
+.billing-table
+{
+	width: 100%;
+	font-size: 13px;
+	color: #5a6573;
+}
+
+.billing-table tr
+{
+	border-bottom: 1px solid #ccc;
+}
+
+.billing-table td
+{
+	padding: 10px 0;
+}
+
+.billing-table-round
+{
+	width: 32px;
+	height: 32px;
+    border-radius: 100px;
+    box-shadow: 0 0 1px #666;
+}
+
+/* Постраничная навигация */
+.billing-pagination
+{
+	text-align: center;
+	margin: 20px
+}
+
+.billing-pagination a, .billing-pagination strong
+{
+	text-decoration:none;
+	text-align:center;
+	font:12px Verdana, Geneva, sans-serif;
+	font-weight:bold;
+	color: #3BA4C7;
+	background-color:#d1ebf4;
+	display: inline-block;
+	margin-right: 3px;
+	padding: 4px 8px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+}
+
+.billing-pagination a:hover
+{
+	background: #3BA4C7;
+	color: #d1ebf4;
+}
+
+.billing-pagination a:active
+{
+	background: #3BA4C7;
+	color: #d1ebf4;
+}
+
+.billing-pagination strong
+{
+	background: #3BA4C7;
+	color: #d1ebf4;
+}
+
+/* Форма созания платежа */
+.billing-pay-step
+{
+	display:block;
+	min-height: 60px;
+	padding: 10px;
+	font-size: 14px;
+}
+
+.billing-pay-step input
+{
+	text-align: right;
+}
+
+.billing-pay-label
+{
+	margin: 10px;
+}
+
+.billing-pay-label > input
+{
+	visibility: hidden;
+	position: absolute;
+}
+.billing-pay-label > input + img
+{
+	cursor: pointer;
+	opacity: 0.5;
+}
+.billing-pay-label > input:checked + img
+{
+	opacity: 1;
+}
