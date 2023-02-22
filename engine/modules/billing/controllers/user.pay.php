@@ -262,7 +262,7 @@ Class USER
 
 							$TimeLine = str_replace("{payment.name}", $Name, $TimeLine);
 							$TimeLine = str_replace("{payment.title}", $Info['config']['title'], $TimeLine);
-							$TimeLine = str_replace("{payment.topay}", $this->DevTools->API->Convert($Invoice['invoice_get'] * $Info['config']['convert'], $Info['config']['format']), $TimeLine);
+							$TimeLine = str_replace("{payment.topay}", $this->DevTools->API->Convert(floatval($Invoice['invoice_get']) * floatval($Info['config']['convert']), $Info['config']['format']), $TimeLine);
 							$TimeLine = str_replace("{payment.currency}", $Info['config']['currency'], $TimeLine);
 
 							$PaysysList .= $TimeLine;
