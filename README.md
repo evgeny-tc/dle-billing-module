@@ -1,11 +1,11 @@
 # DLE Billing
 
-[![Version](https://img.shields.io/badge/Version-0.7.5-blue.svg?style=flat-square "Version")](https://github.com/Japing/dle-billing/releases)
+[![Version](https://img.shields.io/badge/Version-0.7.6-blue.svg?style=flat-square "Version")](https://github.com/Japing/dle-billing/releases)
 ![DLE](https://img.shields.io/badge/DLE-13.0--16.0-green.svg?style=flat-square "DLE")
 ![Charset](https://img.shields.io/badge/Charset-utf--8-red.svg?style=flat-square "Charset")
 ![jQuery](https://img.shields.io/badge/jQuery-1.11+-yellow.svg?style=flat-square "jQuery")
 
-Автоматизируйте приём платежей на сайте с помощью модуля DLE Billing. Предоставьте пользователям возможность оплачивать различные товары и услуги вашего сайта.
+Автоматизируйте прием платежей на сайте с помощью модуля DLE Billing. Предоставьте пользователям возможность оплачивать различные товары и услуги вашего сайта.
 
  Разработка:
 - mr_Evgen (evgeny.tc@gmail.com)  
@@ -24,6 +24,9 @@
 
 ------------
 ### Список изменений
+
+#### v0.7.6 (24.02.2023)
+- Исправление багов
 
 #### v0.7.5 (20.02.2023)
 - Адаптирован для DLE 16.0

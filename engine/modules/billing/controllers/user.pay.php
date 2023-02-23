@@ -262,7 +262,7 @@ Class USER
 
 							$TimeLine = str_replace("{payment.name}", $Name, $TimeLine);
 							$TimeLine = str_replace("{payment.title}", $Info['config']['title'], $TimeLine);
-							$TimeLine = str_replace("{payment.topay}", $this->DevTools->API->Convert(floatval($Invoice['invoice_get']) * floatval($Info['config']['convert']), $Info['config']['format']), $TimeLine);
+							$TimeLine = str_replace("{payment.topay}", $this->DevTools->API->Convert($Invoice['invoice_get'] * $Info['config']['convert'], $Info['config']['format']), $TimeLine);
 							$TimeLine = str_replace("{payment.currency}", $Info['config']['currency'], $TimeLine);
 
 							$PaysysList .= $TimeLine;
@@ -296,7 +296,7 @@ Class USER
 		header( "Content-type: text/html; charset=" . $this->DevTools->dle['charset'] );
 
 		@http_response_code(200);
-		
+
 		$SecretKey = $this->DevTools->LQuery->parsVar( $GET['key'], '~[^a-z|0-9|\-|.]*~is' );
 		$GetPaysys = $this->DevTools->LQuery->parsVar( $GET['payment'], '~[^a-z|0-9|\-|.]*~is' );
 
@@ -484,6 +484,25 @@ Class USER
 		if( ! isset( $Invoice ) or $Invoice['invoice_date_pay'] ) return;
 
 		$this->DevTools->LQuery->DbInvoiceUpdate( $Invoice['invoice_id'], false, $Invoice['invoice_paysys'], $Invoice['invoice_pay'], $CheckPayerRequisites );
+
+		# есть обработчик
+		#
+		if( $Invoice['invoice_handler'] )
+		{
+			$parsHandler = explode(':', $Invoice['invoice_handler']);
+
+			$pluginHandler = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[0] ) );
+			$fileHandler = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[1] ) );
+
+			$this->logging( 16, print_r($parsHandler, true) );
+
+			if( file_exists( MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php' ) )
+			{
+				require_once MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php';
+
+				return true;
+			}
+		}
 
 		# .. отправить уведомление
 		#

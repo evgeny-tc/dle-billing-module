@@ -65,7 +65,7 @@ Class ADMIN
 		foreach ($this->Dashboard->Payments() as $name => $info )
 		{
 			$sectionPayments[] = array(
-				'icon' => 'engine/modules/billing/payments/' . $name . '/icon/icon.png',
+				'icon' => 'engine/skins/billing/payments/' . $name . '.png',
 				'link' => '?mod=billing&c=payment&p=billing/' . $name,
 				'title' => $info['title'],
 				'desc' => $info['desc'],
@@ -82,7 +82,7 @@ Class ADMIN
 		foreach ($this->Dashboard->Plugins() as $name => $info )
 		{
 			$sectionPlugins[] = array(
-				'icon' => 'engine/modules/billing/plugins/' . $name . '/icon/icon.png',
+				'icon' => 'engine/skins/billing/plugins/' . $name . '.png',
 				'link' => '?mod=billing&c=' . $name,
 				'title' => $info['title'],
 				'desc' => $info['desc'],

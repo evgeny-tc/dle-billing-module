@@ -33,7 +33,7 @@ Class Dashboard
 
 	# ..данные модуля
 	#
-	var $version = '0.7.5';
+	var $version = '0.7.6';
 
 	var $config = array();
 	var $lang = array();
@@ -216,7 +216,7 @@ Class Dashboard
 		return $this->MakeMsgInfo(
 			"<span style=\"float: right\">
 				" . ( $link ? "<a href=\"{$link}\" target=\"_blank\" class=\"tip\" title=\"{$this->lang['help']}\">" : '' ) . "
-					<img src=\"/engine/modules/billing/{$path}/icon/icon.png\" class=\"bt_icon\" />
+					<img src=\"/engine/modules/billing/{$path}/icon/icon.png\" onError=\"this.src='engine/skins/billing/icons/plugin.png'\" class=\"bt_icon\" />
 				" . ( $link ? "</a>" : '' ) . "
 			</span>
 			<span style=\"font-size: 18px\">{$ini['title']}</span>
