@@ -56,13 +56,20 @@ Class ADMIN
 					{
 						$this->Dashboard->LQuery->DbInvoiceUpdate( $id );
 
-						$this->Dashboard->API->PlusMoney(
-							$Invoice['invoice_user_name'],
-							$Invoice['invoice_get'],
-							sprintf( $this->Dashboard->lang['pay_msgOk'], $GetPaysysArray[$Invoice['invoice_paysys']]['title'], $Invoice['invoice_pay'], $GetPaysysArray[$Invoice['invoice_paysys']]['config']['currency'] ),
-							'pay',
-							$id
-						);
+						if( $Invoice['invoice_handler'] )
+						{
+							$this->handler($Invoice);
+						}
+						else
+						{
+							$this->Dashboard->API->PlusMoney(
+								$Invoice['invoice_user_name'],
+								$Invoice['invoice_get'],
+								sprintf( $this->Dashboard->lang['pay_msgOk'], $GetPaysysArray[$Invoice['invoice_paysys']]['title'], $Invoice['invoice_pay'], $GetPaysysArray[$Invoice['invoice_paysys']]['config']['currency'] ),
+								'pay',
+								$id
+							);
+						}
 					}
 				}
 			}
@@ -312,6 +319,56 @@ Class ADMIN
 		$Content .= $this->Dashboard->ThemeEchoFoother();
 
 		return $Content;
+	}
+
+	private function handler(array $Invoice)
+	{
+		$parsHandler = explode(':', $Invoice['invoice_handler']);
+
+		$pluginHandler = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[0] ) );
+		$fileHandler = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[1] ) );
+
+		$this->logging( 16, print_r($parsHandler, true) );
+
+		if( file_exists( MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php' ) )
+		{
+			$this->DevTools = $this->Dashboard;
+
+			require_once MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php';
+
+			return true;
+		}
+	}
+
+	private function logging($step = 0, $info = '')
+	{
+		if( ! $this->Dashboard->config['test'] ) return;
+
+		if( filesize('pay.logger.php') > 1024 and ! $step )
+		{
+			unlink('pay.logger.php');
+		}
+
+		if( ! file_exists( 'pay.logger.php' ) )
+		{
+			$handler = fopen( 'pay.logger.php', "a" );
+
+			fwrite( $handler, "<?php if( !defined( 'BILLING_MODULE' ) ) die( 'Hacking attempt!' ); ?>\n");
+		}
+		else
+		{
+			$handler = fopen( 'pay.logger.php', "a" );
+		}
+
+		fwrite( $handler,
+			$step . '|' .
+			langdate( "j.m.Y H:i", $this->Dashboard->_TIME) . '|' .
+			$info . "\n"
+		);
+
+		fclose( $handler );
+
+		return;
 	}
 }
 ?>
