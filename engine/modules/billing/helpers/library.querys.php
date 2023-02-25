@@ -2,9 +2,9 @@
 /**
  * DLE Billing
  *
- * @link          https://github.com/mr-Evgen/dle-billing-module
+ * @link          https://github.com/evgeny-tc/dle-billing-module/
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2017, mr_Evgen
+ * @copyright     Copyright (c) 2023, mr_Evgen
  */
 
 Class LibraryQuerys
@@ -178,20 +178,31 @@ Class LibraryQuerys
 
 	# Создать квитанцию
 	#
-	function DbCreatInvoice( $strPaySys, $strUser, $floatGet, $floatPay )
+	function DbCreatInvoice( string $strPaySys, string $strUser, float $floatGet, float $floatPay = 0, $payer_info = '', string $handler = '' )
 	{
 		$this->parsVar( $strUser );
+
+		$this->parsVar( $handler, "/[^.a-z:\s]/" );
+
+		if( is_array( $payer_info ) )
+		{
+			foreach( $payer_info as $key => $info )
+			{
+				$payer_info[$key] = $this->db->safesql( $info );
+			}
+
+			$payer_info = serialize( $payer_info );
+		}
+		else
+			$payer_info = $this->db->safesql( $payer_info );
+
 		$this->parsVar( $strPaySys, "/[^a-zA-Z0-9\s]/" );
 		$this->parsVar( $floatGet, "/[^.0-9\s]/" );
 		$this->parsVar( $floatPay, "/[^.0-9\s]/" );
 
 		$this->db->query( "INSERT INTO " . USERPREFIX . "_billing_invoice
-							(invoice_paysys, invoice_user_name, invoice_get, invoice_pay, invoice_date_creat) values
-							('" . $strPaySys . "',
-							 '" . $strUser . "',
-							 '" . $floatGet . "',
-							 '" . $floatPay . "',
-							 '" . $this->_TIME . "')" );
+							(invoice_paysys, invoice_user_name, invoice_get, invoice_pay, invoice_date_creat, invoice_payer_info, invoice_handler) values
+							('{$strPaySys}',  '{$strUser }', '{$floatGet}', '{$floatPay}', '{$this->_TIME}', '{$payer_info}', '{$handler}')" );
 
 		return $this->db->insert_id();
 	}
@@ -279,6 +290,16 @@ Class LibraryQuerys
 	#
 	function parsVar( &$str, $filter = '' )
 	{
+		if( is_array( $str ) )
+		{
+			foreach( $str as $item )
+			{
+				$this->parsVar( $item, $filter );
+			}
+
+			return;
+		}
+
 		$str = trim( $str );
 
 		if( function_exists( "get_magic_quotes_gpc" ) && get_magic_quotes_gpc() ) $str = stripslashes( $str );

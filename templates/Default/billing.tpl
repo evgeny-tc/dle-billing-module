@@ -1,7 +1,7 @@
 <!-- Основной шаблон -->
-<div class="box_in">
-	<h1 class="title">{description}</h1>
-	<div class="text">
-		{include file="engine/modules/billing/cabinet.php"}
+<article class="box story">
+	<div class="box_in">
+		<div class="text">{include file="engine/modules/billing/cabinet.php"}</div>
+		{pages}
 	</div>
-</div>
+</article>

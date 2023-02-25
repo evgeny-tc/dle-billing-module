@@ -52,7 +52,7 @@ Class ADMIN
 				{
 					$Invoice = $this->Dashboard->LQuery->DbGetInvoiceByID( $id );
 
-					if( $Invoice['invoice_user_name'] and ! $Invoice['invoice_date_pay'] )
+					if( ! $Invoice['invoice_date_pay'] and ($Invoice['invoice_user_name'] or $Invoice['invoice_handler']) )
 					{
 						$this->Dashboard->LQuery->DbInvoiceUpdate( $id );
 
@@ -174,28 +174,31 @@ Class ADMIN
 			$this->Dashboard->ThemeAddTR( array(
 				$Value['invoice_id'],
 				$Value['invoice_pay'] . '&nbsp;' . $GetPaysysArray[$Value['invoice_paysys']]['config']['currency'],
-				$Value['invoice_get'] . '&nbsp;' . $this->Dashboard->API->Declension( $Value['invoice_pay'] ),
+				$this->Dashboard->API->Convert($Value['invoice_get']) . '&nbsp;' . $this->Dashboard->API->Declension( $Value['invoice_pay'] ),
 				$this->Dashboard->ThemeChangeTime( $Value['invoice_date_creat'] ),
 				$this->Dashboard->ThemeInfoBilling( $GetPaysysArray[$Value['invoice_paysys']] ),
-				$this->Dashboard->ThemeInfoUser( $Value['invoice_user_name'] ),
+				$Value['invoice_user_name'] ? $this->Dashboard->ThemeInfoUser( $Value['invoice_user_name'] ) : $this->Dashboard->lang['history_user_null'],
 				'<center>' .
 					( $Value['invoice_date_pay']
-						? '<span class="label bt_lable_green"><a href="#" onClick="logShowDialogByID( \'#invoice_' . $Value['invoice_id'] . '\' ); return false">' . $this->Dashboard->ThemeChangeTime( $Value['invoice_date_pay'] ) . '</a></span>'
-						: '<span class="label bt_lable_blue">' . $this->Dashboard->lang['refund_wait'] . '</span>' ) .
+						? '<span class="label bt_lable_green" onClick="logShowDialogByID( \'#invoice_' . $Value['invoice_id'] . '\' ); return false">' . $this->Dashboard->ThemeChangeTime( $Value['invoice_date_pay'] ) . '</span>'
+						: '<span class="label bt_lable_blue" onClick="logShowDialogByID( \'#invoice_' . $Value['invoice_id'] . '\' ); return false">' . $this->Dashboard->lang['refund_wait'] . '</span>' ) .
 				'</center>',
 				'<center>' .
 					$this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['invoice_id'], false) .
 				'</center>
 				<div id="invoice_' . $Value['invoice_id'] . '" title="' . $this->Dashboard->lang['history_search_oper'] . $Value['invoice_id'] . '" style="display:none">
-						<b>' . $this->Dashboard->lang['072_req'] . '</b>
-						<br />
-						' . $Value['invoice_payer_requisites'] . '
-						<br /><br />
 						<p>
 							<b>' . $this->Dashboard->lang['072_payer_info'] . '</b>
-							<br />
-							' . $Value['invoice_payer_info'] . '
+							' . ( @unserialize($Value['invoice_payer_info']) !== false ? '<pre>' . print_r(unserialize($Value['invoice_payer_info']), 1) . '</pre>' : $Value['invoice_payer_info'] ) . '
 						</p>
+						<p>
+							<b>' . $this->Dashboard->lang['076_handler'] . '</b>
+							' . $Value['invoice_handler'] . '
+						</p>
+						' . ( $Value['invoice_payer_requisites'] ? '<p>
+								<b>' . $this->Dashboard->lang['072_req'] . '</b>
+								' . $Value['invoice_payer_requisites'] . '
+							</p>' : '' ) . '
 					</div>'
 			) );
 		}
@@ -328,8 +331,6 @@ Class ADMIN
 		$pluginHandler = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[0] ) );
 		$fileHandler = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[1] ) );
 
-		$this->logging( 16, print_r($parsHandler, true) );
-
 		if( file_exists( MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php' ) )
 		{
 			$this->DevTools = $this->Dashboard;
@@ -338,37 +339,6 @@ Class ADMIN
 
 			return true;
 		}
-	}
-
-	private function logging($step = 0, $info = '')
-	{
-		if( ! $this->Dashboard->config['test'] ) return;
-
-		if( filesize('pay.logger.php') > 1024 and ! $step )
-		{
-			unlink('pay.logger.php');
-		}
-
-		if( ! file_exists( 'pay.logger.php' ) )
-		{
-			$handler = fopen( 'pay.logger.php', "a" );
-
-			fwrite( $handler, "<?php if( !defined( 'BILLING_MODULE' ) ) die( 'Hacking attempt!' ); ?>\n");
-		}
-		else
-		{
-			$handler = fopen( 'pay.logger.php', "a" );
-		}
-
-		fwrite( $handler,
-			$step . '|' .
-			langdate( "j.m.Y H:i", $this->Dashboard->_TIME) . '|' .
-			$info . "\n"
-		);
-
-		fclose( $handler );
-
-		return;
 	}
 }
 ?>

@@ -135,6 +135,12 @@
 	margin: 10px;
 }
 
+.billing-pay-label > img
+{
+	height: 30px;
+	overflow: hidden;
+}
+
 .billing-pay-label > input
 {
 	visibility: hidden;
@@ -148,4 +154,16 @@
 .billing-pay-label > input:checked + img
 {
 	opacity: 1;
+}
+
+.billing-pay-grid
+{
+	 display: grid;
+	 grid-template-columns: repeat(2, 50%);
+}
+
+.billing-pay-grid > *
+{
+	 border-radius: 5px;
+	 margin: 1px;
 }

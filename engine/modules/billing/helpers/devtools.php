@@ -46,7 +46,8 @@ Class DevTools
 	protected $elements = array();
 	protected $element_block = array();
 
-	protected $Plugins = array();
+	public $Plugins = [];
+	public $Payments = [];
 
 	# Загрузка
 	#
@@ -134,7 +135,16 @@ Class DevTools
 		{
 			$Cabinet->DevTools = $this;
 
-			echo $Cabinet->$m( $arrParams );
+			try
+			{
+				echo $Cabinet->$m( $arrParams );
+			}
+			catch(\Exception $e)
+			{
+				echo $this->ThemeMsg( $this->lang['pay_error_title'], $e->getMessage() );
+
+				return;
+			}
 		}
 		else
 		{
@@ -205,16 +215,21 @@ Class DevTools
 	#
 	function ThemeLoad( $TplPath )
 	{
-		$Content = @file_get_contents( ROOT_DIR . "/templates/" . $this->dle['skin'] . "/billing/" . $TplPath . ".tpl" ) or die( $this->lang['cabinet_theme_error'] . "$TplName.tpl" );
+		$Content = @file_get_contents( ROOT_DIR . "/templates/" . $this->dle['skin'] . "/billing/" . $TplPath . ".tpl" ) or die( $this->lang['cabinet_theme_error'] . "$TplPath.tpl" );
 
 		return $Content;
 	}
 
 	# Отобразить страницу
 	#
-	function Show( $Content )
+	function Show( $Content, $show_panel = true )
 	{
 		$Cabinet = @file_get_contents( ENGINE_DIR . "/cache/system/billing.php" );
+
+		if( ! $this->member_id['name'] )
+		{
+			$show_panel = false;
+		}
 
 		if( $Cabinet == false )
 		{
@@ -264,6 +279,14 @@ Class DevTools
 
 		$Cabinet = str_replace( "[active]" . $this->get_plugin . "[/active]", "-active", $Cabinet);
 
+		if( $show_panel )
+		{
+			$Cabinet = str_replace('[panel]', '', $Cabinet);
+			$Cabinet = str_replace('[/panel]', '', $Cabinet);
+		}
+		else
+			$Cabinet = preg_replace("'\\[panel\\].*?\\[/panel\\]'si", $PluginsList, $Cabinet);
+
 		$Cabinet = preg_replace("'\\[active\\].*?\\[/active\\]'si", '', $Cabinet);
 
 		foreach( $this->elements as $key=>$value )
@@ -279,14 +302,164 @@ Class DevTools
 		return $Cabinet;
 	}
 
+
+	# Массив пс
+	#
+	public function Payments()
+	{
+		if( $this->Payments ) return $this->Payments;
+
+		$List = opendir( MODULE_PATH . '/payments/' );
+
+		while ( $name = readdir($List) )
+		{
+			if ( in_array($name, array(".", "..", "/", "index.php", ".htaccess")) ) continue;
+
+			$this->Payments[$name] = parse_ini_file( MODULE_PATH . '/payments/' . $name . '/info.ini' );
+			$this->Payments[$name]['config'] = file_exists( MODULE_DATA . '/payment.' . mb_strtolower($name) . '.php' ) ? include MODULE_DATA . '/payment.' . mb_strtolower($name) . '.php' : array();
+
+			if( ! $this->Payments[$name]['config']['status'] )
+			{
+				unset( $this->Payments[$name] );
+			}
+		}
+
+		return $this->Payments;
+	}
+
+	public function FormPayCheck( float $sum, array $_Payment, bool $from_balance = false )
+	{
+		if( ! isset( $_POST['billingHash'] ) or $_POST['billingHash'] != $this->hash() )
+		{
+			throw new \Exception($this->lang['pay_hash_error']);
+		}
+
+		if( $from_balance and ! count( $_Payment ) and $this->member_id['user_id'] )
+		{
+			$_Payment = [
+				'status' => 1,
+				'title' => $this->lang['pay_balance'],
+				'currency' => $this->API->Declension( $sum ),
+				'min' => 0.01,
+				'max' => $this->BalanceUser,
+				'convert' => 1
+			];
+
+			if( $sum > $this->BalanceUser )
+			{
+				throw new Exception( $this->lang['pay_sum_error'] );
+			}
+		}
+
+		if( ! $_Payment['status'] )
+		{
+			throw new Exception( $this->lang['pay_paysys_error'] );
+		}
+		else if( $sum < $_Payment['minimum'] )
+		{
+			throw new \Exception( sprintf(
+				$this->lang['pay_minimum_error'],
+				$_Payment['title'],
+				$_Payment['minimum'],
+				$this->API->Declension( $_Payment['minimum'] )
+			) );
+		}
+		else if( $sum > $_Payment['max'] )
+		{
+			throw new \Exception( sprintf(
+				$this->lang['pay_max_error'],
+				$_Payment['title'],
+				$_Payment['max'],
+				$this->API->Declension( $_Payment['max'] )
+			) );
+		}
+
+		return;
+	}
+
+	public function FormSelectPay( $sum, $from_balance = false, $more_info = [] )
+	{
+		$PaymentsArray = $this->Payments();
+
+		$Tpl = $this->ThemeLoad( "pay/waiting" );
+
+		$PaysysList = '';
+
+		$TplSelect = $this->ThemePregMatch( $Tpl, '~\[payment\](.*?)\[/payment\]~is' );
+
+		if( $from_balance and $this->member_id['user_id'] )
+		{
+			$PaymentsArray['balance'] = [
+				'config' => [
+					'status' => 1,
+					'title' => $this->lang['pay_balance'],
+					'currency' => $this->API->Declension( $sum ),
+					'min' => 0.01,
+					'max' => $this->BalanceUser,
+					'convert' => 1
+				]
+			];
+		}
+
+		if( count( $PaymentsArray ) )
+		{
+			foreach( $PaymentsArray as $Name => $Info )
+			{
+				if( ! $Info['config']['status'] or $sum < $Info['config']['minimum'] or $sum > $Info['config']['max'] )
+				{
+					continue;
+				}
+
+				$TimeLine = $TplSelect;
+
+				$TimeLine = str_replace("{payment.name}", $Name, $TimeLine);
+				$TimeLine = str_replace("{payment.title}", $Info['config']['title'], $TimeLine);
+				$TimeLine = str_replace("{payment.topay}", $this->API->Convert($sum * $Info['config']['convert'], $Info['config']['format']), $TimeLine);
+				$TimeLine = str_replace("{payment.currency}", $Info['config']['currency'], $TimeLine);
+
+				$PaysysList .= $TimeLine;
+			}
+		}
+		else
+		{
+			$PaysysList = $this->lang['pay_main_error'];
+		}
+
+		$this->ThemeSetElementBlock( "payment", $PaysysList );
+
+		if( count($more_info) )
+		{
+			$TplSelect = $this->ThemePregMatch( $Tpl, '~\[more\](.*?)\[/more\]~is' );
+			$TimeLine = $MoreOut = '';
+
+			foreach( $more_info as $title => $value )
+			{
+				$TimeLine = $TplSelect;
+
+				$TimeLine = str_replace('{title}', $title, $TimeLine);
+				$TimeLine = str_replace('{value}', $value, $TimeLine);
+
+				$MoreOut .= $TimeLine;
+			}
+
+			$this->ThemeSetElementBlock( "more", $MoreOut );
+		}
+		else
+			$this->ThemeSetElementBlock( "more", '' );
+
+		$this->ThemeSetElement( "{button}", "<input type=\"submit\" name=\"submit\" class=\"btn\" value=\"" . $this->lang['pay_invoice_now'] . "\">" );
+
+		return "<form action=\"\" method=\"post\"><input type=\"hidden\" name=\"billingHash\" value=\"" . $this->Hash() . "\" />" . $this->ThemeLoad( "pay/waiting" ) . "</form>";
+	}
+
 	# Заглушка страницы
 	#
-	function ThemeMsg( $title, $errors )
+	function ThemeMsg( $title, $errors, $show_panel = true )
 	{
 		$this->ThemeSetElement( "{msg}", $errors );
 		$this->ThemeSetElement( "{title}", $title );
 
-		return $this->Show( $this->ThemeLoad( "msg" ) );
+		return $this->Show( $this->ThemeLoad( "msg" ), $show_panel );
 	}
 
 	# Разбор строки доп. информации
@@ -385,6 +558,30 @@ Class DevTools
 		}
 
 		return $plugin;
+	}
+
+	public function Logger(string $file, ...$msg) : void
+	{
+		if( ! file_exists( MODULE_PATH . "/log/{$file}.txt"  ) )
+		{
+			$handler = fopen( MODULE_PATH . "/log/{$file}.txt", "a" );
+		}
+		else
+		{
+			$handler = fopen( MODULE_PATH . "/log/{$file}.txt", "a" );
+		}
+
+		$msg = str_replace(array('\r\n', '\r', '\n', '|'), '/',  strip_tags(print_r($msg, 1)));
+
+		fwrite( $handler,
+			$step . "\n" .
+			langdate( "j.m.Y H:i", time()) . '|' .
+			$msg . "\n --- END --- \n"
+		);
+
+		fclose( $handler );
+
+		return;
 	}
 }
 ?>

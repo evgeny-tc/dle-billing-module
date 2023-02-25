@@ -155,7 +155,7 @@ Class Dashboard
 						' . $titles . '
 					</ul>
 				</div>
-				<form action="" method="post">
+				<form action="" enctype="multipart/form-data" method="post">
 					<div class="table-responsive">
 						<div class="tab-content">
 							' . $contents . '
@@ -375,32 +375,30 @@ Class Dashboard
 
 	# Заглушка
 	#
-	function ThemeMsg( $title, $text, $link = '' )
+	function ThemeMsg( $title, $text, $link = '', $class_status = 'success' )
 	{
 		$this->ThemeEchoHeader();
 
 		$linkText = $link ? $this->lang['main_next'] : $this->lang['main_back'];
 
 		$return = <<<HTML
-
-<div class="content">
-	<div class="alert alert-success alert-styled-left alert-arrow-left alert-component message_box">
-		<h4>{$title}</h4>
-		<div class="panel-body">
-			<table width="100%">
-				<tbody><tr>
-					<td height="80" class="text-center">{$text}</td>
-				</tr>
-			</tbody></table>
-		</div>
-		<div class="panel-footer">
-			<div class="text-center">
-				<a class="btn btn-sm bg-teal btn-raised position-left legitRipple" href="{$link}">{$linkText}</a>
-			</div>
-		</div>
-	</div>
-</div>
-
+						<div class="content">
+							<div class="alert alert-{$class_status} alert-styled-left alert-arrow-left alert-component message_box">
+								<h4>{$title}</h4>
+								<div class="panel-body">
+									<table width="100%">
+										<tbody><tr>
+											<td height="80" class="text-center">{$text}</td>
+										</tr>
+									</tbody></table>
+								</div>
+								<div class="panel-footer">
+									<div class="text-center">
+										<a class="btn btn-sm bg-teal btn-raised position-left legitRipple" href="{$link}">{$linkText}</a>
+									</div>
+								</div>
+							</div>
+						</div>
 HTML;
 
 		echo $return . $this->ThemeEchoFoother();
@@ -786,6 +784,30 @@ HTML;
 		return "		</form>
 					</div>
 				</div>";
+	}
+
+	public function Logger(string $file, ...$msg) : void
+	{
+		if( ! file_exists( MODULE_PATH . "/log/{$file}.txt"  ) )
+		{
+			$handler = fopen( MODULE_PATH . "/log/{$file}.txt", "a" );
+		}
+		else
+		{
+			$handler = fopen( MODULE_PATH . "/log/{$file}.txt", "a" );
+		}
+
+		$msg = str_replace(array('\r\n', '\r', '\n', '|'), '/',  strip_tags(print_r($msg, 1)));
+
+		fwrite( $handler,
+			$step . "\n" .
+			langdate( "j.m.Y H:i", time()) . '|' .
+			$msg . "\n --- END --- \n"
+		);
+
+		fclose( $handler );
+
+		return;
 	}
 }
 ?>

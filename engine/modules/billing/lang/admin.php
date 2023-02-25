@@ -11,6 +11,7 @@ return array
 	#
 	'072_req' => "Реквизиты плательщика: ",
 	'072_payer_info' => "Информация о платеже: ",
+	'076_handler' => "Обработчик: ",
 
 	# 0.7
 	#
@@ -78,6 +79,7 @@ return array
 	'logger_do_15' => "Квитанци с указанным id не найдена",
 	'logger_do_16' => "Квитанци с указанным id уже оплачена",
 	'logger_do_17' => "Платежная система не соответствует указанной в квитанции",
+	'logger_do_18' => "Загружен обработчик для %s",
 
 	'statistics_dashboard_all' => "Всего средств в системе",
 	'statistics_dashboard_today' => "пополнено сегодня",
@@ -293,8 +295,8 @@ return array
 		'no' => "Не оплачено"
 	),
 
-	'invoice_str_payok' => "Оплачено",
-	'invoice_str_get' => "Зачислено",
+	'invoice_str_payok' => "К оплате",
+	'invoice_str_get' => "К зачислению",
 	'invoice_str_ps' => "Система оплаты",
 	'invoice_str_status' => "Статус",
 
@@ -338,6 +340,7 @@ return array
 	'history_summa' => "Сумма",
 	'history_date' => "Дата и время",
 	'history_user' => "Пользователь",
+	'history_user_null' => "<i>Гость</i>",
 	'history_balance' => "Остаток на балансе",
 	'history_comment' => "Комментарий",
 	'history_paging' => "Страницы",
