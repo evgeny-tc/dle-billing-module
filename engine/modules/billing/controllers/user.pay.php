@@ -30,7 +30,7 @@ Class USER
 				"invoice_date_pay = '0' " => 1
 			));
 
-			if( $this->DevTools->LQuery->DbGetInvoiceNum() >= $this->DevTools->config['invoice_max_num'] )
+			if( $this->DevTools->config['invoice_max_num'] and $this->DevTools->LQuery->DbGetInvoiceNum() >= $this->DevTools->config['invoice_max_num'] )
 			{
 				return $this->DevTools->ThemeMsg( $this->DevTools->lang['pay_error_title'], sprintf( $this->DevTools->lang['invoice_max_num'], $this->DevTools->config['invoice_max_num'] ) );
 			}
@@ -251,7 +251,7 @@ Class USER
 		$SecretKey = $this->DevTools->LQuery->parsVar( $GET['key'], '~[^a-z|0-9|\-|.]*~is' );
 		$GetPaysys = $this->DevTools->LQuery->parsVar( $GET['payment'], '~[^a-z|0-9|\-|.]*~is' );
 
-		$this->PaymentsArray = $this->Payments();
+		$this->PaymentsArray = $this->DevTools->Payments();
 
 		# .. логирование
 		#
