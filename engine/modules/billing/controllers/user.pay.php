@@ -430,7 +430,7 @@ Class USER
 	#
 	private function RegisterPay( $Invoice, $CheckPayerRequisites )
 	{
-		$this->PaymentsArray = $this->Payments();
+		$this->PaymentsArray = $this->DevTools->Payments();
 
 		if( ! isset( $Invoice ) or $Invoice['invoice_date_pay'] ) return;
 
