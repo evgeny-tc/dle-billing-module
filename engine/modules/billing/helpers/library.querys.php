@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module/
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2023, mr_Evgen
+ * @copyright     Copyright (c) 2012-2023, mr_Evgen
  */
 
 Class LibraryQuerys
@@ -60,7 +60,7 @@ Class LibraryQuerys
 	{
 		$new_status = $new_status ? intval( $new_status ) : 0;
 
-		$this->db->super_query( "UPDATE " . USERPREFIX . "_billing_refund
+		$this->db->query( "UPDATE " . USERPREFIX . "_billing_refund
 									SET refund_date_return='" . $new_status . "'
 									WHERE refund_id='" . intval( $refund_id ) . "'" );
 
@@ -71,7 +71,7 @@ Class LibraryQuerys
 	#
 	function DbRefundRemore( $refund_id )
 	{
-		$this->db->super_query( "DELETE FROM " . USERPREFIX . "_billing_refund
+		$this->db->query( "DELETE FROM " . USERPREFIX . "_billing_refund
 									WHERE refund_id='" . intval( $refund_id ) . "'" );
 
 		return;
@@ -170,7 +170,7 @@ Class LibraryQuerys
 	#
 	function DbHistoryRemoveByID( $history_id )
 	{
-		$this->db->super_query( "DELETE FROM " . USERPREFIX . "_billing_history
+		$this->db->query( "DELETE FROM " . USERPREFIX . "_billing_history
 									WHERE history_id = '" . intval( $history_id ) . "'" );
 
 		return;
@@ -225,7 +225,7 @@ Class LibraryQuerys
 	{
 		$time = ! $wait ? $this->_TIME : 0;
 
-		$this->db->super_query( "UPDATE " . USERPREFIX . "_billing_invoice
+		$this->db->query( "UPDATE " . USERPREFIX . "_billing_invoice
 									SET invoice_date_pay = '" . $time . "',
 										invoice_paysys = '" . $invoice_paysys . "',
 										invoice_pay = '" . $invoice_pay . "',
@@ -239,8 +239,7 @@ Class LibraryQuerys
 	#
 	function DbInvoiceRemove( $invoice_id )
 	{
-		$this->db->super_query( "DELETE FROM " . USERPREFIX . "_billing_invoice
-									WHERE invoice_id='" . intval( $invoice_id ) . "'" );
+		$this->db->query( "DELETE FROM " . USERPREFIX . "_billing_invoice WHERE invoice_id='" . intval( $invoice_id ) . "'" );
 
 		return;
 	}
