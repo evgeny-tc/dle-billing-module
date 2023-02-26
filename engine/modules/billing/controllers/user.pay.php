@@ -251,7 +251,7 @@ Class USER
 		$SecretKey = $this->DevTools->LQuery->parsVar( $GET['key'], '~[^a-z|0-9|\-|.]*~is' );
 		$GetPaysys = $this->DevTools->LQuery->parsVar( $GET['payment'], '~[^a-z|0-9|\-|.]*~is' );
 
-		$this->PaymentsArray = $this->Payments();
+		$this->PaymentsArray = $this->DevTools->Payments();
 
 		# .. логирование
 		#
