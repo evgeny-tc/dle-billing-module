@@ -20,4 +20,8 @@ while ( $name = readdir($List) )
 		include( DLEPlugins::Check( MODULE_PATH . "/plugins/" . $name . "/template.tags.php" ) );
 	}
 }
+<<<<<<< HEAD
 ?>
+=======
+?>
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0

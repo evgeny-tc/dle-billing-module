@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?php	if( ! defined( 'BILLING_MODULE' ) ) die( "Hacking attempt!" );
 /**
  * DLE Billing
@@ -5,6 +6,15 @@
  * @link          https://github.com/mr-Evgen/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
  * @copyright     Copyright (c) 2012-2017, mr_Evgen
+=======
+<?php
+/**
+ * DLE Billing
+ *
+ * @link          https://github.com/evgeny-tc/dle-billing-module
+ * @author        dle-billing.ru <evgeny.tc@gmail.com>
+ * @copyright     Copyright (c) 2012-2023
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
  */
 
 Class USER
@@ -19,20 +29,32 @@ Class USER
 		}
 	}
 
+<<<<<<< HEAD
 	function ok( $GET )
+=======
+	public function ok( array $GET = [] )
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	{
 		# Проверка авторизации
 		#
 		if( ! $this->DevTools->member_id['name'] )
 		{
+<<<<<<< HEAD
 			return $this->DevTools->lang['pay_need_login'];
+=======
+			throw new Exception($this->DevTools->lang['pay_need_login']);
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 		}
 
 		# Плагин выключен
 		#
 		if( ! $this->plugin_config['status'] )
 		{
+<<<<<<< HEAD
 			return $this->DevTools->ThemeMsg( $this->DevTools->lang['pay_error_title'], $this->DevTools->lang['cabinet_off'] );
+=======
+			throw new Exception($this->DevTools->lang['cabinet_off']);
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 		}
 
 		$Get = explode("|", base64_decode( urldecode( $GET['info'] ) ) );
@@ -45,26 +67,43 @@ Class USER
 		return $this->DevTools->ThemeMsg( $this->DevTools->lang['transfer_msgOk'], sprintf( $this->DevTools->lang['transfer_log_text'], urlencode( $Get[0] ), $Get[0], $Get[1], $Get[2] ) );
 	}
 
+<<<<<<< HEAD
 	function main( $GET )
+=======
+	public function main( array $GET = [] )
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	{
 		# Проверка авторизации
 		#
 		if( ! $this->DevTools->member_id['name'] )
 		{
+<<<<<<< HEAD
 			return $this->DevTools->lang['pay_need_login'];
+=======
+			throw new Exception($this->DevTools->lang['pay_need_login']);
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 		}
 
 		# Плагин выключен
 		#
 		if( ! $this->plugin_config['status'] )
 		{
+<<<<<<< HEAD
 			return $this->DevTools->ThemeMsg( $this->DevTools->lang['pay_error_title'], $this->DevTools->lang['cabinet_off'] );
+=======
+			throw new Exception($this->DevTools->lang['cabinet_off']);
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 		}
 
 		# Сделать перевод
 		#
 		if( isset($_POST['submit']) )
 		{
+<<<<<<< HEAD
+=======
+			$this->DevTools->CheckHash( $_POST['bs_hash'] );
+
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 			$_SearchUser = $this->DevTools->LQuery->DbSearchUserByName( htmlspecialchars( trim( $_POST['bs_user_name'] ), ENT_COMPAT, $this->DevTools->config_dle['charset'] ) );
 
 			$_Money = $this->DevTools->LQuery->db->safesql( $_POST['bs_summa'] );
@@ -72,11 +111,15 @@ Class USER
 
 			$Error = "";
 
+<<<<<<< HEAD
 			if( ! isset( $_POST['bs_hash'] ) or $_POST['bs_hash'] != $this->DevTools->hash() )
 			{
 				$Error = $this->DevTools->lang['pay_hash_error'];
 			}
 			else if( ! $_Money )
+=======
+			if( ! $_Money )
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 			{
 				$Error = $this->DevTools->lang['pay_summa_error'];
 			}
@@ -127,7 +170,11 @@ Class USER
 
 		$GetSum = $GET['sum'] ?: $this->plugin_config['minimum'];
 
+<<<<<<< HEAD
 		$this->DevTools->ThemeSetElement( "{hash}", $this->DevTools->hash() );
+=======
+		$this->DevTools->ThemeSetElement( "{hash}", $this->DevTools->hash );
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 		$this->DevTools->ThemeSetElement( "{get.sum}", $GetSum );
 		$this->DevTools->ThemeSetElement( "{get.sum.currency}", $this->DevTools->API->Declension( $GetSum ) );
 		$this->DevTools->ThemeSetElement( "{minimum}", $this->plugin_config['minimum'] );
@@ -158,7 +205,11 @@ Class USER
 			$params = array(
 				'{date=' . $TplLineDate . '}' => $this->DevTools->ThemeChangeTime( $Value['history_date'], $TplLineDate ),
 				'{transfer.desc}' => $Value['history_text'],
+<<<<<<< HEAD
 				'{transfer.sum}' => $Value['history_plus']
+=======
+				'{transfer.sum}' => $Value['history_plus'] > 0
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 										? '<font color="green">+' . $Value['history_plus'] . ' ' . $Value['history_currency'] . '</font>'
 										: '<font color="red">-' . $Value['history_minus'] . ' ' . $Value['history_currency'] . '</font>'
 			);
@@ -192,4 +243,7 @@ Class USER
 		return $this->DevTools->Show( $Content );
 	}
 }
+<<<<<<< HEAD
 ?>
+=======
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0

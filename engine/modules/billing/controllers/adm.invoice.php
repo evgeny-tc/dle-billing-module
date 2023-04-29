@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?php	if( ! defined( 'BILLING_MODULE' ) ) die( "Hacking attempt!" );
 /**
  * DLE Billing
@@ -5,11 +6,24 @@
  * @link          https://github.com/mr-Evgen/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
  * @copyright     Copyright (c) 2012-2017, mr_Evgen
+=======
+<?php
+/**
+ * DLE Billing
+ *
+ * @link          https://github.com/evgeny-tc/dle-billing-module
+ * @author        dle-billing.ru <evgeny.tc@gmail.com>
+ * @copyright     Copyright (c) 2012-2023
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
  */
 
 Class ADMIN
 {
+<<<<<<< HEAD
 	function main( $Get )
+=======
+	public function main( array $Get = [] )
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	{
 		$GetPaysysArray = $this->Dashboard->Payments();
 
@@ -17,10 +31,14 @@ Class ADMIN
 		#
 		if( isset( $_POST['act_do'] ) )
 		{
+<<<<<<< HEAD
 			if( $_POST['user_hash'] == "" or $_POST['user_hash'] != $this->Dashboard->hash )
 			{
 				return "Hacking attempt! User not found {$_POST['user_hash']}";
 			}
+=======
+			$this->Dashboard->CheckHash();
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 
 			$MassList = $_POST['massact_list'];
 			$MassAct = $_POST['act'];

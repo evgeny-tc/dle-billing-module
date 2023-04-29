@@ -7,7 +7,11 @@
  * @copyright     Copyright (c) 2012-2017, mr_Evgen
  */
 
+<<<<<<< HEAD
 $_Lang = include DLEPlugins::Check( MODULE_PATH . '/lang/admin.php' );
+=======
+$_Lang = MODULE_PATH . '/lang/admin.php';
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 
 $blank = array
 (

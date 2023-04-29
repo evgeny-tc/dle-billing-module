@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?php	if( ! defined( 'BILLING_MODULE' ) ) die( "Hacking attempt!" );
 /**
  * DLE Billing
@@ -15,6 +16,31 @@ Class DevTools
     private function __construct(){}
     private function __clone()    {}
     private function __wakeup()   {}
+=======
+<?php
+/**
+ * DLE Billing
+ *
+ * @link          https://github.com/evgeny-tc/dle-billing-module
+ * @author        dle-billing.ru <evgeny.tc@gmail.com>
+ * @copyright     Copyright (c) 2012-2023
+ */
+
+/**
+ * Пользовательский интерфейс
+ * @var [type]
+ */
+Class DevTools
+{
+	use Core, Utheme;
+
+	private static $instance;
+
+	private function __construct(){}
+    private function __clone()    {}
+    private function __wakeup()   {}
+
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
     public static function Start()
 	{
         if ( empty(self::$instance) )
@@ -24,6 +50,7 @@ Class DevTools
         return self::$instance->Loader();
     }
 
+<<<<<<< HEAD
 	# ..дублируем переменные dle
 	#
 	var $dle = array();
@@ -56,6 +83,96 @@ Class DevTools
 		global $config, $member_id, $_TIME, $db;
 
 		$this->lang 	= include DLEPlugins::Check( MODULE_PATH . '/lang/cabinet.php' );
+=======
+	/**
+	 * DLE config
+	 * @var [type]
+	 */
+	public array $dle = [];
+
+	/**
+	 * Authorized user
+	 * @var [type]
+	 */
+	public array $member_id = [];
+
+	/**
+	 * Local time
+	 * @var [type]
+	 */
+	public int $_TIME;
+
+	/**
+	 * Config this module
+	 * @var array
+	 */
+	public array $config = [];
+
+	/**
+	 * Lang array
+	 * @var array
+	 */
+	public array $lang = [];
+
+	/**
+	 * Loaded plugin class
+	 * @var string
+	 */
+	public string $get_plugin = '';
+
+	/**
+	 * Loaded plugin method
+	 * @var string
+	 */
+	public string $get_method = '';
+
+	/**
+	 * Connect api module
+	 * @var bool
+	 */
+	public $API = false;
+
+	/**
+	 * Helper sql
+	 * @var [type]
+	 */
+	public $LQuery = false;
+
+	/**
+	 * User balance
+	 * @var float|int
+	 */
+	public float $BalanceUser = 0;
+
+	/**
+	 * Hash string to form
+	 * @var [type]
+	 */
+	public string $hash;
+
+	/**
+	 * Template build
+	 * @var array
+	 */
+	protected $elements = [];
+	protected $element_block = [];
+
+	/**
+	 * Module plugins and payments
+	 * @var array
+	 */
+	public array $Plugins = [];
+	public array $Payments = [];
+
+	/**
+	* Main loader
+	*/
+	private function Loader()
+	{
+		global $config, $member_id, $_TIME, $db, $dle_login_hash;
+
+		$this->lang 	= include MODULE_PATH . '/lang/cabinet.php';
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 		$this->config 	= include MODULE_DATA . '/config.php';
 
 		# ..модуль отключен
@@ -75,13 +192,21 @@ Class DevTools
 			}
 		}
 
+<<<<<<< HEAD
 		$this->LQuery 	= new LibraryQuerys( $db, $this->config['fname'], $_TIME );
+=======
+		$this->LQuery 	= new Database( $db, $this->config['fname'], $_TIME );
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 		$this->API 		= new BillingAPI( $db, $member_id, $this->config, $_TIME );
 
 		$this->dle 		= $config;
 		$this->member_id = $member_id;
 
 		$this->_TIME = $_TIME;
+<<<<<<< HEAD
+=======
+		$this->hash = $dle_login_hash;
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 
 		$this->BalanceUser = $this->API->Convert( $this->member_id[$this->config['fname']] );
 
@@ -113,6 +238,7 @@ Class DevTools
 
 		# Подключение страницы
 		#
+<<<<<<< HEAD
 		if( file_exists( DLEPlugins::Check( MODULE_PATH . '/controllers/user.' . $RealURL . '.php' ) ) )
 		{
 			require_once DLEPlugins::Check( MODULE_PATH . '/controllers/user.' . $RealURL . '.php' );
@@ -127,6 +253,21 @@ Class DevTools
 		{
 			echo sprintf($this->lang['cabinet_controller_error'], $this->get_plugin);
 			return;
+=======
+		if( file_exists( MODULE_PATH . '/controllers/user.' . $RealURL . '.php' ) )
+		{
+			require_once MODULE_PATH . '/controllers/user.' . $RealURL . '.php';
+		}
+		# Подключение плагина
+		#
+		elseif( file_exists( MODULE_PATH . '/plugins/' . $RealURL . '/user.main.php' ) )
+		{
+			require_once MODULE_PATH . '/plugins/' . $RealURL . '/user.main.php';
+		}
+		else
+		{
+			throw new Exception(sprintf($this->lang['cabinet_controller_error'], $this->get_plugin));
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 		}
 
 		$Cabinet = new USER;
@@ -135,6 +276,7 @@ Class DevTools
 		{
 			$Cabinet->DevTools = $this;
 
+<<<<<<< HEAD
 			try
 			{
 				echo $Cabinet->$m( $arrParams );
@@ -223,6 +365,23 @@ Class DevTools
 	# Отобразить страницу
 	#
 	function Show( $Content, $show_panel = true )
+=======
+			echo $Cabinet->$m( $arrParams );
+		}
+		else
+		{
+			throw new Exception(sprintf($this->lang['cabinet_metod_error'], $this->get_plugin, $this->get_method));
+		}
+	}
+
+	/**
+	 * Show page
+	 * @param string $Content
+	 * @param bool $show_panel
+	 * @return array|false|string|string[]|null
+	 */
+	public function Show(string $Content, bool $show_panel = true )
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	{
 		$Cabinet = @file_get_contents( ENGINE_DIR . "/cache/system/billing.php" );
 
@@ -231,7 +390,11 @@ Class DevTools
 			$show_panel = false;
 		}
 
+<<<<<<< HEAD
 		if( $Cabinet == false )
+=======
+		if(!$Cabinet)
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 		{
 			$Cabinet = $this->ThemeLoad( 'cabinet' );
 
@@ -302,6 +465,7 @@ Class DevTools
 		return $Cabinet;
 	}
 
+<<<<<<< HEAD
 
 	# Массив пс
 	#
@@ -333,6 +497,19 @@ Class DevTools
 		{
 			throw new \Exception($this->lang['pay_hash_error']);
 		}
+=======
+	/**
+	 * Pre-check pay from balance
+	 * @param float $sum
+	 * @param array $_Payment
+	 * @param bool $from_balance
+	 * @return void
+	 * @throws Exception
+	 */
+	public function FormPayCheck( float $sum, array $_Payment, bool $from_balance = false )
+	{
+		$this->CheckHash($_POST['billingHash']);
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 
 		if( $from_balance and ! count( $_Payment ) and $this->member_id['user_id'] )
 		{
@@ -377,7 +554,18 @@ Class DevTools
 		return;
 	}
 
+<<<<<<< HEAD
 	public function FormSelectPay( $sum, $from_balance = false, $more_info = [] )
+=======
+	/**
+	 * Payment list for pay
+	 * @param float $sum
+	 * @param bool $from_balance
+	 * @param array $more_info
+	 * @return string
+	 */
+	public function FormSelectPay( float $sum, bool $from_balance = false, array $more_info = [] )
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	{
 		$PaymentsArray = $this->Payments();
 
@@ -414,7 +602,11 @@ Class DevTools
 
 				$TimeLine = str_replace("{payment.name}", $Name, $TimeLine);
 				$TimeLine = str_replace("{payment.title}", $Info['config']['title'], $TimeLine);
+<<<<<<< HEAD
 				$TimeLine = str_replace("{payment.topay}", $this->API->Convert($sum * $Info['config']['convert'], $Info['config']['format']), $TimeLine);
+=======
+				$TimeLine = str_replace("{payment.topay}", $this->API->Convert($sum * floatval($Info['config']['convert']), $Info['config']['format']), $TimeLine);
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 				$TimeLine = str_replace("{payment.currency}", $Info['config']['currency'], $TimeLine);
 
 				$PaysysList .= $TimeLine;
@@ -449,6 +641,7 @@ Class DevTools
 
 		$this->ThemeSetElement( "{button}", "<input type=\"submit\" name=\"submit\" class=\"btn\" value=\"" . $this->lang['pay_invoice_now'] . "\">" );
 
+<<<<<<< HEAD
 		return "<form action=\"\" method=\"post\"><input type=\"hidden\" name=\"billingHash\" value=\"" . $this->Hash() . "\" />" . $this->ThemeLoad( "pay/waiting" ) . "</form>";
 	}
 
@@ -465,6 +658,17 @@ Class DevTools
 	# Разбор строки доп. информации
 	#
 	function ParsUserXFields( $xfields_str )
+=======
+		return "<form action=\"\" method=\"post\"><input type=\"hidden\" name=\"billingHash\" value=\"" . $this->DevTools->hash . "\" />" . $this->ThemeLoad( "pay/waiting" ) . "</form>";
+	}
+
+	/**
+	 * Parse user xfields
+	 * @param string $xfields_str
+	 * @return array
+	 */
+	public function ParsUserXFields( string $xfields_str = '' )
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	{
 		$arrUserfields = array();
 
@@ -478,6 +682,7 @@ Class DevTools
 		return $arrUserfields;
 	}
 
+<<<<<<< HEAD
 	# Фото пользователя
 	#
 	private function Foto( $foto )
@@ -524,6 +729,14 @@ Class DevTools
 	# Альтернативный URL => реальный
 	#
 	function URL( $plugin )
+=======
+	/**
+	 * URL: alt -> real
+	 * @param string $plugin
+	 * @return string
+	 */
+	public function URL( string $plugin )
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	{
 		foreach (explode(',', $this->config['urls']) as $url_param)
 		{
@@ -543,9 +756,18 @@ Class DevTools
 		return $plugin;
 	}
 
+<<<<<<< HEAD
 	# Реальный URL => Альтернативный
 	#
 	function reURL( $plugin )
+=======
+	/**
+	 * URL: real -> alt
+	 * @param string $plugin
+	 * @return string
+	 */
+	public function reURL( string $plugin )
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	{
 		foreach (explode(',', $this->config['urls']) as $url_param)
 		{
@@ -559,6 +781,7 @@ Class DevTools
 
 		return $plugin;
 	}
+<<<<<<< HEAD
 
 	public function Logger(string $file, ...$msg) : void
 	{
@@ -583,5 +806,7 @@ Class DevTools
 
 		return;
 	}
+=======
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 }
 ?>

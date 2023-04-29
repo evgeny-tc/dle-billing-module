@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?php	if( ! defined( 'BILLING_MODULE' ) ) die( "Hacking attempt!" );
 /**
  * DLE Billing
@@ -5,20 +6,37 @@
  * @link          https://github.com/mr-Evgen/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
  * @copyright     Copyright (c) 2012-2017, mr_Evgen
+=======
+<?php
+/**
+ * DLE Billing
+ *
+ * @link          https://github.com/evgeny-tc/dle-billing-module
+ * @author        dle-billing.ru <evgeny.tc@gmail.com>
+ * @copyright     Copyright (c) 2012-2023
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
  */
 
 Class ADMIN
 {
+<<<<<<< HEAD
 	function main( $Get )
+=======
+	public function main( array $Get = [] )
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	{
 		# Сохранить настройки
 		#
 		if( isset( $_POST['save'] ) )
 		{
+<<<<<<< HEAD
 			if( $_POST['user_hash'] == "" or $_POST['user_hash'] != $this->Dashboard->hash )
 			{
 				return "Hacking attempt! User not found {$_POST['user_hash']}";
 			}
+=======
+			$this->Dashboard->CheckHash();
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 
 			$this->Dashboard->SaveConfig("plugin.refund", $_POST['save_con']);
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
@@ -28,10 +46,14 @@ Class ADMIN
 		#
 		if( isset( $_POST['act_do'] ) )
 		{
+<<<<<<< HEAD
 			if( $_POST['user_hash'] == "" or $_POST['user_hash'] != $this->Dashboard->hash )
 			{
 				return "Hacking attempt! User not found {$_POST['user_hash']}";
 			}
+=======
+			$this->Dashboard->CheckHash();
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 
 			$RemoveList = $_POST['remove_list'];
 			$RemoveAct = $_POST['act'];
@@ -77,7 +99,11 @@ Class ADMIN
 		#
 		$_Config = $this->Dashboard->LoadConfig( "refund", true, array('status'=>"0") );
 
+<<<<<<< HEAD
 		$this->Dashboard->ThemeEchoHeader();
+=======
+		$this->Dashboard->ThemeEchoHeader($this->Dashboard->lang['refund_title']);
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 
 		$this->Dashboard->ThemeAddTR( array(
 			'<th width="1%"><b>#</b></th>',
@@ -94,12 +120,18 @@ Class ADMIN
 		#
 		if( isset( $_POST['search_btn'] ) )
 		{
+<<<<<<< HEAD
 			if( $_POST['user_hash'] == "" or $_POST['user_hash'] != $this->Dashboard->hash )
 			{
 				return "Hacking attempt! User not found {$_POST['user_hash']}";
 			}
 
 			$_WhereData = array();
+=======
+			$this->Dashboard->CheckHash();
+
+			$_WhereData = [];
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 
 			switch( substr( $_POST['search_summa'], 0, 1) )
 			{
@@ -176,6 +208,7 @@ Class ADMIN
 								"<li><a href=\"{page_num_link}\">{page_num}</a></li>",
 								"<li class=\"active\"><span>{page_num}</span></li>",
 								$PerPage
+<<<<<<< HEAD
 							) . '</ul></div>
 							<select name="act" class="uniform">
 								<option value="ok">' . $this->Dashboard->lang['refund_act_ok'] . '</option>
@@ -184,6 +217,18 @@ Class ADMIN
 								<option value="remove">' . $this->Dashboard->lang['remove'] . '</option>
 							</select>
 							' . $this->Dashboard->MakeButton("act_do", $this->Dashboard->lang['act'], "gold"),
+=======
+							) . '</ul>
+						</div>
+						<div style="float: right">
+								<select name="act" class="uniform">
+									<option value="ok">' . $this->Dashboard->lang['refund_act_ok'] . '</option>
+									<option value="wait">' . $this->Dashboard->lang['refund_wait'] . '</option>
+									<option value="back">' . $this->Dashboard->lang['refund_act_no'] . '</option>
+									<option value="remove">' . $this->Dashboard->lang['remove'] . '</option>
+								</select>
+							' . $this->Dashboard->MakeButton("act_do", $this->Dashboard->lang['act'], "gold") . '</div>',
+>>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 							'box-footer', 'right' );
 		}
 		else
