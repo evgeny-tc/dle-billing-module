@@ -11,8 +11,6 @@ define( 'BILLING_MODULE', TRUE );
 define( 'MODULE_PATH', ENGINE_DIR . "/modules/billing" );
 define( 'MODULE_DATA', ENGINE_DIR . "/data/billing" );
 
-<<<<<<< HEAD
-=======
 spl_autoload_register(function ($class)
 {
     $file = MODULE_PATH . '/helpers/' . mb_strtolower($class).'.php';
@@ -25,22 +23,11 @@ spl_autoload_register(function ($class)
     return false;
 });
 
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 # Требуется установка модуля
 #
 if( ! file_exists( MODULE_DATA . '/config.php' ) )
 {
 	header("Location: /index.php");
-<<<<<<< HEAD
-	exit();
-}
-
-require_once DLEPlugins::Check(MODULE_PATH . '/helpers/library.querys.php');
-require_once DLEPlugins::Check(MODULE_PATH . '/helpers/api.php');
-require_once DLEPlugins::Check(MODULE_PATH . '/helpers/devtools.php');
-
-DevTools::Start();
-=======
 	exit;
 }
 
@@ -54,4 +41,3 @@ catch (\Exception $e)
 {
     echo $e->getMessage() . "<br /><br /><a href=\"javascript:history.go(-1)\">$lang[all_prev]</a>";
 }
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0

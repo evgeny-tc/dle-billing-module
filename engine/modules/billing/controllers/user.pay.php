@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-<?php	if( ! defined( 'BILLING_MODULE' ) ) die( "Hacking attempt!" );
-/**
- * DLE Billing
- *
- * @link          https://github.com/evgeny-tc/dle-billing-module/
- * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2023, mr_Evgen
-=======
 <?php
 /**
  * DLE Billing
@@ -14,22 +5,12 @@
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
  * @copyright     Copyright (c) 2012-2023
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
  */
 
 Class USER
 {
 	private $PaymentsArray = [];
 
-<<<<<<< HEAD
-	# Страница пополнения баланса
-	#
-	function main( $GET )
-	{
-		# Проверка авторизации
-		#
-		if( ! $this->DevTools->member_id['name'] ) return $this->DevTools->lang['pay_need_login'];
-=======
 	/**
 	 * Страница пополнения баланса
 	 * @param array $GET
@@ -44,7 +25,6 @@ Class USER
 		{
 			throw new Exception($this->DevTools->lang['pay_need_login']);
 		}
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 
 		$this->PaymentsArray = $this->DevTools->Payments();
 
@@ -52,11 +32,8 @@ Class USER
 		#
 		if( isset($_POST['submit']) )
 		{
-<<<<<<< HEAD
-=======
 			$this->DevTools->CheckHash( $_POST['billingHash'] );
 
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 			$this->DevTools->LQuery->DbWhere( array(
 				"invoice_user_name = '{s}' " => $this->DevTools->member_id['name'],
 				"invoice_date_pay = '0' " => 1
@@ -71,15 +48,7 @@ Class USER
 
 			$Error = "";
 
-<<<<<<< HEAD
-			if( ! isset( $_POST['billingHash'] ) or $_POST['billingHash'] != $this->DevTools->hash() )
-			{
-				$Error = $this->DevTools->lang['pay_hash_error'];
-			}
-			else if( ! $this->DevTools->API->Convert( $_Sum ) )
-=======
 			if( ! $this->DevTools->API->Convert( $_Sum ) )
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 			{
 				$Error = $this->DevTools->lang['pay_incorect_sum'];
 			}
@@ -127,13 +96,7 @@ Class USER
 		#
 		$Tpl = $this->DevTools->ThemeLoad( "pay/start" );
 
-<<<<<<< HEAD
-		$PaysysList = '';
-
-		$TplSelect = $this->DevTools->ThemePregMatch( $Tpl, '~\[payment\](.*?)\[/payment\]~is' );
-=======
 		$this->DevTools->ThemePregMatch( $Tpl, '~\[payment\](.*?)\[/payment\]~is' );
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 
 		$GetSum = $GET['sum'] ? $this->DevTools->API->Convert( $GET['sum'] ) : $this->DevTools->config['sum'];
 
@@ -141,52 +104,32 @@ Class USER
 		$this->DevTools->ThemeSetElement( "{module.currency}", $this->DevTools->config['currency'] );
 		$this->DevTools->ThemeSetElement( "{module.format}", $this->DevTools->config['format'] == 'int' ? 0 : 2 );
 		$this->DevTools->ThemeSetElement( "{get.sum}", $GetSum );
-<<<<<<< HEAD
-		$this->DevTools->ThemeSetElement( "{hash}", $this->DevTools->Hash() );
-=======
 		$this->DevTools->ThemeSetElement( "{hash}", $this->DevTools->hash );
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 
 		return $this->DevTools->Show( $Tpl );
 	}
 
-<<<<<<< HEAD
-	# Страницы результата оплаты
-	#
-	function ok()
-=======
 	/**
 	 * Страницы результата оплаты
 	 * @param array $GET
 	 * @return mixed
 	 */
 	public function ok(array $GET = [])
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	{
 		return $this->DevTools->Show( $this->DevTools->ThemeLoad( "pay/success" ) );
 	}
 
-<<<<<<< HEAD
-	function bad()
-=======
 	public function bad(array $GET = [])
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	{
 		return $this->DevTools->Show( $this->DevTools->ThemeLoad( "pay/fail" ) );
 	}
 
-<<<<<<< HEAD
-	# Квитанция, переход к оплате
-	#
-	function waiting( $GET )
-=======
 	/**
 	 * Квитанция, переход к оплате
 	 * @param array $GET
 	 * @return mixed|string
 	 */
 	public function waiting( array $GET = [] )
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	{
 		# Проверка авторизации
 		#
@@ -305,18 +248,12 @@ Class USER
 		return $this->DevTools->Show( $Content );
 	}
 
-<<<<<<< HEAD
-	# Обработчик платежей
-	#
-	function handler( $GET )
-=======
 	/**
 	 * Обработчик платежей
 	 * @param array $GET
 	 * @return void
 	 */
 	public function handler( array $GET = [] )
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	{
 		header($_SERVER['SERVER_PROTOCOL'].' HTTP 200 OK', true, 200);
 		header( "Content-type: text/html; charset=" . $this->DevTools->dle['charset'] );
@@ -444,17 +381,12 @@ Class USER
 		exit();
 	}
 
-<<<<<<< HEAD
-	# Вывод сообщения для ПС
-	#
-=======
 	/**
 	 * Вывод сообщения для ПС
 	 * @param $payment
 	 * @param $text
 	 * @return mixed
 	 */
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	private function billingMessage( $payment, $text )
 	{
 		if( in_array('null_info', get_class_methods($payment) ) )
@@ -467,10 +399,6 @@ Class USER
 		}
 	}
 
-<<<<<<< HEAD
-	# Логирование
-	#
-=======
 	/**
 	 * Логирование
 	 * TODO: replace new method
@@ -478,7 +406,6 @@ Class USER
 	 * @param $info
 	 * @return bool
 	 */
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	private function logging( $step = 0, $info = '' )
 	{
 		if( ! $this->DevTools->config['test'] ) return false;
@@ -510,14 +437,11 @@ Class USER
 		return true;
 	}
 
-<<<<<<< HEAD
-=======
 	/**
 	 * Remove params
 	 * @param $DATA
 	 * @return mixed
 	 */
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	private function ClearData( $DATA )
 	{
 		foreach( $DATA as $key=>$val )
@@ -528,15 +452,6 @@ Class USER
 		return $DATA;
 	}
 
-<<<<<<< HEAD
-	# Изменить статус квитанции, зачислить платеж
-	#
-	private function RegisterPay( $Invoice, $CheckPayerRequisites )
-	{
-		$this->PaymentsArray = $this->DevTools->Payments();
-
-		if( ! isset( $Invoice ) or $Invoice['invoice_date_pay'] ) return;
-=======
 	/**
 	 * Изменить статус квитанции, зачислить платеж
 	 * @param array $Invoice
@@ -548,7 +463,6 @@ Class USER
 		$this->PaymentsArray = $this->DevTools->Payments();
 
 		if( ! isset( $Invoice ) or $Invoice['invoice_date_pay'] ) return true;
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 
 		$this->DevTools->LQuery->DbInvoiceUpdate( $Invoice['invoice_id'], false, $Invoice['invoice_paysys'], $Invoice['invoice_pay'], $CheckPayerRequisites );
 
@@ -609,9 +523,4 @@ Class USER
 
 		return true;
 	}
-<<<<<<< HEAD
 }
-?>
-=======
-}
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0

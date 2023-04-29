@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-<?php	if( ! defined( 'BILLING_MODULE' ) ) die( "Hacking attempt!" );
-/**
- * DLE Billing
- *
- * @link          https://github.com/mr-Evgen/dle-billing-module
- * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2017, mr_Evgen
-=======
 <?php
 /**
  * DLE Billing
@@ -14,16 +5,11 @@
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
  * @copyright     Copyright (c) 2012-2023
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
  */
 
 Class ADMIN
 {
-<<<<<<< HEAD
-	function main( $Get )
-=======
 	public function main( array $Get = [] )
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	{
 		if( $Get['user'] )
 		{
@@ -34,14 +20,7 @@ Class ADMIN
 		#
 		if( isset( $_POST['mass_remove'] ) )
 		{
-<<<<<<< HEAD
-			if( $_POST['user_hash'] == "" or $_POST['user_hash'] != $this->Dashboard->hash )
-			{
-				return "Hacking attempt! User not found {$_POST['user_hash']}";
-			}
-=======
 			$this->Dashboard->CheckHash();
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 
 			foreach( $_POST['massact_list'] as $id )
 			{
@@ -61,14 +40,7 @@ Class ADMIN
 		#
 		if( isset( $_POST['search_btn'] ) )
 		{
-<<<<<<< HEAD
-			if( $_POST['user_hash'] == "" or $_POST['user_hash'] != $this->Dashboard->hash )
-			{
-				return "Hacking attempt! User not found {$_POST['user_hash']}";
-			}
-=======
 			$this->Dashboard->CheckHash();
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 
 			$_WhereData = array();
 
@@ -145,13 +117,8 @@ Class ADMIN
 				$Value['history_id'],
 				$Value['history_plugin'] . " / " . $Value['history_plugin_id'],
 				$this->Dashboard->ThemeChangeTime( $Value['history_date'] ),
-<<<<<<< HEAD
-				$Value['history_plus']  ? "<font color=\"green\">+{$Value['history_plus']} {$Value['history_currency']}</font>"
-										: "<font color=\"red\">-{$Value['history_minus']} {$Value['history_currency']}</font>",
-=======
 				$Value['history_plus'] > 0  ? "<font color=\"green\">+{$Value['history_plus']} {$Value['history_currency']}</font>"
 											: "<font color=\"red\">-{$Value['history_minus']} {$Value['history_currency']}</font>",
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 				$this->Dashboard->ThemeInfoUser( $Value['history_user_name'] ),
 				$this->Dashboard->API->Convert( $Value['history_balance'] ) . "&nbsp;	" . $this->Dashboard->API->Declension( $Value['history_balance'] ),
 				(

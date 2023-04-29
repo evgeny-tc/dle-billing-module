@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-<?php	if( ! defined( 'BILLING_MODULE' ) ) die( "Hacking attempt!" );
-/**
- * DLE Billing
- *
- * @link          https://github.com/mr-Evgen/dle-billing-module
- * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2017, mr_Evgen
-=======
 <?php
 /**
  * DLE Billing
@@ -14,26 +5,17 @@
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
  * @copyright     Copyright (c) 2012-2023
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
  */
 
 Class USER
 {
-<<<<<<< HEAD
-	function main( $GET )
-=======
 	public function main( array $GET = [] )
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	{
 		# Проверка авторизации
 		#
 		if( ! $this->DevTools->member_id['name'] )
 		{
-<<<<<<< HEAD
-			return $this->DevTools->lang['pay_need_login'];
-=======
 			throw new Exception($this->DevTools->lang['pay_need_login']);
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 		}
 
 		$Content = $this->DevTools->ThemeLoad( "history" );
@@ -63,13 +45,8 @@ Class USER
 				'{plugin}' => $Value['history_plugin'],
 				'{plugin.id}' => $Value['history_plugin_id'],
 				'{balance}' => $Value['history_balance'] . ' ' . $this->DevTools->API->Declension( $Value['history_balance'] ),
-<<<<<<< HEAD
-				'{sum}' => $Value['history_plus']	? "<font color=\"green\">+{$Value['history_plus']} {$Value['history_currency']}</font>"
-													: "<font color=\"red\">-{$Value['history_minus']} {$Value['history_currency']}</font>"
-=======
 				'{sum}' => $Value['history_plus'] > 0	? "<font color=\"green\">+{$Value['history_plus']} {$Value['history_currency']}</font>"
 														: "<font color=\"red\">-{$Value['history_minus']} {$Value['history_currency']}</font>"
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 			);
 
 			$TimeLine = str_replace(array_keys($params), array_values($params), $TimeLine);

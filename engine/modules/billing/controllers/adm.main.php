@@ -139,25 +139,6 @@ Class ADMIN
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
 		}
 
-<<<<<<< HEAD
-		# Список информеров для плагинов
-		#
-		/*
-		$arrInformers = array( 'invoice' => $this->Dashboard->lang['invoice_new'] );
-
-		foreach( $this->Dashboard->Plugins() as $name => $config )
-		{
-			if( ! isset( $config['informers'] ) ) continue;
-
-			foreach( explode(",", $config['informers'] ) as $conInformer )
-			{
-				$arrConInformer = explode(":", $conInformer );
-				$arrInformers[$name.".".$arrConInformer[1]] = $config['title'] . " &raquo; " . $arrConInformer[0];
-			}
-		}*/
-
-=======
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 		$this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_1'] );
 
 		$this->Dashboard->ThemeAddStr(
@@ -232,15 +213,6 @@ Class ADMIN
 			"<input name=\"save_con[paging]\" class=\"form-control\" type=\"text\" value=\"" . $this->Dashboard->config['paging'] ."\" style=\"width: 20%\">"
 		);
 
-<<<<<<< HEAD
-		/*$this->Dashboard->ThemeAddStr(
-			$this->Dashboard->lang['settings_informers'],
-			$this->Dashboard->lang['settings_informers_desc'],
-			$this->Dashboard->GetSelect( $arrInformers, "informers[]", explode(",", $this->Dashboard->config['informers'] ), true  )
-		);*/
-
-=======
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 		$tabs[] = array(
 				'id' => 'more',
 				'title' => $this->Dashboard->lang['main_settings_2'],
@@ -265,19 +237,11 @@ Class ADMIN
 			"<input name=\"save_con[url_catalog]\" class=\"form-control\" type=\"text\" value=\"" . $this->Dashboard->config['url_catalog'] ."\" style=\"width: 100%\">"
 		);
 
-<<<<<<< HEAD
-		$tabs[] = array(
-				'id' => 'security',
-				'title' => $this->Dashboard->lang['main_settings_3'],
-				'content' => $this->Dashboard->ThemeParserStr()
-		);
-=======
 		$tabs[] = [
 			'id' => 'security',
 			'title' => $this->Dashboard->lang['main_settings_3'],
 			'content' => $this->Dashboard->ThemeParserStr()
 		];
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 
 		$this->Dashboard->ThemeAddTR( $this->Dashboard->lang['mail_table'] );
 
