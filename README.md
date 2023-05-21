@@ -17,7 +17,7 @@
 [![](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://yoomoney.ru/fundraise/RKcDogSR19k.230521)
 
 ### **Установка:**
-1. [Скачать](https://github.com/evgeny-tc/dle-billing-module/releases "Скачать архив")  архив с модулем (beta) / [другие версии](https://github.com/evgeny-tc/dle-billing-module/releases) 
+1. [Скачать](https://github.com/evgeny-tc/dle-billing-module/archive/refs/heads/main.zip "Скачать архив")  архив с модулем (beta) / [другие версии](https://github.com/evgeny-tc/dle-billing-module/releases) 
 2. В **Админ панель** -> **Утилиты** -> **Управление плагинами** - загрузить скачанный архив
 3. Открыть страницу ваш_сайт.ру/admin.php?mod=billing
 4. Выполнить инструкции установщика
