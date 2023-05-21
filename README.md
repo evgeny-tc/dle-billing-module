@@ -12,7 +12,7 @@
 - mr_Evgen (evgeny.tc@gmail.com)  
 - Japing (https://github.com/Japing/DLE-Billing)
 
-[[dle-billing.ru](https://dle-billing.ru/ "dle-billing.ru")] [[техническая поддержка](https://dle-billing.ru/support/index.php?a=add)] [[документация](https://dle-billing.ru/doc/)]
+[[dle-billing.ru](https://dle-billing.ru/ "dle-billing.ru")] [[тех.поддержка](https://dle-billing.ru/support/index.php?a=add)] [[документация](https://dle-billing.ru/doc/)]
 
 [![](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://yoomoney.ru/fundraise/RKcDogSR19k.230521)
 
