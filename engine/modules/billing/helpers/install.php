@@ -1,20 +1,18 @@
-<?php	if( ! defined( 'BILLING_MODULE' ) ) die( "Hacking attempt!" );
+<?php
 /**
  * DLE Billing
  *
- * @link          https://github.com/mr-Evgen/dle-billing-module
+ * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2017, mr_Evgen
+ * @copyright     Copyright (c) 2012-2023
  */
 
-<<<<<<< HEAD
-$_Lang = include DLEPlugins::Check( MODULE_PATH . '/lang/admin.php' );
-=======
-$_Lang = MODULE_PATH . '/lang/admin.php';
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
+require_once MODULE_PATH . '/helpers/install.functions.php';
 
-$blank = array
-(
+$_Lang = include MODULE_PATH . '/lang/admin.php';
+
+$blank =
+[
 	'status' => "0",
 	'page' => "billing",
 	'currency' => "",
@@ -26,10 +24,10 @@ $blank = array
 	'fname' => "user_balance",
 	'start' => "log/main/page/1",
 	'format' => "float",
-	'version' => "0.7.6",
+	'version' => "0.8",
 	'url_catalog' => "https://dle-billing.ru/plugins.php",
 	'urls' => "refund-cashback"
-);
+];
 
 $blank['currency'] = $_Lang['currency'];
 $blank['admin'] = $member_id['name'];
@@ -39,7 +37,7 @@ $htaccess_set = "# billing\nRewriteRule ^([^/]+).html/(.*)(/?)+$ index.php?do=st
 
 # Процесс установки
 #
-if( isset( $_POST['agree'] ) )
+if( isset( $_POST['agree'] ) or isset($_GET['install']) )
 {
 	# htaccess
 	#
@@ -56,6 +54,40 @@ if( isset( $_POST['agree'] ) )
 	{
 		msg( "error", $_Lang['install_bad'], "<div style=\"text-align: left\">" . $_Lang['install_error'] . "<pre><code>" . $htaccess_set . "</code></pre></div>", array( "" => "<i class=\"fa fa-repeat\"></i> " . $_Lang['main_re']) );
 	}
+
+	# Copy templates
+	#
+    if( $_GET['install'] !== 'ignore' )
+    {
+        if( file_exists(ROOT_DIR . '/templates/' . $config['skin'] . '/billing/' ) )
+        {
+            if( $_GET['install'] === 'rewrite' )
+            {
+                if( rename(ROOT_DIR . '/templates/' . $config['skin'] . '/billing/', ROOT_DIR . '/templates/' . $config['skin'] . '/billing_old_' . time() . '/') )
+                {
+                    if( ! copy_folder(ENGINE_DIR . '/modules/billing/install/_template_/', ROOT_DIR . '/templates/' . $config['skin'] ) )
+                    {
+                        msg( "error", $_Lang['install_bad'], "<div style=\"text-align: left\">" . sprintf($_Lang['install_error_templates_error2'], '/templates/' . $config['skin'] ) . "</div>", array( "?mod=billing&install=ignore" => $_Lang['main_re']) );
+                    }
+                }
+                else
+                {
+                    msg( "error", $_Lang['install_bad'], "<div style=\"text-align: left\">" . sprintf($_Lang['install_error_templates_error'], '/templates/' . $config['skin'] . '/billing/') . "</div>", array( "?mod=billing&install=rewrite" => $_Lang['main_re']) );
+                }
+            }
+            else
+            {
+                msg( "warning", $_Lang['install_bad'], "<div style=\"text-align: left\">" . sprintf($_Lang['install_error_templates'], '/templates/' . $config['skin'] . '/billing/') . "</div>", array( "?mod=billing&install=rewrite" => $_Lang['main_next']) );
+            }
+        }
+        else
+        {
+            if( ! copy_folder(ENGINE_DIR . '/modules/billing/install/_template_/', ROOT_DIR . '/templates/' . $config['skin'] ) )
+            {
+                msg( "error", $_Lang['install_bad'], "<div style=\"text-align: left\">" . sprintf($_Lang['install_error_templates_error2'], '/templates/' . $config['skin'] ) . "</div>", array( "?mod=billing&install=ignore" => $_Lang['main_re']) );
+            }
+        }
+    }
 
 	# config
 	#
@@ -79,7 +111,7 @@ if( isset( $_POST['agree'] ) )
 		msg( "error", $_Lang['install_bad'], "<div style=\"text-align: left\">" . $_Lang['install_error_config'] . "<pre><code>" . str_replace('<', '&lt;', $saveConfigFile) . "</code></pre></div>", array( "" => "<i class=\"fa fa-repeat\"></i> " . $_Lang['main_re']) );
 	}
 
-	msg( "success", $_Lang['install_ok'], $_Lang['install_ok_text'], array( "" => $_Lang['main_next']) );
+	msg( "success", $_Lang['install_ok'], $_Lang['install_ok_text'], array( "?mod=billing" => $_Lang['main_next']) );
 }
 
 # Соглашение
@@ -105,18 +137,3 @@ echo "<form action=\"\" method=\"post\">
 		</form>";
 
 echofooter();
-
-function genCode()
-{
-	$chars = 'abdefhiknrstyzABDEFGHKNQRSTYZ23456789';
-	$numChars = strlen($chars);
-	$string = '';
-
-	for ($i = 0; $i < 10; $i++)
-	{
-		$string .= substr($chars, rand(1, $numChars) - 1, 1);
-	}
-
-	return $string;
-}
-?>

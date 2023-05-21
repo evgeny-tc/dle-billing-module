@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-<?php	if( ! defined( 'BILLING_MODULE' ) ) die( "Hacking attempt!" );
-/**
- * DLE Billing
- *
- * @link          https://github.com/mr-Evgen/dle-billing-module
- * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2017, mr_Evgen
-=======
 <?php
 /**
  * DLE Billing
@@ -14,7 +5,6 @@
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
  * @copyright     Copyright (c) 2012-2023
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
  */
 
 Class USER
@@ -29,13 +19,6 @@ Class USER
 		}
 	}
 
-<<<<<<< HEAD
-	function main( $GET )
-	{
-		# Проверка авторизации
-		#
-		if( ! $this->DevTools->member_id['name'] ) return $this->DevTools->lang['pay_need_login'];
-=======
 	public function main( array $GET =[] )
 	{
 		# Проверка авторизации
@@ -44,46 +27,28 @@ Class USER
 		{
 			throw new Exception($this->DevTools->lang['pay_need_login']);
 		}
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 
 		# Плагин выключен
 		#
 		if( ! $this->plugin_config['status'] )
 		{
-<<<<<<< HEAD
-			return $this->DevTools->ThemeMsg( $this->DevTools->lang['pay_error_title'], $this->DevTools->lang['cabinet_off'] );
-=======
 			throw new Exception($this->DevTools->lang['cabinet_off']);
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 		}
 
 		# Создать запрос
 		#
 		if( isset( $_POST['submit'] ) )
 		{
-<<<<<<< HEAD
-=======
 			$this->DevTools->CheckHash( $_POST['bs_hash'] );
 
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 			$_Requisites = $this->DevTools->LQuery->db->safesql( $_POST['bs_requisites'] );
 			$_Money = $this->DevTools->API->Convert( $_POST['bs_summa'] );
 
 			$_MoneyCommission = $this->DevTools->API->Convert( ( $_Money / 100 ) * $this->plugin_config['com'] );
 
-<<<<<<< HEAD
-			$Error = "";
-
-			if( ! isset( $_POST['bs_hash'] ) or $_POST['bs_hash'] != $this->DevTools->hash() )
-			{
-				$Error = $this->DevTools->lang['pay_hash_error'];
-			}
-			else if( ! $_Money )
-=======
 			$Error = '';
 
 			if( ! $_Money )
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 			{
 				$Error = $this->DevTools->lang['pay_summa_error'];
 			}
@@ -142,11 +107,6 @@ Class USER
 			header( 'Location: /' . $this->DevTools->config['page'] . '.html/' . $this->DevTools->get_plugin . '/ok/' );
 		}
 
-<<<<<<< HEAD
-		$this->DevTools->ThemeSetElement( "{hash}", $this->DevTools->hash() );
-=======
-		$this->DevTools->ThemeSetElement( "{hash}", $this->DevTools->hash );
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 		$this->DevTools->ThemeSetElement( "{requisites}", $this->xfield( $this->plugin_config['requisites'] ) );
 		$this->DevTools->ThemeSetElement( "{minimum}", $this->plugin_config['minimum'] );
 		$this->DevTools->ThemeSetElement( "{minimum.currency}", $this->DevTools->API->Declension( $this->plugin_config['minimum'] ) );
@@ -230,7 +190,3 @@ Class USER
 		return $arrUserfields[$key];
 	}
 }
-<<<<<<< HEAD
-?>
-=======
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0

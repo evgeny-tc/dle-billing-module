@@ -1,21 +1,52 @@
-<?php	if( ! defined( 'DATALIFEENGINE' ) ) die( "Hacking attempt!" );
+<?php
 /**
  * DLE Billing
  *
- * @link          https://github.com/mr-Evgen/dle-billing-module
+ * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2017, mr_Evgen
+ * @copyright     Copyright (c) 2012-2023
  */
 
+/**
+ * API 1.0
+ * TODO: update
+ */
 Class BillingAPI
 {
-	var $config = false;
-	var $db = false;
-	var $member_id = false;
-	var $_TIME = false;
+	/**
+	 * Config this module
+	 * @var array
+	 */
+	public $config = false;
 
-	var $hook_step = 0;
+	/**
+	 * Connect db
+	 * @var bool
+	 */
+	public $db = false;
 
+	/**
+	 * Authorized user
+	 * @var [type]
+	 */
+	public array $member_id = [];
+
+	/**
+	 * Local time
+	 * @var [type]
+	 */
+	public int $_TIME;
+
+	/**
+	 * depth
+	 * @var int
+	 */
+	private int $hook_step = 0;
+
+	/**
+	 * Config send alerts
+	 * @var bool
+	 */
 	public $alert_pm = true;
 	public $alert_main = true;
 
@@ -27,9 +58,16 @@ Class BillingAPI
 		$this->config = $billing_config;
 	}
 
-	# Начислить средства
-	#
-	function PlusMoney( $user, $money, $desc, $plugin = 'api', $plugin_id = 0 )
+	/**
+	 * Add money
+	 * @param $user
+	 * @param $money
+	 * @param $desc
+	 * @param $plugin
+	 * @param $plugin_id
+	 * @return bool
+	 */
+	public function PlusMoney( $user, $money, $desc, $plugin = 'api', $plugin_id = 0 )
 	{
 		$this->hook_step += 1;
 
@@ -58,9 +96,17 @@ Class BillingAPI
 		return true;
 	}
 
-	# Снять средства с баланса
-	#
-	function MinusMoney( $user, $money, $desc, $plugin = 'api', $plugin_id = 0, $test_balance = true )
+	/**
+	 * Minus money
+	 * @param $user
+	 * @param $money
+	 * @param $desc
+	 * @param $plugin
+	 * @param $plugin_id
+	 * @param $test_balance
+	 * @return bool
+	 */
+	public function MinusMoney( $user, $money, $desc, $plugin = 'api', $plugin_id = 0, $test_balance = true )
 	{
 		$this->hook_step += 1;
 
@@ -91,9 +137,16 @@ Class BillingAPI
 		return true;
 	}
 
-	# Отправить уведомление пользователю
-	#
-	function Alert( $theme, $data, $user_id = 0, $user_email = '', $from = '' )
+	/**
+	 * Send alerts
+	 * @param $theme
+	 * @param $data
+	 * @param $user_id
+	 * @param $user_email
+	 * @param $from
+	 * @return string|void
+	 */
+	public function Alert( $theme, $data, $user_id = 0, $user_email = '', $from = '' )
 	{
 		global $config;
 
@@ -146,9 +199,17 @@ Class BillingAPI
 		return;
 	}
 
-	# Постраничная навигация
-	#
-	function Pagination( $all_count, $this_page, $link, $tpl_link, $tpl_this_num, $per_page = '' )
+	/**
+	 * Paging
+	 * @param $all_count
+	 * @param $this_page
+	 * @param $link
+	 * @param $tpl_link
+	 * @param $tpl_this_num
+	 * @param $per_page
+	 * @return array|string|string[]
+	 */
+	public function Pagination( $all_count, $this_page, $link, $tpl_link, $tpl_this_num, $per_page = '' )
 	{
 		$all_count = intval( $all_count ) ? intval( $all_count ) : 1;
 		$this_page = intval( $this_page ) ? intval( $this_page ) : 1;
@@ -222,9 +283,13 @@ Class BillingAPI
 		return $answer;
 	}
 
-	# Привести число к формату у.е.
-	#
-	function Convert( $money, $format = '' )
+	/**
+	 * Convert the number to the format
+	 * @param $money
+	 * @param $format
+	 * @return int|string
+	 */
+	public function Convert( $money, $format = '' )
 	{
 		if( ! $format ) $format = $this->config['format'];
 		if( ! $money ) $money = 0;
@@ -234,9 +299,13 @@ Class BillingAPI
 		return number_format($money, 2, '.', '');
 	}
 
-	# Вывод названия валюты
-	#
-	function Declension( $number, $titles = '' )
+	/**
+	 * Name currency
+	 * @param $number
+	 * @param $titles
+	 * @return string
+	 */
+	public function Declension( $number, $titles = '' )
 	{
 		$number = intval( $number );
 
@@ -251,8 +320,17 @@ Class BillingAPI
 		return $titles[ ($number%100 > 4 && $number %100 < 20) ? 2 : $cases[min($number%10, 5)] ];
 	}
 
-	# Доп. действия при платежах
-	#
+	/**
+	 * Connect plugins hook
+	 * @param $user
+	 * @param $plus
+	 * @param $minus
+	 * @param $balance
+	 * @param $desc
+	 * @param $plugin
+	 * @param $plugin_id
+	 * @return void
+	 */
 	private function Hooks( $user, $plus, $minus, $balance, $desc, $plugin = '', $plugin_id = '' )
 	{
 		if( $this->hook_step >= 2 ) return;
@@ -277,8 +355,17 @@ Class BillingAPI
 		return;
 	}
 
-	# Запись платежа в историю транзакция
-	#
+	/**
+	 * Write to story pay
+	 * @param $user
+	 * @param $plus
+	 * @param $minus
+	 * @param $balance
+	 * @param $desc
+	 * @param $plugin
+	 * @param $plugin_id
+	 * @return bool
+	 */
 	private function SetHistory( $user, $plus, $minus, $balance, $desc, $plugin = '', $plugin_id = '' )
 	{
 		$desc = $this->db->safesql( $desc );
@@ -331,4 +418,3 @@ Class BillingAPI
 		return true;
 	}
 }
-?>

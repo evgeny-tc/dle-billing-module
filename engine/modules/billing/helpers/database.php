@@ -9,10 +9,28 @@
 
 Class Database
 {
+	/**
+	 * Builder WHERE..
+	 * @var string
+	 */
 	public string $where = '';
 
+	/**
+	 * Connect db
+	 * @var
+	 */
 	public $db;
+
+	/**
+	 * String balance field in db
+	 * @var
+	 */
 	public $BalanceField;
+
+	/**
+	 * Local time
+	 * @var
+	 */
 	public $_TIME;
 
 	function __construct( $db, $field, $time )
@@ -22,9 +40,12 @@ Class Database
 		$this->_TIME = $time;
 	}
 
-	# Список пользователей
-	#
-	function DbSearchUsers( $limit = 100 )
+	/**
+	 * Users list
+	 * @param $limit
+	 * @return array
+	 */
+	public function DbSearchUsers( $limit = 100 )
 	{
 		$limit = intval( $limit );
 
@@ -37,26 +58,36 @@ Class Database
 		return $answer;
 	}
 
-	# Поиск пользователя по логину или email
-	#
-	function DbSearchUserByName( $search_str )
+	/**
+	 * Search users
+	 * @param $search_str
+	 * @return mixed
+	 */
+	public function DbSearchUserByName( string $search_str )
 	{
 		return $this->db->super_query( "SELECT * FROM " . USERPREFIX . "_users
 											WHERE name = '" . $this->db->safesql( $search_str ) . "' or
 											      email = '" . $this->db->safesql( $search_str ) . "'" );
 	}
 
-	# Поиск запроса вывода средств по ID
-	#
-	function DbGetRefundById( $refund_id )
+	/**
+	 * Get refund row by id
+	 * @param $refund_id
+	 * @return mixed
+	 */
+	public function DbGetRefundById( $refund_id )
 	{
 		return $this->db->super_query( "SELECT * FROM " . USERPREFIX . "_billing_refund
 											WHERE refund_id='" . intval( $refund_id ) . "'" );
 	}
 
-	# Изменить статус запроса вывода средств по ID
-	#
-	function DbRefundStatus( $refund_id, $new_status = 0 )
+	/**
+	 * Update refund status
+	 * @param $refund_id
+	 * @param $new_status
+	 * @return void
+	 */
+	public function DbRefundStatus( $refund_id, $new_status = 0 )
 	{
 		$new_status = $new_status ? intval( $new_status ) : 0;
 
@@ -67,9 +98,12 @@ Class Database
 		return;
 	}
 
-	# Удалить запроса вывода средств по ID
-	#
-	function DbRefundRemore( $refund_id )
+	/**
+	 * Delete refund row
+	 * @param $refund_id
+	 * @return void
+	 */
+	public function DbRefundRemore( $refund_id )
 	{
 		$this->db->query( "DELETE FROM " . USERPREFIX . "_billing_refund
 									WHERE refund_id='" . intval( $refund_id ) . "'" );
@@ -77,9 +111,11 @@ Class Database
 		return;
 	}
 
-	# Всего запросов вывода средств
-	#
-	function DbGetRefundNum()
+	/**
+	 * Get count refund rows
+	 * @return mixed
+	 */
+	public function DbGetRefundNum()
 	{
 		$result_count = $this->db->super_query( "SELECT COUNT(*) as count
 													FROM " . USERPREFIX . "_billing_refund " . $this->where );
@@ -87,9 +123,13 @@ Class Database
         return $result_count['count'];
 	}
 
-	# Список запросов вывода средств
-	#
-	function DbGetRefund( $intFrom = 1, $intPer = 30 )
+	/**
+	 * Get refund rows
+	 * @param $intFrom
+	 * @param $intPer
+	 * @return array
+	 */
+	public function DbGetRefund( $intFrom = 1, $intPer = 30 )
 	{
 		$this->parsPage( $intFrom, $intPer );
 
@@ -103,9 +143,11 @@ Class Database
 		return $answer;
 	}
 
-	# Всего квитанций
-	#
-	function DbGetInvoiceNum()
+	/**
+	 * Get count invoices
+	 * @return mixed
+	 */
+	public function DbGetInvoiceNum()
 	{
 		$result_count = $this->db->super_query( "SELECT COUNT(*) as count
 													FROM " . USERPREFIX . "_billing_invoice " . $this->where );
@@ -113,9 +155,11 @@ Class Database
         return $result_count['count'];
 	}
 
-	# Сумма у.е. из неоплаченных квитанций
-	#
-	function DbNewInvoiceSumm()
+	/**
+	 * Get sum invoice null
+	 * @return int
+	 */
+	public function DbNewInvoiceSumm()
 	{
 		$sqlInvoice = $this->db->super_query( "SELECT SUM(invoice_get) as `sum`
 													FROM " . USERPREFIX . "_billing_invoice
@@ -124,9 +168,13 @@ Class Database
 		return $sqlInvoice['sum'] ? $sqlInvoice['sum'] : 0;
 	}
 
-	# Список квитанций
-	#
-	function DbGetInvoice( $intFrom = 1, $intPer = 30 )
+	/**
+	 * Get invoice rows
+	 * @param $intFrom
+	 * @param $intPer
+	 * @return array
+	 */
+	public function DbGetInvoice( $intFrom = 1, $intPer = 30 )
 	{
 		$this->parsPage( $intFrom, $intPer );
 
@@ -140,9 +188,11 @@ Class Database
 		return $answer;
 	}
 
-	# Всего транзакций
-	#
-	function DbGetHistoryNum()
+	/**
+	 * Get count transactions
+	 * @return mixed
+	 */
+	public function DbGetHistoryNum()
 	{
 		$result_count = $this->db->super_query( "SELECT COUNT(*) as count
 													FROM " . USERPREFIX . "_billing_history " . $this->where );
@@ -150,9 +200,13 @@ Class Database
         return $result_count['count'];
 	}
 
-	# Список транзакций
-	#
-	function DbGetHistory( $intFrom = 1, $intPer = 30 )
+	/**
+	 * Get transaction rows
+	 * @param $intFrom
+	 * @param $intPer
+	 * @return array
+	 */
+	public function DbGetHistory( $intFrom = 1, $intPer = 30 )
 	{
 		$this->parsPage( $intFrom, $intPer );
 
@@ -166,19 +220,27 @@ Class Database
 		return $answer;
 	}
 
-	# Удалить транзакцию по ID
-	#
-	function DbHistoryRemoveByID( $history_id )
+	/**
+	 * Delete transaction by row
+	 * @param $history_id
+	 * @return void
+	 */
+	public function DbHistoryRemoveByID(  int $history_id )
 	{
-		$this->db->query( "DELETE FROM " . USERPREFIX . "_billing_history
-									WHERE history_id = '" . intval( $history_id ) . "'" );
-
-		return;
+		$this->db->query( "DELETE FROM " . USERPREFIX . "_billing_history WHERE history_id = '" . intval( $history_id ) . "'" );
 	}
 
-	# Создать квитанцию
-	#
-	function DbCreatInvoice( string $strPaySys, string $strUser, float $floatGet, float $floatPay = 0, $payer_info = '', string $handler = '' )
+	/**
+	 * Create invoice
+	 * @param string $strPaySys
+	 * @param string $strUser
+	 * @param float $floatGet
+	 * @param float $floatPay
+	 * @param $payer_info
+	 * @param string $handler
+	 * @return mixed
+	 */
+	public function DbCreatInvoice( string $strPaySys, string $strUser, float $floatGet, float $floatPay = 0, $payer_info = '', string $handler = '' )
 	{
 		$this->parsVar( $strUser );
 
@@ -188,7 +250,17 @@ Class Database
 		{
 			foreach( $payer_info as $key => $info )
 			{
-				$payer_info[$key] = $this->db->safesql( $info );
+				if( is_array($info) )
+				{
+					foreach($info as $info_key => $info_val)
+					{
+						$payer_info[$key][$info_key] = preg_replace('/[^ a-z&#;@а-я\d.]/ui', '', $info_val );
+					}
+				}
+				else
+				{
+					$payer_info[$key] = preg_replace('/[^ a-z&#;@а-я\d.]/ui', '', $info);
+				}
 			}
 
 			$payer_info = serialize( $payer_info );
@@ -207,21 +279,30 @@ Class Database
 		return $this->db->insert_id();
 	}
 
-	# Получить квитанцию по ID
-	#
-	function DbGetInvoiceByID( $id )
+	/**
+	 * Get invoice row
+	 * @param $id
+	 * @return false
+	 */
+	public function DbGetInvoiceByID( $id )
 	{
 		$id = intval( $id );
 
 		if( ! $id ) return false;
 
-		return $this->db->super_query( "SELECT * FROM " . USERPREFIX . "_billing_invoice
-											WHERE invoice_id='" . $id . "'" );
+		return $this->db->super_query( "SELECT * FROM " . USERPREFIX . "_billing_invoice WHERE invoice_id='" . $id . "'" );
 	}
 
-	# Обновить статус квитанции по ID
-	#
-	function DbInvoiceUpdate( $invoice_id, $wait = false, $invoice_paysys = '', $invoice_pay = '', $check_payer_requisites = '' )
+	/**
+	 * Update invoice by id
+	 * @param $invoice_id
+	 * @param $wait
+	 * @param $invoice_paysys
+	 * @param $invoice_pay
+	 * @param $check_payer_requisites
+	 * @return void
+	 */
+	public function DbInvoiceUpdate( $invoice_id, $wait = false, $invoice_paysys = '', $invoice_pay = '', $check_payer_requisites = '' )
 	{
 		$time = ! $wait ? $this->_TIME : 0;
 
@@ -235,18 +316,27 @@ Class Database
 		return;
 	}
 
-	# Удалить квитанию по ID
-	#
-	function DbInvoiceRemove( $invoice_id )
+	/**
+	 * Delete invoice by id
+	 * @param $invoice_id
+	 * @return void
+	 */
+	public function DbInvoiceRemove( $invoice_id )
 	{
 		$this->db->query( "DELETE FROM " . USERPREFIX . "_billing_invoice WHERE invoice_id='" . intval( $invoice_id ) . "'" );
 
 		return;
 	}
 
-	# Создать запрос вывода средств
-	#
-	function DbCreatRefund( $strUser, $floatSum, $floatComm, $strReq )
+	/**
+	 * Create refund row
+	 * @param $strUser
+	 * @param $floatSum
+	 * @param $floatComm
+	 * @param $strReq
+	 * @return mixed
+	 */
+	public function DbCreatRefund( $strUser, $floatSum, $floatComm, $strReq )
 	{
 		$this->parsVar( $strUser );
 		$this->parsVar( $strReq );
@@ -264,9 +354,12 @@ Class Database
 		return $this->db->insert_id();
 	}
 
-	# Задать условия запроса
-	#
-	function DbWhere( $where_array )
+	/**
+	 * Set params filter
+	 * @param $where_array
+	 * @return void
+	 */
+	public function DbWhere( array $where_array = [] )
 	{
 		$this->where = '';
 
@@ -287,7 +380,13 @@ Class Database
 	#		/[^a-zA-Z0-9\s]/
 	#		/[^.0-9\s]/
 	#
-	function parsVar( &$str, $filter = '' )
+	/**
+	 * Filter
+	 * @param $str
+	 * @param $filter
+	 * @return void
+	 */
+	public function parsVar( &$str, $filter = '' )
 	{
 		if( is_array( $str ) )
 		{
@@ -329,4 +428,3 @@ Class Database
 		return;
 	}
 }
-?>

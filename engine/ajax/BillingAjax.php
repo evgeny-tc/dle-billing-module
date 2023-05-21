@@ -9,14 +9,14 @@
 =====================================================
 */
 
-@error_reporting ( E_ALL ^ E_WARNING ^ E_NOTICE );
-@ini_set ( 'display_errors', true );
-@ini_set ( 'html_errors', false );
-@ini_set ( 'error_reporting', E_ALL ^ E_WARNING ^ E_NOTICE );
+error_reporting ( E_ALL ^ E_WARNING ^ E_DEPRECATED ^ E_NOTICE );
+ini_set ( 'error_reporting', E_ALL ^ E_WARNING ^ E_DEPRECATED ^ E_NOTICE );
 
 define('DATALIFEENGINE', true);
 define( 'ROOT_DIR', substr( dirname(  __FILE__ ), 0, -12 ) );
 define( 'ENGINE_DIR', ROOT_DIR . '/engine' );
+
+header('Content-Type: application/json; charset=utf-8');
 
 require_once (ENGINE_DIR . '/classes/plugins.class.php');
 
@@ -54,7 +54,9 @@ if( ! $user_group )
 			$user_group[$row['id']][$key] = stripslashes($value);
 		}
 	}
-	set_vars( "usergroup", $user_group );
+
+    set_vars( "usergroup", $user_group );
+
 	$db->free();
 }
 
@@ -71,24 +73,45 @@ else
 	@include_once DLEPlugins::Check(ROOT_DIR . '/language/' . $config['langs'] . '/website.lng');
 }
 
-$config['charset'] = ($lang['charset'] != '') ? $lang['charset'] : $config['charset'];
+$config['charset'] = $lang['charset'] != '' ? $lang['charset'] : $config['charset'];
 
 require_once (DLEPlugins::Check(ENGINE_DIR . '/modules/sitelogin.php'));
 
-if ( !$is_logged ) $member_id['user_group'] = 5;
-
-$Plugin = $db->safesql( trim( $_REQUEST['plugin'] ) );
-
-if( ! $Plugin ) exit("Plugin file is not selected!");
-
-@header( "Content-type: text/html; charset=" . $config['charset'] );
-
-if( file_exists( DLEPlugins::Check( ENGINE_DIR . "/modules/billing/plugins/" . preg_replace("/[^a-zA-Z0-9\s]/", "", trim( mb_strtolower( $Plugin ) ) ) . "/ajax.php" ) ) )
+if( ! $is_logged )
 {
-	include_once DLEPlugins::Check(ENGINE_DIR . "/modules/billing/plugins/" . preg_replace("/[^a-zA-Z0-9\s]/", "", trim( mb_strtolower( $Plugin ) ) ) . "/ajax.php");
+    $member_id['user_group'] = 5;
 }
-else
+
+if( ! $_REQUEST['hash'] or $_REQUEST['hash'] != $dle_login_hash )
 {
-	exit("Plugin file is not found!");
+    billing_error('Check stop!');
 }
-?>
+
+if( $Plugin = $_REQUEST['plugin'] and file_exists( ENGINE_DIR . "/modules/billing/plugins/" . preg_replace("/[^a-zA-Z0-9\s]/", "", trim( mb_strtolower( $Plugin ) ) ) . "/ajax.php" ) )
+{
+	include_once ENGINE_DIR . "/modules/billing/plugins/" . preg_replace("/[^a-zA-Z0-9\s]/", "", trim( mb_strtolower( $Plugin ) ) ) . "/ajax.php";
+
+	die();
+}
+
+billing_error('Plugin not found!');
+
+function billing_error(string $message = '')
+{
+    echo json_encode([
+        'status' => "error",
+        'message' => $message
+    ]);
+
+    die();
+}
+
+function billing_ok(array $data = [])
+{
+    echo json_encode([
+        'status' => 'ok',
+        'data' => $data
+    ]);
+
+    die();
+}

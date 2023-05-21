@@ -1,29 +1,51 @@
 # DLE Billing
 
-[![Version](https://img.shields.io/badge/Version-0.7.6-blue.svg?style=flat-square "Version")](https://github.com/Japing/dle-billing/releases)
-![DLE](https://img.shields.io/badge/DLE-13.0--16.0-green.svg?style=flat-square "DLE")
+[![Version](https://img.shields.io/badge/Version-0.8.beta-blue.svg?style=flat-square "Version")](https://github.com/Japing/dle-billing/releases)
+![DLE](https://img.shields.io/badge/DLE-13.0+-green.svg?style=flat-square "DLE")
+![PHP](https://img.shields.io/badge/PHP-8+-blue.svg?style=flat-square "PHP")
 ![Charset](https://img.shields.io/badge/Charset-utf--8-red.svg?style=flat-square "Charset")
 ![jQuery](https://img.shields.io/badge/jQuery-1.11+-yellow.svg?style=flat-square "jQuery")
 
 Автоматизируйте прием платежей на сайте с помощью модуля DLE Billing. Предоставьте пользователям возможность оплачивать различные товары и услуги вашего сайта.
 
- Разработка:
+### **Разработка:**
 - mr_Evgen (evgeny.tc@gmail.com)  
 - Japing (https://github.com/Japing/DLE-Billing)
 
+[[dle-billing.ru](https://dle-billing.ru/ "dle-billing.ru")] [[техническая поддержка](https://dle-billing.ru/support/index.php?a=add)] [[документация](https://dle-billing.ru/doc/)]
+
+[![](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://yoomoney.ru/fundraise/RKcDogSR19k.230521)
+
 ### **Установка:**
-1. [Скачать архив](https://github.com/evgeny-tc/dle-billing-module/releases "Скачать архив") с модулем
-2. Войти в **Админ панель** -> **Утилиты** -> **Управление плагинами** и загрузить скачанный архив
-3. Открыть страницу Ваш_Сайт.ру/admin.php?mod=billing
+1. [Скачать](https://github.com/evgeny-tc/dle-billing-module/releases "Скачать архив")  архив с модулем (beta) / [другие версии](https://github.com/evgeny-tc/dle-billing-module/releases) 
+2. В **Админ панель** -> **Утилиты** -> **Управление плагинами** - загрузить скачанный архив
+3. Открыть страницу ваш_сайт.ру/admin.php?mod=billing
 4. Выполнить инструкции установщика
 5. Настроить модуль
 
 ### **Обновление:**
 1. Обновите модуль через систему плагинов
 2. Войдите в админ.панель модуля для автоматического обновления бд и файла настроек.
+------------
+### Плагины
+- Перевод средств между пользователями
+- Запросы вывода средств с баланса
+- Платный переход в группу
+- Пожертвования
+- Фиксация новостей
+- Оплата контента
+- Бонусы
+- Промокоды
+- Реферальная программа
 
 ------------
 ### Список изменений
+
+#### v0.8.beta (20.05.2023)
+- Модуль полностью переведен на PHP 8 и выше
+- Обновлены и добавлены в модуль некоторые плагины
+- Добавлена возможность прямой оплаты услуг, в обход баланса
+- Добавлена возможность оплаты некоторых услуг неавторизованным пользователям
 
 #### v0.7.6 (24.02.2023)
 - Исправление багов

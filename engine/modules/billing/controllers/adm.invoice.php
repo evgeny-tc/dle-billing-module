@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-<?php	if( ! defined( 'BILLING_MODULE' ) ) die( "Hacking attempt!" );
-/**
- * DLE Billing
- *
- * @link          https://github.com/mr-Evgen/dle-billing-module
- * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2017, mr_Evgen
-=======
 <?php
 /**
  * DLE Billing
@@ -14,31 +5,29 @@
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
  * @copyright     Copyright (c) 2012-2023
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
  */
 
 Class ADMIN
 {
-<<<<<<< HEAD
-	function main( $Get )
-=======
 	public function main( array $Get = [] )
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	{
 		$GetPaysysArray = $this->Dashboard->Payments();
+
+        $GetPaysysArray['balance'] = [
+            'title' => $this->Dashboard->lang['title_short'],
+            'config' => [
+                'status' => $this->Dashboard->config['status'],
+                'title' => $this->Dashboard->lang['title_short'],
+                'currency' => $this->Dashboard->API->Declension(1),
+                'convert' => 1
+            ]
+        ];
 
 		# Массовые действия
 		#
 		if( isset( $_POST['act_do'] ) )
 		{
-<<<<<<< HEAD
-			if( $_POST['user_hash'] == "" or $_POST['user_hash'] != $this->Dashboard->hash )
-			{
-				return "Hacking attempt! User not found {$_POST['user_hash']}";
-			}
-=======
 			$this->Dashboard->CheckHash();
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 
 			$MassList = $_POST['massact_list'];
 			$MassAct = $_POST['act'];
@@ -107,10 +96,7 @@ Class ADMIN
 		#
 		if( isset( $_POST['search_btn'] ) )
 		{
-			if( $_POST['user_hash'] == "" or $_POST['user_hash'] != $this->Dashboard->hash )
-			{
-				return "Hacking attempt! User not found {$_POST['user_hash']}";
-			}
+            $this->Dashboard->CheckHash();
 
 			$_WhereData = array();
 
@@ -226,25 +212,23 @@ Class ADMIN
 		if( $NumData )
 		{
 			$ContentList .= $this->Dashboard->ThemePadded( '
-					<div class="pull-left" style="margin: 15px">
-						<ul class="pagination pagination-sm">
+					<ul class="pagination pagination-sm">
 							' . $this->Dashboard->API->Pagination(
-									$NumData,
-									$Get['page'],
-									$PHP_SELF . "?mod=billing&c=invoice&p=user/{$Get['user']}/page/{p}",
-									"<li><a href=\"{page_num_link}\">{page_num}</a></li>",
-									"<li class=\"active\"><span>{page_num}</span></li>",
-									$PerPage
-								) . '
+                                    $NumData,
+                                    $Get['page'],
+                                    $PHP_SELF . "?mod=billing&c=invoice&p=user/{$Get['user']}/page/{p}",
+                                    "<li><a href=\"{page_num_link}\">{page_num}</a></li>",
+                                    "<li class=\"active\"><span>{page_num}</span></li>",
+                                    $PerPage
+                                ) . '
 						</ul>
-					</div>
 					<div style="float: right">
-						<select name="act" class="uniform">
-							<option value="ok">' . $this->Dashboard->lang['invoice_edit_1'] . '</option>
-							<option value="no">' . $this->Dashboard->lang['invoice_edit_2'] . '</option>
-							<option value="ok_pay">' . $this->Dashboard->lang['invoice_edit_3'] . '</option>
-							<option value="remove">' . $this->Dashboard->lang['remove'] . '</option>
-						</select>
+						 <select name="act" class="uniform" style="padding-right: 10px">
+                                <option value="ok">' . $this->Dashboard->lang['invoice_edit_1'] . '</option>
+                                <option value="no">' . $this->Dashboard->lang['invoice_edit_2'] . '</option>
+                                <option value="ok_pay">' . $this->Dashboard->lang['invoice_edit_3'] . '</option>
+                                <option value="remove">' . $this->Dashboard->lang['remove'] . '</option>
+                            </select>
 						' . $this->Dashboard->MakeButton("act_do", $this->Dashboard->lang['act'], "gold") . '</div>' );
 		}
 		else
@@ -342,21 +326,23 @@ Class ADMIN
 		return $Content;
 	}
 
+    # есть обработчик
+    #
 	private function handler(array $Invoice)
 	{
-		$parsHandler = explode(':', $Invoice['invoice_handler']);
+        $parsHandler = explode(':', $Invoice['invoice_handler']);
 
-		$pluginHandler = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[0] ) );
-		$fileHandler = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[1] ) );
+        $pluginHandler = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[0] ) );
+        $fileHandler = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[1] ) );
+        
+        if( file_exists( MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php' ) )
+        {
+            $Handler = include MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php';
 
-		if( file_exists( MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php' ) )
-		{
-			$this->DevTools = $this->Dashboard;
-
-			require_once MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php';
-
-			return true;
-		}
+            if( in_array('pay', get_class_methods($Handler) ) )
+            {
+                $Handler->pay($Invoice, $this->Dashboard->API);
+            }
+        }
 	}
 }
-?>

@@ -2,14 +2,15 @@
 
 return array
 (
-<<<<<<< HEAD
-=======
+    /* 0.8 */
 	'hash_error' => "Время ожидания модуля закончилось. Повторите попытку",
+    'pay_handler_desc' => "Описание:",
+    'title_short' => "Баланс пользователя",
 
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 	/* 0.7.4 */
 	'invoice_max_num' => "Вы имеете больше %s неоплаченных квитанций, просим вас их оплатить или удалить.",
-	'invoice_good_desc' => "Пополнение баланса пользователя",
+	'invoice_good_desc' => "Пополнение баланса",
+    'invoice_good_desc2' => "Оплата услуг",
 	'invoice_paid_error' => "Квитанция уже оплачена, невозможно удалить.",
 	'pay_incorect_sum' => "Введите корректную сумму.",
 	'pay_invoice_now' => "Оплатить",
@@ -22,13 +23,13 @@ return array
 	'cabinet_controller_error' => "Файл плагина user.%s не найден!",
 	'cabinet_metod_error' => "Метод плагина user.%s->%s не найден!",
 	'cabinet_theme_error' => "Невозможно загрузить шаблон ",
-	'cabinet_now' => "Сегодня в ",
-	'cabinet_rnow' => "Вчера в ",
+    'main_now' => "Сегодня в ",
+    'main_rnow' => "Вчера в ",
 
 	/* Pay */
 	'pay_need_login' => "Требуется авторизация!",
 	'pay_hash_error' => "Время ожидания модуля закончилось. Повторите попытку",
-	'pay_paysys_error' => "Платёжная система не выбрана",
+	'pay_paysys_error' => "Не выбран способ оплаты",
 	'pay_sum_error' => "Недостаточно средств на балансе",
 	'pay_summa_error' => "Не указана сумма",
 	'pay_minimum_error' => "Минимальная сумма оплаты для %s составляет %s %s",
@@ -37,7 +38,7 @@ return array
 	'pay_invoice_error' => "Квитанция не найдена",
 	'pay_invoice_pay' => "Квитанция уже оплачена",
 	'pay_invoice_payment' => "Платежная система не соответствует указанной в квитанции",
-	'pay_file_error' => "Файл платёжной системы не найден!",
+	'pay_file_error' => "Ошибка инициализации платежного агрегатора!",
 	'pay_balance' => "Оплата с баланса",
 
 	'pay_invoice' => "Квитанция #{id}",
@@ -45,7 +46,7 @@ return array
 
 	'pay_error_title' => "Ошибка",
 
-	'pay_getErr_key' => "Ключ доступа платёжной системы устарел",
+	'pay_getErr_key' => "Токен доступа устарел",
 	'pay_getErr_paysys' => "Платежная система не найдена",
 	'pay_getErr_invoice' => "Квитанция не найдена, либо уже оплачена",
 	'pay_desc' => "Пополнение баланса пользователя %s на сумму %s %s",
@@ -78,5 +79,3 @@ return array
 	'off' => "<div style='background-color: #ff2e2e; color: white; padding: 10px; margin: 5px; border-radius: 5px'>Личный кабинет отключен для всех, кроме администраторов. <br />Включите модуль в админ.панели: Баланс пользователя &rarr; Настройки.</div>"
 
 );
-
-?>

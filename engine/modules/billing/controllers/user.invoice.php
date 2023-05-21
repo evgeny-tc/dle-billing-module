@@ -1,25 +1,27 @@
-<?php	if( ! defined( 'BILLING_MODULE' ) ) die( "Hacking attempt!" );
+<?php
 /**
  * DLE Billing
  *
- * @link          https://github.com/mr-Evgen/dle-billing-module
+ * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2017, mr_Evgen
+ * @copyright     Copyright (c) 2012-2023
  */
 
 Class USER
 {
-	function main( $GET )
+	public function main( array $GET = [] )
 	{
 		# Проверка авторизации
 		#
 		if( ! $this->DevTools->member_id['name'] )
 		{
-			return $this->DevTools->lang['pay_need_login'];
+            throw new Exception($this->DevTools->lang['pay_need_login']);
 		}
 
 		if( intval($_POST['invoice_delete']) )
 		{
+            $this->DevTools->CheckHash( $_POST['bs_hash'] );
+
 			$Delete_id = intval($_POST['invoice_delete']);
 
 			$Del = $this->DevTools->LQuery->DbGetInvoiceByID( $Delete_id );
@@ -71,17 +73,15 @@ Class USER
 
 			$Value['invoice_date_pay'] ? $this->DevTools->ThemePregReplace( 'not_paid', $TimeLine ) : $this->DevTools->ThemePregReplace( 'paid', $TimeLine );
 			
-			$params = array(
-				'[not_paid]' => '',
-				'[/not_paid]' => '',
-				'[paid]' => '',
-				'[/paid]' => '',
-				'{creat-date=' . $TplLineDate . '}' => $this->DevTools->ThemeChangeTime( $Value['invoice_date_creat'], $TplLineDate ),
-				'{id}' => $Value['invoice_id'],
-				'{sum}' => $Value['invoice_get'] ." " . $this->DevTools->API->Declension( $Value['invoice_get'] ),
-				'{paylink}' => $InvoiceUrl,
-				'{desc}' => $this->DevTools->lang['invoice_good_desc'],
-			);
+			$params = [
+                '[not_paid]' => '', '[/not_paid]' => '',
+                '[paid]' => '',     '[/paid]' => '',
+                '{creat-date=' . $TplLineDate . '}' => $this->DevTools->ThemeChangeTime( $Value['invoice_date_creat'], $TplLineDate ),
+                '{id}' => $Value['invoice_id'],
+                '{sum}' => $Value['invoice_get'] ." " . $this->DevTools->API->Declension( $Value['invoice_get'] ),
+                '{paylink}' => $InvoiceUrl,
+                '{desc}' => $Value['invoice_handler'] ? $this->DevTools->lang['invoice_good_desc2'] : $this->DevTools->lang['invoice_good_desc'],
+            ];
 
 			$TimeLine = str_replace(array_keys($params), array_values($params), $TimeLine);
 
@@ -117,10 +117,7 @@ Class USER
 		else 		$this->DevTools->ThemeSetElementBlock( "not_invoice", $TplLineNull );
 
 		$this->DevTools->ThemeSetElementBlock( "invoice", $Line );
-		
-		$Content = "<form method=\"post\">{$Content}</form>";
 
 		return $this->DevTools->Show( $Content );
 	}
 }
-?>

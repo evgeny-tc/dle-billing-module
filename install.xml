@@ -1,34 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <dleplugin>
 	<name>DLE Billing</name>
-	<description>Автоматизируйте приём платежей на сайте с помощью модуля DLE-Billing</description>
-	<icon>engine/skins/images/billing.png</icon>
-	<version>0.7.6</version>
+	<description>Автоматизируйте прием платежей на сайте с помощью модуля DLE-Billing</description>
+	<icon>engine/skins/billing/icons/billing.png</icon>
+	<version>0.8</version>
 	<dleversion>13.0</dleversion>
 	<versioncompare>greater</versioncompare>
-	<upgradeurl></upgradeurl>
+	<upgradeurl>https://dle-billing.ru/update.json</upgradeurl>
 	<filedelete>1</filedelete>
 	<needplugin></needplugin>
-	<mnotice>0</mnotice>
+	<mnotice>1</mnotice>
 	<mysqlinstall><![CDATA[CREATE TABLE `{prefix}_billing_history` (
 	`history_id` int(11) NOT NULL AUTO_INCREMENT,
 	`history_plugin` varchar(21) NOT NULL,
 	`history_plugin_id` int(11) NOT NULL,
 	`history_user_name` varchar(40) NOT NULL,
-	`history_plus` text NOT NULL,
-	`history_minus` text NOT NULL,
-	`history_balance` text NOT NULL,
+	`history_plus` decimal(10,2) NOT NULL,
+	`history_minus` decimal(10,2) NOT NULL,
+	`history_balance` decimal(10,2) NOT NULL,
 	`history_currency` varchar(100) NOT NULL,
 	`history_text` text NOT NULL,
 	`history_date` int(11) NOT NULL,
 	PRIMARY KEY (`history_id`)
 ) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
+
 CREATE TABLE `{prefix}_billing_invoice` (
 	`invoice_id` int(11) NOT NULL AUTO_INCREMENT,
 	`invoice_paysys` varchar(21) NOT NULL,
 	`invoice_user_name` varchar(40) NOT NULL,
-	`invoice_get` text NOT NULL,
-	`invoice_pay` text NOT NULL,
+	`invoice_get` decimal(10,2) NOT NULL,
+	`invoice_pay` decimal(10,2) NOT NULL,
 	`invoice_date_creat` int(11) NOT NULL,
 	`invoice_date_pay` int(11) NOT NULL,
 	`invoice_payer_requisites` varchar(40) NOT NULL,
@@ -36,20 +37,23 @@ CREATE TABLE `{prefix}_billing_invoice` (
 	`invoice_handler` text NOT NULL,
 	PRIMARY KEY (`invoice_id`)
 ) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
+
 CREATE TABLE `{prefix}_billing_refund` (
 	`refund_id` int(11) NOT NULL AUTO_INCREMENT,
 	`refund_date` int(11) NOT NULL,
 	`refund_user` varchar(40) NOT NULL,
-	`refund_summa` text NOT NULL,
-	`refund_commission` text NOT NULL,
+	`refund_summa` decimal(10,2) NOT NULL,
+	`refund_commission` decimal(10,2) NOT NULL,
 	`refund_requisites` text NOT NULL,
 	`refund_date_return` int(11) NOT NULL,
 	PRIMARY KEY (`refund_id`)
 ) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
-ALTER TABLE `{prefix}_users` ADD `user_balance` float NOT NULL;
+
+ALTER TABLE `{prefix}_users` ADD `user_balance` decimal(10,2) NOT NULL;
+
 INSERT INTO `{prefix}_static` (`name`, `descr`, `template`, `allow_br`, `allow_template`, `grouplevel`, `tpl`, `metadescr`, `metakeys`, `views`, `template_folder`, `date`, `metatitle`, `allow_count`, `sitemap`, `disable_index`) VALUES ('billing', 'Личный кабинет', 'billing/cabinet', 1, 1, 'all', 'billing', 'billing/cabinet', 'cabinet, billing', 0, '', unix_timestamp(), '', 1, 1, 1);]]></mysqlinstall>
 	<mysqlupgrade><![CDATA[]]></mysqlupgrade>
-	<mysqlenable><![CDATA[INSERT INTO `{prefix}_admin_sections` (`name`, `title`, `descr`, `icon`, `allow_groups`) VALUES ('billing', 'DLE Billing', 'Управление модулем DLE-Billing', 'engine/skins/images/billing.png', '1');]]></mysqlenable>
+	<mysqlenable><![CDATA[INSERT INTO `{prefix}_admin_sections` (`name`, `title`, `descr`, `icon`, `allow_groups`) VALUES ('billing', 'DLE Billing', 'Автоматизируйте прием платежей на сайте с помощью модуля DLE-Billing', 'engine/skins/billing/icons/billing.png', '1');]]></mysqlenable>
 	<mysqldisable><![CDATA[DELETE FROM `{prefix}_admin_sections` WHERE name = 'billing';]]></mysqldisable>
 	<mysqldelete><![CDATA[DROP TABLE IF EXISTS `{prefix}_billing_history`;
 DROP TABLE IF EXISTS `{prefix}_billing_invoice`;
@@ -66,7 +70,14 @@ DELETE FROM `{prefix}_static` WHERE name = 'billing';]]></mysqldelete>
 	<file name="engine/classes/templates.class.php">
 		<operation action="before">
 			<searchcode><![CDATA[$this->_clear();]]></searchcode>
-			<replacecode><![CDATA[include( ENGINE_DIR . "/modules/billing/helpers/parser.php" );]]></replacecode>
+			<replacecode><![CDATA[include( ENGINE_DIR . "/modules/billing/helpers/include.template.php" );]]></replacecode>
+			<enabled>1</enabled>
+		</operation>
+	</file>
+	<file name="engine/engine.php">
+		<operation action="before">
+			<searchcode><![CDATA[switch ( $do ) {]]></searchcode>
+			<replacecode><![CDATA[include( ENGINE_DIR . "/modules/billing/helpers/include.engine.php" );]]></replacecode>
 			<enabled>1</enabled>
 		</operation>
 	</file>

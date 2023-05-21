@@ -9,6 +9,12 @@
 
 trait Utheme
 {
+    /**
+     * Template build
+     * @var array
+     */
+    public $elements = [];
+    public $element_block = [];
 
     /**
      * TPL: Added tag
@@ -16,7 +22,7 @@ trait Utheme
      * @param string $value
      * @return void
      */
-    public function ThemeSetElement( string $field, string|null $value = '' )
+    public function ThemeSetElement( string $field, $value = '' )
     {
         $this->elements[$field] = $value;
 
@@ -29,7 +35,7 @@ trait Utheme
      * @param string $value
      * @return void
      */
-    public function ThemeSetElementBlock( string $fields, string|null $value = '' )
+    public function ThemeSetElementBlock( string $fields, $value = '' )
     {
         $this->element_block[$fields] = $value;
 
@@ -43,9 +49,12 @@ trait Utheme
      */
     public function ThemeLoad( string $file )
     {
-        $Content = @file_get_contents( ROOT_DIR . "/templates/" . $this->dle['skin'] . "/billing/" . $file . ".tpl" ) or throw new \Exception($this->lang['cabinet_theme_error'] . "{$file}.tpl");;
+        if( ! file_exists( ROOT_DIR . "/templates/" . $this->dle['skin'] . "/billing/" . $file . ".tpl" ) )
+        {
+            throw new \Exception($this->lang['cabinet_theme_error'] . "{$file}.tpl");
+        }
 
-        return $Content;
+        return @file_get_contents( ROOT_DIR . "/templates/" . $this->dle['skin'] . "/billing/" . $file . ".tpl" );
     }
 
     /**
@@ -70,7 +79,7 @@ trait Utheme
      * @param string $update
      * @return void
      */
-    public function ThemePregReplace( string $tag, string &$data, string|null $update = '' )
+    public function ThemePregReplace( string $tag, string &$data, $update = '' )
     {
         $data = preg_replace("'\\[$tag\\].*?\\[/$tag\\]'si", $update, $data);
 
@@ -85,7 +94,7 @@ trait Utheme
      */
     public function ThemePregMatch( string $theme, string $tag )
     {
-        $answer = array();
+        $answer = [];
 
         preg_match($tag, $theme, $answer);
 

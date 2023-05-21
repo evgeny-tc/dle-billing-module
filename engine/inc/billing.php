@@ -14,5 +14,3 @@ if(!defined('DATALIFEENGINE')) {
 }
 
 require_once DLEPlugins::Check(ENGINE_DIR . '/modules/billing/admin.php');
-
-?>

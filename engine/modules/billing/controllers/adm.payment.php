@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-<?php	if( ! defined( 'BILLING_MODULE' ) ) die( "Hacking attempt!" );
-/**
- * DLE Billing
- *
- * @link          https://github.com/mr-Evgen/dle-billing-module
- * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2017, mr_Evgen
-=======
 <?php
 /**
  * DLE Billing
@@ -14,7 +5,6 @@
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
  * @copyright     Copyright (c) 2012-2023
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
  */
 
 Class ADMIN
@@ -109,11 +99,7 @@ Class ADMIN
 		$this->Dashboard->ThemeAddTR(
 			array(
 				"<center>" . $this->Dashboard->API->Convert( 1 ) . "&nbsp;" . $this->Dashboard->API->Declension( 1 ) . "</center>",
-<<<<<<< HEAD
-				"<input name=\"save_con[convert]\" class=\"form-control\" type=\"text\" placeholder=\"1\" value=\"" . $Payment['convert'] . "\" style=\"width: 100%\">"
-=======
 				"<input name=\"save_con[convert]\" class=\"form-control\" type=\"text\" value=\"" . $Payment['convert'] . "\" style=\"width: 100%\">"
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 			)
 		);
 
@@ -126,11 +112,7 @@ Class ADMIN
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['paysys_url'],
 			$this->Dashboard->lang['paysys_url_desc'],
-<<<<<<< HEAD
-			$this->Dashboard->dle['http_home_url'] . $this->Dashboard->config['page'] . '.html/pay/handler/payment/' . $Name . '/key/' . $this->Dashboard->config['secret'] . '/'
-=======
 			'<input type="text" class="form-control" value="' . $this->Dashboard->dle['http_home_url'] . $this->Dashboard->config['page'] . '.html/pay/handler/payment/' . $Name . '/key/' . $this->Dashboard->config['secret'] . '/' . '" disable>'
->>>>>>> 89c755e2dc661e5aa31fbdd02f7ac88d16bf71f0
 		);
 
 		foreach( $Paysys->Settings( $Payment ) as $Form )

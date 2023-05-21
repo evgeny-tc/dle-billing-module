@@ -66,7 +66,7 @@ trait Core
 
     # Время и дата
     #
-    function ThemeChangeTime( $time )
+    function ThemeChangeTime( int $time )
     {
         date_default_timezone_set( $this->dle['date_adjust'] );
 
