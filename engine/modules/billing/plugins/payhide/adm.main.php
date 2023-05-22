@@ -168,8 +168,6 @@ Class ADMIN
 	#
 	private function install()
 	{
-		$this->Dashboard->SaveConfig("plugin.payhide", array('status'=>"0"));
-
         $tableSchema = [];
 
         $tableSchema[] = "DROP TABLE IF EXISTS " . PREFIX . "_billing_payhide";
@@ -189,6 +187,8 @@ Class ADMIN
         {
             $this->Dashboard->LQuery->db->query($table);
         }
+
+        $this->Dashboard->SaveConfig("plugin.payhide", array('status'=>"0"));
 
         return;
 	}

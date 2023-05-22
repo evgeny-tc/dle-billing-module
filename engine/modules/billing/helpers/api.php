@@ -327,11 +327,11 @@ Class BillingAPI
 	 * @param $minus
 	 * @param $balance
 	 * @param $desc
-	 * @param $plugin
-	 * @param $plugin_id
+	 * @param string $plugin
+	 * @param string $plugin_id
 	 * @return void
 	 */
-	private function Hooks( $user, $plus, $minus, $balance, $desc, $plugin = '', $plugin_id = '' )
+	private function Hooks($user, $plus, $minus, $balance, $desc, string $plugin = '', string $plugin_id = '' )
 	{
 		if( $this->hook_step >= 2 ) return;
 
@@ -341,14 +341,20 @@ Class BillingAPI
 		{
 			if ( in_array($name, array(".", "..", "/", "index.php", ".htaccess")) ) continue;
 
-			if( file_exists( DLEPlugins::Check( MODULE_PATH . '/plugins/' . $name . '/hook.class.php' ) ) )
+			if( file_exists( MODULE_PATH . '/plugins/' . $name . '/hook.class.php' ) )
 			{
-				$Hook = include( DLEPlugins::Check( MODULE_PATH . '/plugins/' . $name . '/hook.class.php' ) );
+				$Hook = include( MODULE_PATH . '/plugins/' . $name . '/hook.class.php' );
 
-				$Hook->plugin = @include MODULE_DATA . '/plugin.' . $name . '.php';
-				$Hook->api = $this;
+                if( (new ReflectionClass($Hook))->isAnonymous() )
+                {
+                    $Hook->plugin = @include MODULE_DATA . '/plugin.' . $name . '.php';
+                    $Hook->api = $this;
 
-				$Hook->pay( $user, $plus, $minus, $balance, $desc, $plugin, $plugin_id );
+                    if( in_array('pay', get_class_methods($Hook) ) )
+                    {
+                        $Hook->pay( $user, $plus, $minus, $balance, $desc, $plugin, $plugin_id );
+                    }
+                }
 			}
 		}
 
