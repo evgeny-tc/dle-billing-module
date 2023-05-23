@@ -1,10 +1,10 @@
-<?php	if( ! defined( 'BILLING_MODULE' ) ) die( "Hacking attempt!" );
+<?php
 /**
  * DLE Billing
  *
- * @link          https://github.com/mr-Evgen/dle-billing-module
+ * @link          https://github.com/evgeny-tc/dle-billing-module/
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2017, mr_Evgen
+ * @copyright     Copyright (c) 2012-2023, mr_Evgen
  */
 
 Class ADMIN
@@ -407,4 +407,3 @@ Class ADMIN
 		return '<center><span class="text-danger"><b><i class="fa fa-exclamation-circle"></i></b></span></center>';
 	}
 }
-?>

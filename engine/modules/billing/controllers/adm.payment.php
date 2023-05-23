@@ -17,10 +17,7 @@ Class ADMIN
 		#
 		if( isset( $_POST['save'] ) )
 		{
-			if( $_POST['user_hash'] == "" or $_POST['user_hash'] != $this->Dashboard->hash )
-			{
-				return "Hacking attempt! User not found {$_POST['user_hash']}";
-			}
+			$this->Dashboard->CheckHash();
 
 			$SaveData = $_POST['save_con'];
 
@@ -52,7 +49,7 @@ Class ADMIN
 		$Payments = $this->Dashboard->Payments();
 		$Payment = $Payments[$Name]['config'];
 
-		$Content = $this->Dashboard->PanelPlugin('payments/' . $Name, 'icon-money', $Payment['status'], $Paysys->doc );
+		$Content = $this->Dashboard->PanelPlugin('payments/' . $Name, $Paysys->doc );
 
 		# Форма
 		#
@@ -136,4 +133,3 @@ Class ADMIN
 		return $Content;
 	}
 }
-?>

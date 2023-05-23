@@ -1,10 +1,10 @@
-<?php	if( ! defined( 'BILLING_MODULE' ) ) die( "Hacking attempt!" );
+<?php
 /**
  * DLE Billing
  *
- * @link          https://github.com/mr-Evgen/dle-billing-module
+ * @link          https://github.com/evgeny-tc/dle-billing-module/
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2017, mr_Evgen
+ * @copyright     Copyright (c) 2012-2023, mr_Evgen
  */
 
 Class ADMIN
@@ -17,10 +17,7 @@ Class ADMIN
 		#
 		if( isset( $_POST['edit_user_btn'] ) )
 		{
-			if( $_POST['user_hash'] == "" or $_POST['user_hash'] != $this->Dashboard->hash )
-			{
-				return "Hacking attempt! User not found {$_POST['user_hash']}";
-			}
+			$this->Dashboard->CheckHash();
 
 			$_Login = explode(",", $_POST['edit_name'] );
 			$_Do = intval( $_POST['edit_do'] );
@@ -81,10 +78,7 @@ Class ADMIN
 		#
 		if( isset( $_POST['edit_group_btn'] ) )
 		{
-			if( $_POST['user_hash'] == "" or $_POST['user_hash'] != $this->Dashboard->hash )
-			{
-				return "Hacking attempt! User not found {$_POST['user_hash']}";
-			}
+			$this->Dashboard->CheckHash();
 
 			$_Group = intval( $_POST['edit_group'] );
 			$_Do = intval( $_POST['edit_do_group'] );
@@ -132,10 +126,7 @@ Class ADMIN
 		#
 		if( isset( $_POST['search_btn'] ) )
 		{
-			if( $_POST['user_hash'] == "" or $_POST['user_hash'] != $this->Dashboard->hash )
-			{
-				return "Hacking attempt! User not found {$_POST['user_hash']}";
-			}
+			$this->Dashboard->CheckHash();
 
 			$_WhereData = array();
 
@@ -329,4 +320,3 @@ Class ADMIN
 		return $Content;
 	}
 }
-?>

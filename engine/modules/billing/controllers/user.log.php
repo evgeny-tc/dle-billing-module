@@ -87,4 +87,3 @@ Class USER
 		return $this->DevTools->Show( $Content );
 	}
 }
-?>

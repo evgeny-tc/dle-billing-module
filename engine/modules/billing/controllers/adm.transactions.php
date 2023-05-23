@@ -241,4 +241,3 @@ Class ADMIN
 		return $Content;
 	}
 }
-?>
