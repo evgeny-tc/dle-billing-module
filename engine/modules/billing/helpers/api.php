@@ -331,7 +331,7 @@ Class BillingAPI
 	 * @param string $plugin_id
 	 * @return void
 	 */
-	private function Hooks($user, $plus, $minus, $balance, $desc, string $plugin = '', string $plugin_id = '' )
+	private function Hooks($user, $plus, $minus, $balance, $desc, $plugin = '', $plugin_id = '' )
 	{
 		if( $this->hook_step >= 2 ) return;
 
