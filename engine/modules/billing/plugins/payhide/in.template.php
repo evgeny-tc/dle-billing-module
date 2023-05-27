@@ -47,7 +47,7 @@ if( ! function_exists('BillingPayhideParser') )
 	{
 		global $config, $_TIME;
 
-		$error_load_tpl = 'Невозможно загрузить шаблон %s';
+        $error_load_tpl = 'Error load template %s';
 
 		if( ! $_Theme = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $Data['theme_open'] ) ) )
 		{
@@ -112,6 +112,8 @@ if( ! function_exists('BillingPayhideParser') )
 		{
 			$Data['post_id'] = $row['id'];
 		}
+
+        $Data['price'] = number_format($Data['price'], 2, '.', '');
 
 		# Автор поста
 		#
