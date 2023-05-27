@@ -30,7 +30,7 @@ return array
     #
     'balance_today' => "SELECT SUM(invoice_get) as `sum`
                             FROM " . USERPREFIX . "_billing_invoice
-                            WHERE invoice_date_pay >= '%s'",
+                            WHERE invoice_paysys != 'balance' and invoice_date_pay >= '%s'",
 
     # Пополнено вчера
     #
@@ -54,13 +54,13 @@ return array
     #
     'pay_all' => "SELECT SUM(invoice_get) as `sum`
                         FROM " . USERPREFIX . "_billing_invoice
-                        WHERE invoice_date_pay != 0",
+                        WHERE invoice_paysys != 'balance' and invoice_date_pay != 0",
 
     # Пополнено через платежные системы, ожидается
     #
     'pay_wait' => "SELECT SUM(invoice_get) as `sum`
                         FROM " . USERPREFIX . "_billing_invoice
-                        WHERE invoice_date_pay = 0",
+                        WHERE invoice_paysys != 'balance' and invoice_date_pay = 0",
 
     # Всего переведено
     #
@@ -75,12 +75,12 @@ return array
     #
     'billing_up' => "SELECT count(*) as `rows`, invoice_paysys, SUM(invoice_get) as `get`
                         FROM " . USERPREFIX . "_billing_invoice
-                        WHERE invoice_date_pay  != 0 and invoice_date_creat >= '%s' and invoice_date_creat <= '%s'
+                        WHERE invoice_paysys != 'balance' and invoice_date_pay  != 0 and invoice_date_creat >= '%s' and invoice_date_creat <= '%s'
                         GROUP BY invoice_paysys",
 
     'billing_up_null' => "SELECT count(*) as `rows`, invoice_paysys, SUM(invoice_get) as `get`
                             FROM " . USERPREFIX . "_billing_invoice
-                            WHERE invoice_date_pay  = 0 and invoice_date_creat >= '%s' and invoice_date_creat <= '%s'
+                            WHERE invoice_paysys != 'balance' and invoice_date_pay  = 0 and invoice_date_creat >= '%s' and invoice_date_creat <= '%s'
                             GROUP BY invoice_paysys",
 
     'billing_exp' => "SELECT DAY(FROM_UNIXTIME(`invoice_date_pay`)) as `D`,
@@ -88,7 +88,7 @@ return array
                           YEAR(FROM_UNIXTIME(`invoice_date_pay`)) as `Y`,
                           SUM(invoice_get) as `sum`
                     FROM " . USERPREFIX . "_billing_invoice
-                    WHERE invoice_date_pay >= '%s' and invoice_date_pay <= '%s'
+                    WHERE invoice_paysys != 'balance'and invoice_date_pay >= '%s' and invoice_date_pay <= '%s'
                     GROUP BY %s",
 
     # ---
