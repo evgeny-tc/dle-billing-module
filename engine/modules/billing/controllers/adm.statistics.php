@@ -712,7 +712,7 @@ HTML;
 		});
 		</script>
 
-		<div id=\"container_{$this->draw}\" style=\"width: 100%; height: 400px; margin: 10px\"></div>";
+		<div id=\"container_{$this->draw}\" style=\"height: 400px; margin: 10px\"></div>";
 	}
 
     /**
@@ -787,7 +787,7 @@ HTML;
 		});
 		</script>
 		<br />
-		<div id='container_{$this->draw}' style='" . ( $this->draw == 1 ? 'min-width: 310px' : 'width: 100%' )  . "; height: 400px; margin: 10px'></div>";
+		<div id='container_{$this->draw}' style='" . ( $this->draw == 1 ? 'min-width: 310px' : '' )  . "; height: 400px; margin: 10px'></div>";
 	}
 
 
