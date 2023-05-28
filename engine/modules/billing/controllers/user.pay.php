@@ -240,7 +240,7 @@ Class USER
 
                     if( $from_balance and $_POST['billingPayment'] == 'balance' )
                     {
-                        if( floatval($Invoice['invoice_get']) < floatval($this->DevTools->BalanceUser) )
+                        if( floatval($Invoice['invoice_get']) <= floatval($this->DevTools->BalanceUser) )
                         {
                             $logData = (isset($Handler) and in_array('desc', get_class_methods($Handler))) ? $Handler->desc($InfoPay) : ['null', 0];
 
