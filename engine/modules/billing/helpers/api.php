@@ -341,13 +341,14 @@ Class BillingAPI
 		{
 			if ( in_array($name, array(".", "..", "/", "index.php", ".htaccess")) ) continue;
 
-			if( file_exists( MODULE_PATH . '/plugins/' . $name . '/hook.class.php' ) )
+			if( file_exists( MODULE_PATH . '/plugins/' . $name . '/hook.class.php' )
+                and file_exists( MODULE_DATA . '/plugin.' . $name . '.php' ))
 			{
 				$Hook = include( MODULE_PATH . '/plugins/' . $name . '/hook.class.php' );
 
                 if( (new ReflectionClass($Hook))->isAnonymous() )
                 {
-                    $Hook->plugin = @include MODULE_DATA . '/plugin.' . $name . '.php';
+                    $Hook->plugin = include MODULE_DATA . '/plugin.' . $name . '.php';
                     $Hook->api = $this;
 
                     if( in_array('pay', get_class_methods($Hook) ) )
