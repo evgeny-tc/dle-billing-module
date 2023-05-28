@@ -132,13 +132,13 @@
 
 .billing-pay-label
 {
-	margin: 10px;
+	margin: 2px;
 }
 
 .billing-pay-label > img
 {
-	height: 30px;
-	overflow: hidden;
+	margin-left: 20%;
+	margin-top: 4px;
 }
 
 .billing-pay-label > input
@@ -173,4 +173,16 @@
 	background: none;
 	border: none;
 	cursor: pointer;
+}
+
+hr.payment__section
+{
+	padding: 0;
+	margin: 0 0 5px;
+}
+
+.payment__desc span
+{
+	font-size: 11px;
+	color: grey;
 }

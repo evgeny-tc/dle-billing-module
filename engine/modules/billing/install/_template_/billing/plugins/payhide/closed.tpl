@@ -18,7 +18,5 @@ if( typeof window['openPayPage'] != 'function' )
 
 	[time]<p>После оплаты доступ будет открыт в течении {time}</p>[/time]
 
-	[login]<p>Оплатить из <a href="/billing.html/payhide/pay/sign/{link}" onclick="openPayPage(this.href); return false;">личного кошелька на сайте</a>.</p>[/login]
-
-	[not-login]<p>Для оплаты Вам необходимо <a href="/index.php?do=register">зарегистрироваться</a> либо войти на сайт под своим именем.</p>[/not-login]
+	<p><a href="/billing.html/payhide/pay/sign/{link}" onclick="openPayPage(this.href); return false;">Оплатить онлайн</a>.</p>
 </fieldset>

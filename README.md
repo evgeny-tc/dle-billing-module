@@ -12,20 +12,18 @@
 - mr_Evgen (evgeny.tc@gmail.com)  
 - Japing (https://github.com/Japing/DLE-Billing)
 
-[[dle-billing.ru](https://dle-billing.ru/ "dle-billing.ru")] [[тех.поддержка](https://dle-billing.ru/support/index.php?a=add)] [[документация](https://dle-billing.ru/doc/)]
+[[dle-billing.ru](https://dle-billing.ru/ "dle-billing.ru")] [[техподдержка](https://dle-billing.ru/support/index.php?a=add)] [[документация](https://dle-billing.ru/doc/)]
 
 [![](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://yoomoney.ru/fundraise/RKcDogSR19k.230521)
 
-### **Установка:**
+### **Установить:**
 1. [Скачать](https://github.com/evgeny-tc/dle-billing-module/archive/refs/heads/main.zip "Скачать архив")  архив с модулем (beta) / [другие версии](https://github.com/evgeny-tc/dle-billing-module/releases) 
-2. В **Админ панель** -> **Утилиты** -> **Управление плагинами** - загрузить скачанный архив
-3. Открыть страницу ваш_сайт.ру/admin.php?mod=billing
-4. Выполнить инструкции установщика
-5. Настроить модуль
+2. **Панель управления** -> **Утилиты** -> **Управление плагинами** - загрузить скачанный архив
+3. Открыть страницу ваш_сайт.ру/admin.php?mod=billing и запустить установщик
 
-### **Обновление:**
+### **Обновить:**
 1. Обновите модуль через систему плагинов
-2. Войдите в админ.панель модуля для автоматического обновления бд и файла настроек.
+2. Войдите в админ.панель модуля для автоматического обновления бд и конфигурации модуля.
 ------------
 ### Плагины
 - Перевод средств между пользователями

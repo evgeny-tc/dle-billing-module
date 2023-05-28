@@ -100,11 +100,15 @@ if( isset( $_POST['agree'] ) or isset($_GET['install']) )
 
 	$saveConfigFile .= ");\n\n?>";
 
-	$handler = fopen( ENGINE_DIR . '/data/billing/config.php', "w" );
+    $handler = fopen(ENGINE_DIR . '/data/billing/config.php', "w+");
 
-	fwrite( $handler, $saveConfigFile );
+    if ($handler !== false)
+    {
+        fwrite($handler, $saveConfigFile);
+        fclose($handler);
+    }
 
-	fclose( $handler );
+    @chmod(ENGINE_DIR . '/data/billing/config.php', 0666);
 
 	if( ! file_exists(ENGINE_DIR . '/data/billing/config.php') )
 	{

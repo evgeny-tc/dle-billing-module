@@ -34,26 +34,25 @@
 							<div>
 								<label class="billing-pay-label">
 									<input name="billingPayment" id="balance" type="radio" value="balance" class="paymentSelect">
-									<img src="{module.skin}/billing/icons/balance.png" alt="Оплатить с баланса" title="Оплатить с баланса" />
-
+									<img src="/templates/{module.skin}/billing/icons/balance.png" alt="Оплатить с баланса" title="Оплатить с баланса" />
 								</label>
 							</div>
-							<div style="valign: middle">{invoice.get} {invoice.get.currency}</div>
+							<div class="payment__desc"><span>К оплате</span><br>{invoice.get} {invoice.get.currency}</div>
 						</div>
-						<hr>
+						<hr class="payment__section">
 						[/payment_balance]
 						[payment]
 						<div class="billing-pay-grid">
 							<div>
 								<label class="billing-pay-label">
 									<input name="billingPayment" id="{payment.name}" type="radio" value="{payment.name}" class="paymentSelect">
-									<img src="/templates/{module.skin}/billing/icons/{payment.name}.png" alt="{payment.title}" title="{payment.title}" />
+									<img src="/templates/{module.skin}/billing/icons/{payment.name}.png" onerror="this.src='/templates/{module.skin}/billing/icons/payment_icon.png'" alt="{payment.title}" title="{payment.title}" />
 
 								</label>
 							</div>
-							<div style="valign: middle">{payment.topay} {payment.currency}</div>
+							<div class="payment__desc"><span>К оплате</span><br>{payment.topay} {payment.currency}</div>
 						</div>
-						<hr>
+						<hr class="payment__section">
 						[/payment]
 				</div>
 		</div>
