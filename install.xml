@@ -3,7 +3,7 @@
 	<name>DLE Billing</name>
 	<description>Автоматизируйте прием платежей на сайте с помощью модуля DLE-Billing</description>
 	<icon>engine/skins/billing/icons/billing.png</icon>
-	<version>0.8.3.1</version>
+	<version>0.8.4</version>
 	<dleversion>13.0</dleversion>
 	<versioncompare>greater</versioncompare>
 	<upgradeurl>https://dle-billing.ru/update.json</upgradeurl>
@@ -78,6 +78,13 @@ DELETE FROM `{prefix}_static` WHERE name = 'billing';]]></mysqldelete>
 		<operation action="before">
 			<searchcode><![CDATA[switch ( $do ) {]]></searchcode>
 			<replacecode><![CDATA[include( ENGINE_DIR . "/modules/billing/helpers/include.engine.php" );]]></replacecode>
+			<enabled>1</enabled>
+		</operation>
+	</file>
+	<file name="engine/modules/register.php">
+		<operation action="after">
+			<searchcode><![CDATA[$id = $db->insert_id();]]></searchcode>
+			<replacecode><![CDATA[require_once ENGINE_DIR . '/modules/billing/plugins/referrals/register.php';]]></replacecode>
 			<enabled>1</enabled>
 		</operation>
 	</file>
