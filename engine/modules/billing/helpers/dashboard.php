@@ -290,7 +290,7 @@ Class Dashboard
 	 * @param $link
 	 * @return string
 	 */
-	public function PanelPlugin( string $path, string $link = '' )
+	public function PanelPlugin( string $path, ?string $link = '' )
 	{
 		$ini = parse_ini_file( MODULE_PATH . '/' . $path . '/info.ini' );
 
