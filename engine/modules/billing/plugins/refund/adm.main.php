@@ -292,7 +292,7 @@ Class ADMIN
 		);
 
 		$Content = $this->Dashboard->PanelPlugin('plugins/refund' );
-		$Content .= $Get['user'] ? $this->Dashboard->MakeMsgInfo( "<a href='{$PHP_SELF}?mod=billing&c=refund' title='{$this->Dashboard->lang['remove']}' class='btn btn-red'><i class='icon-remove'></i> " . $Get['user'] . "</a> {$this->Dashboard->lang['info_login']}", "icon-user", "blue") : "";
+        $Content .= $Get['user'] ? $this->Dashboard->MakeMsgInfo( "<a href='{$PHP_SELF}?mod=billing&c=refund' title='{$this->Dashboard->lang['remove']}' class='btn bg-danger btn-sm btn-raised position-left legitRipple' style='vertical-align: middle;'><i class='fa fa-repeat'></i> " . $Get['user'] . "</a> <span style='vertical-align: middle;'>{$this->Dashboard->lang['info_login']}</span>", "icon-user", "blue") : "";
 		$Content .= $this->Dashboard->PanelTabs( $tabs );
 		$Content .= $this->Dashboard->ThemeEchoFoother();
 

@@ -44,30 +44,28 @@ Class USER
 			$_Requisites = $this->DevTools->LQuery->db->safesql( $_POST['bs_requisites'] );
 			$_Money = $this->DevTools->API->Convert( $_POST['bs_summa'] );
 
-			$_MoneyCommission = $this->DevTools->API->Convert( ( $_Money / 100 ) * $this->plugin_config['com'] );
-
-			$Error = '';
+			$_MoneyCommission = $this->DevTools->API->Convert( ( $_Money / 100 ) * (float) $this->plugin_config['com'] );
 
 			if( ! $_Money )
 			{
-				$Error = $this->DevTools->lang['pay_summa_error'];
-			}
-			else if( $_Money < $this->plugin_config['minimum'] )
-			{
-				$Error = sprintf( $this->DevTools->lang['refund_error_minimum'], $this->plugin_config['minimum'], $this->DevTools->API->Declension( $this->plugin_config['minimum'] ) );
-			}
-			else if( ! $_Requisites )
-			{
-				$Error = $this->DevTools->lang['refund_error_requisites'];
-			}
-			else if( $_Money > $this->DevTools->BalanceUser )
-			{
-				$Error = $this->DevTools->lang['refund_error_balance'];
+                throw new Exception($this->DevTools->lang['pay_summa_error']);
 			}
 
-			if( $Error )
+            if( $_Money < $this->plugin_config['minimum'] )
 			{
-				return $this->DevTools->ThemeMsg( $this->DevTools->lang['pay_error_title'], $Error );
+                throw new Exception(
+                    sprintf( $this->DevTools->lang['refund_error_minimum'], $this->plugin_config['minimum'], $this->DevTools->API->Declension( $this->plugin_config['minimum'] ) )
+                );
+			}
+
+            if( ! $_Requisites )
+			{
+                throw new Exception($this->DevTools->lang['refund_error_requisites']);
+			}
+
+            if( $_Money > $this->DevTools->BalanceUser )
+			{
+                throw new Exception($this->DevTools->lang['refund_error_balance']);
 			}
 
 			$_Money = $this->DevTools->API->Convert( $_POST['bs_summa'] );

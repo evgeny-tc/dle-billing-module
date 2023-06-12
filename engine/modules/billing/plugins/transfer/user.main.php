@@ -70,34 +70,33 @@ Class USER
 			$_SearchUser = $this->DevTools->LQuery->DbSearchUserByName( htmlspecialchars( trim( $_POST['bs_user_name'] ), ENT_COMPAT, $this->DevTools->config_dle['charset'] ) );
 
 			$_Money = $this->DevTools->LQuery->db->safesql( $_POST['bs_summa'] );
-			$_MoneyCommission = $this->DevTools->API->Convert( ( $_Money / 100 ) * $this->plugin_config['com'] );
-
-			$Error = "";
+			$_MoneyCommission = $this->DevTools->API->Convert( ( $_Money / 100 ) * (float) $this->plugin_config['com'] );
 
 			if( ! $_Money )
 			{
-				$Error = $this->DevTools->lang['pay_summa_error'];
-			}
-			else if( ! $_SearchUser['name'] )
-			{
-				$Error = $this->DevTools->lang['transfer_error_get'];
-			}
-			else if( $_Money > $this->DevTools->BalanceUser )
-			{
-				$Error = $this->DevTools->lang['refund_error_balance'];
-			}
-			else if( $_SearchUser['name'] == $this->DevTools->member_id['name'] )
-			{
-				$Error = $this->DevTools->lang['transfer_error_name_me'];
-			}
-			else if( $_Money < $this->plugin_config['minimum'] )
-			{
-				$Error = sprintf( $this->DevTools->lang['transfer_error_minimum'], $this->plugin_config['minimum'], $this->DevTools->API->Declension( $this->plugin_config['minimum'] ) );
+                throw new Exception($this->DevTools->lang['pay_summa_error']);
 			}
 
-			if( $Error )
+            if( ! $_SearchUser['name'] )
 			{
-				return $this->DevTools->ThemeMsg( $this->DevTools->lang['pay_error_title'], $Error );
+                throw new Exception($this->DevTools->lang['transfer_error_get']);
+			}
+
+            if( $_Money > $this->DevTools->BalanceUser )
+			{
+                throw new Exception($this->DevTools->lang['refund_error_balance']);
+			}
+
+            if( $_SearchUser['name'] == $this->DevTools->member_id['name'] )
+			{
+                throw new Exception($this->DevTools->lang['transfer_error_name_me']);
+			}
+
+            if( $_Money < $this->plugin_config['minimum'] )
+			{
+                throw new Exception(
+                    sprintf( $this->DevTools->lang['transfer_error_minimum'], $this->plugin_config['minimum'], $this->DevTools->API->Declension( $this->plugin_config['minimum'] ) )
+                );
 			}
 
 			$_Money = $this->DevTools->API->Convert( $_POST['bs_summa'] );
