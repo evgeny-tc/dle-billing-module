@@ -61,7 +61,7 @@ Class ADMIN
 
 		$tabs[] = array(
 			'id' => 'tab0',
-			'title' => $this->_Lang['tab1'],
+			'title' => $this->_Lang['tab0'],
 			'content' => $this->Dashboard->ThemeParserStr()
 		);
 
