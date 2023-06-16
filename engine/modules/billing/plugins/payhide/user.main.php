@@ -172,7 +172,8 @@ Class USER
 					'post_id' => $Get['post_id'],
 					'pagelink' => base64_encode($Get['pagelink']),
 					'endtime' => $Get['endtime'],
-					'post_autor' => $Get['post_autor']
+					'post_autor' => $Get['post_autor'],
+					'title' => base64_encode($Get['title'])
 				]
 			],
 			'payhide:pay'

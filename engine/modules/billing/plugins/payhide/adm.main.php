@@ -233,6 +233,12 @@ Class ADMIN
 			"<input id=\"phGenFormKey\" onkeyup=\"phGenForm()\" class=\"form-control\" value=\"{$genKey}\" type=\"text\" style=\"width: 20%\">" . $this->local_lang['tag_1d7']
 		);
 
+        $this->Dashboard->ThemeAddStr(
+            $this->local_lang['tag_title'],
+            $this->local_lang['tag_title_desc'],
+            "<input id=\"phGenFormTitle\" onkeyup=\"phGenForm()\" class=\"form-control\" style=\"width: 100%\" type=\"text\">"
+        );
+
 		$this->Dashboard->ThemeAddStr(
 			$this->local_lang['tag_6'],
 			$this->local_lang['tag_6d'],
@@ -268,6 +274,12 @@ Class ADMIN
 			$this->local_lang['tag_theme_open_desc'],
 			"<input id=\"phGenFormThemeOpen\" onkeyup=\"phGenForm()\" class=\"form-control\" style=\"width: 100%\" type=\"text\">"
 		);
+
+        $this->Dashboard->ThemeAddStr(
+            $this->local_lang['include_theme_close'],
+            $this->local_lang['include_theme_close_desc'],
+            "<input class=\"icheck\" type=\"checkbox\" onchange=\"phGenForm()\" id=\"phGenFormIncludeClose\" value=\"0\">"
+        );
 
 		$this->Dashboard->ThemeAddStr(
 			$this->local_lang['tag_4'],
@@ -326,6 +338,11 @@ Class ADMIN
 				genForm += ' key=' + $("#phGenFormKey").val();
 				genForm += ' price=' + $("#phGenFormPrice").val();
 
+                if( $("#phGenFormTitle").val() )
+				{
+					genForm += ' title="' + $("#phGenFormTitle").val() + '"';
+				}
+
 				if( $("#phGenFormTime").val() )
 				{
 					genForm += ' time=' + $("#phGenFormTime").val();
@@ -341,7 +358,14 @@ Class ADMIN
 					genForm += ' theme_open=' + $("#phGenFormThemeOpen").val();
 				}
 
-				genForm += ']{$this->local_lang['tag_form']}[/payhide]';
+                let content_tag = '{$this->local_lang['tag_form']}';
+                
+                if( $("#phGenFormIncludeClose").prop("checked") )
+                {
+                    content_tag += '[payclose]{$this->local_lang['tag_form_close']}[/payclose]';
+                }
+                
+				genForm += ']' + content_tag + '[/payhide]';
 
 				$("#phGenFormTag").val( genForm );
 			}

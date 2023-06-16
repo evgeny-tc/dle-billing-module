@@ -54,7 +54,10 @@ if( ! function_exists('BillingPayhideParser') )
 			$_Theme = 'open';
 		}
 
-		$_Content = @file_get_contents( ROOT_DIR . '/templates/' . $config['skin'] . '/billing/plugins/payhide/' . $_Theme . '.tpl');
+        if( ! $_Content )
+        {
+            $_Content = @file_get_contents( ROOT_DIR . '/templates/' . $config['skin'] . '/billing/plugins/payhide/' . $_Theme . '.tpl');
+        }
 
 		if( ! $_Content )
 		{
@@ -91,6 +94,20 @@ if( ! function_exists('BillingPayhideParser') )
 		$Data = [];
 
 		$Data['content'] = $Params[2];
+
+        if( preg_match( "#\\[payclose\\](.*?)\\[/payclose\\]#is", $Data['content'], $match ) )
+        {
+            $_Content = $match[1];
+
+            $Data['content'] = preg_replace("#\\[payclose\\](.*?)\\[/payclose\\]#is", '', $Data['content']);
+        }
+
+        if( preg_match( "#title=['\"](.+?)['\"]#i", $Params[1], $match ) )
+        {
+            $Data['title'] = $match[1];
+
+            $Params[1] = preg_replace("#title=['\"](.+?)['\"]#i", '', $Params[1]);
+        }
 
 		foreach( explode(" ", $Params[1] ) as $val)
 		{
@@ -154,7 +171,10 @@ if( ! function_exists('BillingPayhideParser') )
 			$_Theme = 'closed';
 		}
 
-		$_Content = @file_get_contents( ROOT_DIR . '/templates/' . $config['skin'] . '/billing/plugins/payhide/' . $_Theme . '.tpl');
+        if( ! $_Content )
+        {
+            $_Content = @file_get_contents( ROOT_DIR . '/templates/' . $config['skin'] . '/billing/plugins/payhide/' . $_Theme . '.tpl');
+        }
 
 		if( ! $_Content )
 		{
@@ -218,9 +238,7 @@ if( ! function_exists('BillingPayhideParser') )
 			$newstr = $newstr.$arr[$x-1][3].$arr[$x-1][6].$arr[$x-1][1].$arr[$x-1][2];
 		}
 
-		$_Content = str_replace('{link}', urlencode( $newstr ) . '&modal=1', $_Content);
-
-		return $_Content;
+        return str_replace('{link}', urlencode( $newstr ) . '&modal=1', $_Content);
 	}
 }
 

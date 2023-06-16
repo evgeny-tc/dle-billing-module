@@ -3,7 +3,7 @@
 	<name>DLE Billing</name>
 	<description>Автоматизируйте прием платежей на сайте с помощью модуля DLE Billing</description>
 	<icon>engine/skins/billing/icons/billing.png</icon>
-	<version>0.8.6</version>
+	<version>0.8.6.1</version>
 	<dleversion>13.0</dleversion>
 	<versioncompare>greater</versioncompare>
 	<upgradeurl>https://dle-billing.ru/update.json</upgradeurl>
