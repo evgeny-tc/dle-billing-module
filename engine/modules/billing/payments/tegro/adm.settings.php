@@ -1,4 +1,4 @@
-<?php	if( ! defined( 'BILLING_MODULE' ) ) die( "Hacking attempt!" );
+<?php
 /**
  * DLE Billing
  *
@@ -9,7 +9,7 @@
 
 Class Payment
 {
-	var $doc = '';
+	public $doc = 'https://dle-billing.ru/doc/payments/tegro';
 
 	function Settings( $config )
 	{
@@ -117,4 +117,3 @@ Class Payment
 }
 
 $Paysys = new Payment;
-?>
