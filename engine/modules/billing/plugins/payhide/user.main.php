@@ -133,6 +133,13 @@ Class USER
 			$payFromBalance = true;
 		}
 
+		$pay_description = '';
+
+		if( isset($DATA['title']) and md5(urldecode($DATA['title'])) == $Get['title'] )
+		{
+			$pay_description = urldecode($DATA['title']);
+		}
+
 		# Проверка на повторную оплату
 		#
 		$this->DevTools->LQuery->DbWhere( array(
@@ -173,7 +180,7 @@ Class USER
 					'pagelink' => base64_encode($Get['pagelink']),
 					'endtime' => $Get['endtime'],
 					'post_autor' => $Get['post_autor'],
-					'title' => base64_encode($Get['title'])
+					'title' => $pay_description
 				]
 			],
 			'payhide:pay'

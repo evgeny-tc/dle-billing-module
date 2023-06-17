@@ -254,12 +254,12 @@ Class Database
 				{
 					foreach($info as $info_key => $info_val)
 					{
-						$payer_info[$key][$info_key] = preg_replace('/[^ a-z&#;@а-я\d.]/ui', '', $info_val );
+						$payer_info[$key][$info_key] = preg_replace('/[^ a-z&#;@а-яA-ZА-Я\d.]/ui', '', $info_val );
 					}
 				}
 				else
 				{
-					$payer_info[$key] = preg_replace('/[^ a-z&#;@а-я\d.]/ui', '', $info);
+					$payer_info[$key] = preg_replace('/[^ a-z&#;@а-яA-ZА-Я\d.]/ui', '', $info);
 				}
 			}
 

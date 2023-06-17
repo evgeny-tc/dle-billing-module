@@ -54,7 +54,6 @@ return new class
         include MODULE_PATH . "/plugins/payhide/lang.php";
 
         $infopay['params']['pagelink'] = base64_decode($infopay['params']['pagelink']);
-        $infopay['params']['title'] = base64_decode($infopay['params']['title']);
 
         return [
             sprintf( $infopay['params']['title'] ?: $plugin_lang['balance_desc'], $infopay['params']['pagelink'] ),
@@ -81,7 +80,7 @@ return new class
         include MODULE_PATH . "/plugins/payhide/lang.php";
 
         $more_data[""] = sprintf(
-            base64_decode($infopay['params']['title']) ?: $plugin_lang['handler']['title'],
+            $infopay['params']['title'] ?: $plugin_lang['handler']['title'],
             base64_decode($infopay['params']['pagelink'])
         );
 
