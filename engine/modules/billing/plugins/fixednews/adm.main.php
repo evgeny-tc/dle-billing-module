@@ -21,9 +21,14 @@ Class ADMIN
 		{
 			$this->Dashboard->CheckHash();
 
-            if( ! isset($_POST['save_con']['stop']) )
+            if( ! isset($_POST['save_con']['stop']) or ! is_array($_POST['save_con']['stop']) )
             {
                 $_POST['save_con']['stop'] = [];
+            }
+
+            if( ! isset($_POST['save_con']['stop_categorys']) or ! is_array($_POST['save_con']['stop_categorys']) )
+            {
+                $_POST['save_con']['stop_categorys'] = [];
             }
 
 			$_POST['save_con']['status'] = '1';

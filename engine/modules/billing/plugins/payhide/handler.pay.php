@@ -39,7 +39,7 @@ return new class
         $API->db->query( "INSERT INTO " . USERPREFIX . "_billing_payhide
 												(payhide_user, payhide_pagelink, payhide_price, payhide_date, payhide_tag, payhide_post_id, payhide_time)
 												values ('" . $Invoice['invoice_user_name'] . "',
-														'" . $InfoPay['params']['pagelink'] . "',
+														'" . $InfoPay['params']['title'] . '|' . $InfoPay['params']['pagelink'] . "',
 														'" . $Invoice['invoice_get'] . "',
 														'" . $API->_TIME . "',
 														'" . $InfoPay['params']['tag'] . "',

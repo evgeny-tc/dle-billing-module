@@ -78,6 +78,20 @@ Class USER
 				$params['{time}'] = $this->local_lang['timeFull'];
 			}
 
+			if (strripos($Value['payhide_pagelink'], '|'))
+			{
+				$Value['ex_pagelink'] = explode('|', $Value['payhide_pagelink']);
+				$Value['payhide_pagelink'] = $Value['ex_pagelink'][1];
+
+				$params['{pay_desc}'] = $Value['ex_pagelink'][0];
+				$params['[pay_desc]'] = '';
+				$params['[/pay_desc]'] = '';
+			}
+			else
+			{
+				$TimeLine = preg_replace('~\[pay_desc\](.*?)\[/pay_desc\]~is', '', $TimeLine);
+			}
+
 			if( $Value['payhide_post_id'] )
 			{
 				$params['{page}'] = sprintf( $this->local_lang['access_post'], $Value['payhide_pagelink'], $Value['title'] );

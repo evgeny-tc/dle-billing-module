@@ -97,11 +97,21 @@ Class ADMIN
 
 		while ( $Value = $this->Dashboard->LQuery->db->get_row() )
 		{
+            $pay_description = '';
+
+            if (strripos($Value['payhide_pagelink'], '|'))
+            {
+                $Value['ex_pagelink'] = explode('|', $Value['payhide_pagelink']);
+                $Value['payhide_pagelink'] = $Value['ex_pagelink'][1];
+
+                $pay_description = '<br><span style="font-size: 10px; color: grey">' . $Value['ex_pagelink'][0] . '</span>';
+            }
+
 			$this->Dashboard->ThemeAddTR( array(
 				$Value['payhide_id'],
 				$this->Dashboard->ThemeChangeTime( $Value['payhide_date'] ),
 				$this->Dashboard->ThemeInfoUser( $Value['payhide_user'] ),
-				$Value['payhide_post_id'] ? sprintf( $this->local_lang['access_post'], $Value['payhide_pagelink'], $Value['title'] ) : sprintf( $this->local_lang['access_page'], $Value['payhide_pagelink'] ),
+				($Value['payhide_post_id'] ? sprintf( $this->local_lang['access_post'], $Value['payhide_pagelink'], $Value['title'] ) : sprintf( $this->local_lang['access_page'], $Value['payhide_pagelink'] )) . $pay_description,
 				$Value['autor'] ? $this->Dashboard->ThemeInfoUser( $Value['autor'] ) : '',
 				$Value['payhide_price'] . ' ' . $this->Dashboard->API->Declension( $Value['payhide_price'] ),
 				$Value['payhide_time'] ? ( ( $Value['payhide_time']>=$this->Dashboard->_TIME ) ? "<font color='green'>".$this->local_lang['timeTo'].langdate( "j F Y  G:i", $Value['payhide_time'])."</font>": "<font color='red'>".$this->local_lang['timeTo'].langdate( "j F Y  G:i", $Value['payhide_time'])."</font>" ) : $this->local_lang['timeFull'],

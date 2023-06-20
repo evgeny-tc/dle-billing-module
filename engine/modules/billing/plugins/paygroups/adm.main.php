@@ -26,6 +26,11 @@ Class ADMIN
 				$_POST['save_stop'] = [];
 			}
 
+            if( ! isset($_POST['save_stop']) or ! is_array($_POST['save_stop']) )
+            {
+                $_POST['save_con']['stop'] = [];
+            }
+
 			$_POST['save_con']['stop'] = implode(",", $_POST['save_stop']);
 
 			$this->Dashboard->SaveConfig("plugin.paygroups", $_POST['save_con'], "plugin_config");
@@ -45,7 +50,7 @@ Class ADMIN
 				{
 					$SetStart[] = [];
 
-					if( isset($SaveCon[$group_tag]['start']) )
+					if( isset($SaveCon[$group_tag]['start']) and is_array($SaveCon[$group_tag]['start']) )
 					{
 						foreach( $SaveCon[$group_tag]['start'] as $group_tag_info )
 						{

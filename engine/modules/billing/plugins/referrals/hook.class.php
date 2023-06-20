@@ -12,7 +12,6 @@ if( ! class_exists("HookReferrals") )
 	Class HookReferrals
 	{
 		public array $plugin = [];
-
 		public BillingAPI $api;
 
 		function pay( string $user, $plus, $minus, $balance, $desc, $plugin = '', $plugin_id = 0 )
