@@ -86,9 +86,14 @@ Class USER
 				$params['{pay_desc}'] = $Value['ex_pagelink'][0];
 				$params['[pay_desc]'] = '';
 				$params['[/pay_desc]'] = '';
+
+				$TimeLine = preg_replace('~\[not_pay_desc\](.*?)\[/not_pay_desc\]~is', '', $TimeLine);
 			}
 			else
 			{
+				$params['[not_pay_desc]'] = '';
+				$params['[/not_pay_desc]'] = '';
+
 				$TimeLine = preg_replace('~\[pay_desc\](.*?)\[/pay_desc\]~is', '', $TimeLine);
 			}
 
