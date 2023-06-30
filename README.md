@@ -14,7 +14,7 @@
 
 [[dle-billing.ru](https://dle-billing.ru/ "dle-billing.ru")] [[техподдержка](https://dle-billing.ru/support/index.php?a=add)] [[документация](https://dle-billing.ru/doc/)]
 
-[![](https://dle-billing.ru/img/donate.png)](https://yoomoney.ru/fundraise/RKcDogSR19k.230521)
+[![](https://dle-billing.ru/img/yoodonate.png)](https://yoomoney.ru/fundraise/RKcDogSR19k.230521)
 
 ## Установить
 1. [Загрузить](https://github.com/evgeny-tc/dle-billing-module/releases/download/beta-10-06/archive.zip "Скачать архив")  архив с модулем / [другие версии](https://github.com/evgeny-tc/dle-billing-module/releases)
