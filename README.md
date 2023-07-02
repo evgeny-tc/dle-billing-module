@@ -8,6 +8,8 @@
 
 Платежный модуль и биллинг платформа для cms dle - автоматизирует продажи и работу с посетителями вашего сайта.
 
+![](https://dle-billing.ru/assets/images/NW4MjIMUQ5.gif)
+
 ## Разработка и поддержка
 - mr_Evgen (evgeny.tc@gmail.com)
 - Japing (https://github.com/Japing/DLE-Billing)
