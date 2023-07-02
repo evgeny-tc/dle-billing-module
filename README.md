@@ -1,14 +1,12 @@
 # DLE Billing
 
-![Version](https://img.shields.io/badge/Version-0.8.7.beta-blue.svg?style=flat-square "Version")
+![Version](https://img.shields.io/badge/Version-0.8.7Œ.beta-blue.svg?style=flat-square "Version")
 ![DLE](https://img.shields.io/badge/DLE-13.0+-green.svg?style=flat-square "DLE")
 ![PHP](https://img.shields.io/badge/PHP-8+-blue.svg?style=flat-square "PHP")
 ![Charset](https://img.shields.io/badge/Charset-utf--8-red.svg?style=flat-square "Charset")
 ![jQuery](https://img.shields.io/badge/jQuery-3.0+-yellow.svg?style=flat-square "jQuery")
 
 Платежный модуль и биллинг платформа для cms dle - автоматизирует продажи и работу с посетителями вашего сайта.
-
-![](https://dle-billing.ru/assets/images/NW4MjIMUQ5.gif)
 
 ## Разработка и поддержка
 - mr_Evgen (evgeny.tc@gmail.com)
