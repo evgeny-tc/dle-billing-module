@@ -6,7 +6,7 @@
 ![Charset](https://img.shields.io/badge/Charset-utf--8-red.svg?style=flat-square "Charset")
 ![jQuery](https://img.shields.io/badge/jQuery-3.0+-yellow.svg?style=flat-square "jQuery")
 
-Платежный модуль и биллинг платформа для cms dle - автоматизирует продажи и работу с посетителями вашего сайта.
+Платежный модуль и биллинг платформа для cms dle - автоматизирует продажи и работу с пользователями сайта.
 
 ![](https://dle-billing.ru/assets/images/NW4MjIMUQ5.gif)
 
