@@ -99,7 +99,7 @@ return new class
 					{
 						$this->api->PlusMoney( 
 							$_Partner['ref_from'], 
-							$_Bonus, 
+							floatval($_Bonus),
 							$bonus['desc'],
 							'referrals', 
 							$_Partner['ref_user_id']
