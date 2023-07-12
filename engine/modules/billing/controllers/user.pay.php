@@ -389,6 +389,8 @@ Class USER
 			#
 			$CheckID = $Paysys->check_id( $DATA );
 
+            $CheckPayerRequisites = '';
+
 			if( in_array('check_payer_requisites', get_class_methods($Paysys) ) )
 			{
 				$CheckPayerRequisites = $Paysys->check_payer_requisites( $DATA );
