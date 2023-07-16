@@ -18,6 +18,11 @@
 
 [![](https://dle-billing.ru/img/donate3.png)](https://yoomoney.ru/fundraise/RKcDogSR19k.230521)
 
+## Принять участие
+
+[[contributing](https://github.com/evgeny-tc/dle-billing-module/blob/main/CONTRIBUTING.md)]
+[[issues](https://github.com/evgeny-tc/dle-billing-module/issues)]
+
 ## Установить
 1. [Загрузить](https://github.com/evgeny-tc/dle-billing-module/releases/download/beta-10-06/archive.zip "Скачать архив")  архив с модулем / [другие версии](https://github.com/evgeny-tc/dle-billing-module/releases)
 2. **Панель управления** -> **Утилиты** -> **Управление плагинами** - загрузить скачанный архив
