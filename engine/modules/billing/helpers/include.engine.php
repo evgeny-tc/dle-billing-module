@@ -7,7 +7,7 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-if( ! defined( 'DATALIFEENGINE' ) )
+if( ! defined( 'MODULE_PATH' ) )
 {
     define( 'MODULE_PATH', ENGINE_DIR . "/modules/billing" );
 }
