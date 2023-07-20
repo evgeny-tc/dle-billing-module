@@ -14,12 +14,12 @@ Class USER
 
 	function __construct()
 	{
-		if( file_exists( MODULE_DATA . "/plugin.subscription_categorys.php" ) )
+		if( file_exists( MODULE_DATA . "/plugin.prcode.php" ) )
 		{
-			$this->_Config = include MODULE_DATA . "/plugin.subscription_categorys.php";
+			$this->_Config = include MODULE_DATA . "/plugin.prcode.php";
 		}
 
-		$this->_Lang = include MODULE_PATH . "/plugins/subscription_categorys/lang.php";
+		$this->_Lang = include MODULE_PATH . "/plugins/prcode/lang.php";
 	}
 
 	public function main( array $GET = [] )
@@ -66,7 +66,7 @@ Class USER
 
 			if( $Error )
 			{
-				return $this->DevTools->ThemeMsg( $this->DevTools->lang['pay_error_title'], $Error, "subscription_categorys" );
+				return $this->DevTools->ThemeMsg( $this->DevTools->lang['pay_error_title'], $Error, "prcode" );
 			}
 
 			$this->DevTools->LQuery->db->query( "UPDATE " . USERPREFIX . "_billing_prcodes
@@ -78,19 +78,19 @@ Class USER
 				$this->DevTools->member_id['name'],
 				$_SearchPromoCode['prcode_sum'],
 				sprintf($this->_Lang['ui_active_desc'], $PromoCode),
-				'subscription_categorys',
+				'prcode',
 				$_SearchPromoCode['prcode_id']
 			);
 
 			return $this->DevTools->ThemeMsg(
 				$this->_Lang['ui_active_ok'],
 				sprintf($this->_Lang['ui_active_ok_balance'], $_SearchPromoCode['prcode_sum'], $this->DevTools->API->Declension( $_SearchPromoCode['prcode_sum'] )),
-				'subscription_categorys'
+				'prcode'
 			);
 		}
 
-		$Content = $this->DevTools->ThemeLoad( "plugins/subscription_categorys" );
+		$Content = $this->DevTools->ThemeLoad( "plugins/prcode" );
 
-		return $this->DevTools->Show( $Content, "subscription_categorys" );
+		return $this->DevTools->Show( $Content, "prcode" );
 	}
 }

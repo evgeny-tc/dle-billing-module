@@ -14,7 +14,7 @@ Class ADMIN
 
 	function __construct()
 	{
-		$this->_Lang = include MODULE_PATH . "/plugins/subscription_categorys/lang.php";
+		$this->_Lang = include MODULE_PATH . "/plugins/prcode/lang.php";
 	}
 
 	public function main( array $GET = [] )
@@ -25,17 +25,17 @@ Class ADMIN
 		{
 			$this->Dashboard->CheckHash();
 
-			$this->Dashboard->SaveConfig("plugin.subscription_categorys", $_POST['save_con'], "plugin_config");
+			$this->Dashboard->SaveConfig("plugin.prcode", $_POST['save_con'], "plugin_config");
 
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
 		}
 
-		if( ! file_exists( MODULE_DATA . "/plugin.subscription_categorys.php" ) )
+		if( ! file_exists( MODULE_DATA . "/plugin.prcode.php" ) )
 		{
 			$this->install();
 		}
 
-		$_Config = $this->Dashboard->LoadConfig( "subscription_categorys" );
+		$_Config = $this->Dashboard->LoadConfig( "prcode" );
 
 		# Удалить отмеченные
 		#
@@ -95,7 +95,7 @@ Class ADMIN
 				$_Answer .= '<tr><td>' . $_prCode . '</td><td>' . $_Sum . ' ' . $_Declension . '</td></tr>';
 			}
 
-			$this->Dashboard->ThemeMsg( $this->_Lang['ap_gen_ok'], '<table class="table table-normal table-hover">' . $_Answer . '</table>', '?mod=billing&c=subscription_categorys' );
+			$this->Dashboard->ThemeMsg( $this->_Lang['ap_gen_ok'], '<table class="table table-normal table-hover">' . $_Answer . '</table>', '?mod=billing&c=prcode' );
 		}
 
 		# Список
@@ -147,7 +147,7 @@ Class ADMIN
 						$this->Dashboard->API->Pagination(
 							$NumData,
 							$GET['page'],
-							$PHP_SELF . "?mod=billing&c=subscription_categorys&p=page/{p}",
+							$PHP_SELF . "?mod=billing&c=prcode&p=page/{p}",
 							"<li><a href=\"{page_num_link}\">{page_num}</a></li>",
 							"<li class=\"active\"><span>{page_num}</span></li>",
 							$PerPage ) . '
@@ -219,7 +219,7 @@ Class ADMIN
 
 		$this->Dashboard->ThemeEchoHeader( $this->_Lang['title'] );
 
-		$Content = $this->Dashboard->PanelPlugin('plugins/subscription_categorys', 'https://dle-billing.ru/doc/plugins/prcode/' );
+		$Content = $this->Dashboard->PanelPlugin('plugins/prcode', 'https://dle-billing.ru/doc/plugins/prcode/' );
 		$Content .= $this->Dashboard->PanelTabs( $tabs );
 		$Content .= $this->Dashboard->ThemeEchoFoother();
 
@@ -247,7 +247,7 @@ Class ADMIN
             $this->Dashboard->LQuery->db->query($table);
         }
 
-		$this->Dashboard->SaveConfig("plugin.subscription_categorys", array('status'=>"0"));
+		$this->Dashboard->SaveConfig("plugin.prcode", array('status'=>"0"));
 
 		return;
 	}
