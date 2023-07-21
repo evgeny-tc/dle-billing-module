@@ -54,10 +54,7 @@ if( ! function_exists('BillingPayhideParser') )
             $_Theme = 'open';
         }
 
-        if( ! $_Content )
-        {
-            $_Content = @file_get_contents( ROOT_DIR . '/templates/' . $config['skin'] . '/billing/plugins/payhide/' . $_Theme . '.tpl');
-        }
+        $_Content = @file_get_contents( ROOT_DIR . '/templates/' . $config['skin'] . '/billing/plugins/payhide/' . $_Theme . '.tpl');
 
         if( ! $_Content )
         {
@@ -116,6 +113,8 @@ if( ! function_exists('BillingPayhideParser') )
         foreach( explode(" ", $Params[1] ) as $val)
         {
             $parsData = explode("=", $val );
+
+            $parsData[0] = preg_replace("/[^a-zA-Z0-9\s]/", "", $parsData[0] );
 
             # .. для совместимости со старыми версиями
             #
