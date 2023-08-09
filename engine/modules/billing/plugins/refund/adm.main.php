@@ -66,7 +66,7 @@ Class ADMIN extends PluginActions
 				}
 			}
 
-			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['refund_act'], $PHP_SELF . "?mod=billing&c=Refund" );
+			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['refund_act'], $PHP_SELF . "?mod=billing&c=refund" );
 		}
 
 		# Настройки
@@ -166,7 +166,7 @@ Class ADMIN extends PluginActions
 							$this->Dashboard->API->Pagination(
 								$NumData,
 								$Get['page'],
-								$PHP_SELF . "?mod=billing&c=Refund&p=user/{$Get['user']}/page/{p}",
+								$PHP_SELF . "?mod=billing&c=refund&p=user/{$Get['user']}/page/{p}",
 								"<li><a href=\"{page_num_link}\">{page_num}</a></li>",
 								"<li class=\"active\"><span>{page_num}</span></li>",
 								$PerPage
