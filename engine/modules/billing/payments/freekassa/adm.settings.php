@@ -6,9 +6,9 @@
  * @link          https://www.free-kassa.ru/
  * @faq           https://www.free-kassa.ru/faq.php
  */
-class FreeKassa
+Class FreeKassa
 {
-    var $doc = 'http://www.free-kassa.ru/modules.php?id=6';
+    public string $doc = 'http://www.free-kassa.ru/modules.php?id=6';
 
     function Settings($config)
     {
