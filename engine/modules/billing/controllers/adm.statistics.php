@@ -9,99 +9,99 @@
 
 Class ADMIN
 {
-	private $_StartTime = 0;
-	private $_EndTime = 0;
-	private $_SectorTime = 'D';
+    private $_StartTime = 0;
+    private $_EndTime = 0;
+    private $_SectorTime = 'D';
 
-	private $_Querys = array();
+    private $_Querys = array();
 
-	private $draw = 0;
+    private $draw = 0;
 
-	public function __construct()
-	{
-		session_start();
+    public function __construct()
+    {
+        session_start();
 
-		if( $_GET['date'] == 'now' )
-		{
-			$_SESSION['billingTimeStart'] = mktime(0,0,0);
-			$_SESSION['billingTimeEnd'] = mktime(0,0,0);
-			$_SESSION['billingTimeSector'] = 'D';
-		}
-		else if( $_GET['date'] == 'week' )
-		{
-			$_SESSION['billingTimeStart'] = strtotime(date("d.m.Y", strtotime("last Monday")));
-			$_SESSION['billingTimeEnd'] = strtotime(date("d.m.Y", strtotime("Sunday")));
-			$_SESSION['billingTimeSector'] = 'D';
-		}
-		else if( $_GET['date'] == 'month' )
-		{
-			$_SESSION['billingTimeStart'] = strtotime(date("Y-m-01"));
-			$_SESSION['billingTimeEnd'] = strtotime(date("Y-m-t"));
-			$_SESSION['billingTimeSector'] = 'D';
-		}
-		else if( $_GET['date'] == 'year' )
-		{
-			$_SESSION['billingTimeStart'] = strtotime(date("Y-01-01"));
-			$_SESSION['billingTimeEnd'] = strtotime(date("Y-12-31"));
-			$_SESSION['billingTimeSector'] = 'M';
-		}
+        if( $_GET['date'] == 'now' )
+        {
+            $_SESSION['billingTimeStart'] = mktime(0,0,0);
+            $_SESSION['billingTimeEnd'] = mktime(0,0,0);
+            $_SESSION['billingTimeSector'] = 'D';
+        }
+        else if( $_GET['date'] == 'week' )
+        {
+            $_SESSION['billingTimeStart'] = strtotime(date("d.m.Y", strtotime("last Monday")));
+            $_SESSION['billingTimeEnd'] = strtotime(date("d.m.Y", strtotime("Sunday")));
+            $_SESSION['billingTimeSector'] = 'D';
+        }
+        else if( $_GET['date'] == 'month' )
+        {
+            $_SESSION['billingTimeStart'] = strtotime(date("Y-m-01"));
+            $_SESSION['billingTimeEnd'] = strtotime(date("Y-m-t"));
+            $_SESSION['billingTimeSector'] = 'D';
+        }
+        else if( $_GET['date'] == 'year' )
+        {
+            $_SESSION['billingTimeStart'] = strtotime(date("Y-01-01"));
+            $_SESSION['billingTimeEnd'] = strtotime(date("Y-12-31"));
+            $_SESSION['billingTimeSector'] = 'M';
+        }
 
-		if( $_GET['date'] )
-		{
-			$_SESSION['billingTime'] = $_GET['date'];
-			$_SESSION['billingTimeEnd'] += 86399;
+        if( $_GET['date'] )
+        {
+            $_SESSION['billingTime'] = $_GET['date'];
+            $_SESSION['billingTimeEnd'] += 86399;
 
-			header("Location: " . $_SERVER['HTTP_REFERER']);
+            header("Location: " . $_SERVER['HTTP_REFERER']);
 
-			exit();
-		}
+            exit();
+        }
 
-		if( isset( $_POST['sort'] ) )
-		{
-			$_SESSION['billingTime'] = '';
-			$_SESSION['billingTimeStart'] = $_POST['date_edit_start'] ? strtotime( $_POST['date_edit_start'] ) : strtotime(date("Y-m-01"));
-			$_SESSION['billingTimeEnd'] = $_POST['date_edit_end'] ? strtotime( $_POST['date_edit_end'] ) : strtotime(date("Y-m-t"));
+        if( isset( $_POST['sort'] ) )
+        {
+            $_SESSION['billingTime'] = '';
+            $_SESSION['billingTimeStart'] = $_POST['date_edit_start'] ? strtotime( $_POST['date_edit_start'] ) : strtotime(date("Y-m-01"));
+            $_SESSION['billingTimeEnd'] = $_POST['date_edit_end'] ? strtotime( $_POST['date_edit_end'] ) : strtotime(date("Y-m-t"));
 
-			if( ( $_SESSION['billingTimeEnd'] - $_SESSION['billingTimeStart'] ) > 32140800 )
-			{
-				$_SESSION['billingTimeSector'] = "Y";
-			}
-			else if( ( $_SESSION['billingTimeEnd'] - $_SESSION['billingTimeStart'] ) > 2678400 )
-			{
-				$_SESSION['billingTimeSector'] = "M";
-			}
-			else
-			{
-				$_SESSION['billingTimeSector'] = "D";
-			}
-		}
+            if( ( $_SESSION['billingTimeEnd'] - $_SESSION['billingTimeStart'] ) > 32140800 )
+            {
+                $_SESSION['billingTimeSector'] = "Y";
+            }
+            else if( ( $_SESSION['billingTimeEnd'] - $_SESSION['billingTimeStart'] ) > 2678400 )
+            {
+                $_SESSION['billingTimeSector'] = "M";
+            }
+            else
+            {
+                $_SESSION['billingTimeSector'] = "D";
+            }
+        }
 
-		if( ! $_SESSION['billingTime'] and ! isset( $_POST['sort'] ) )
-		{
-			$_SESSION['billingTime'] = 'month';
-		}
+        if( ! $_SESSION['billingTime'] and ! isset( $_POST['sort'] ) )
+        {
+            $_SESSION['billingTime'] = 'month';
+        }
 
-		$this->_StartTime = intval( $_SESSION['billingTimeStart'] )
-								? $_SESSION['billingTimeStart']
-								: strtotime(date("Y-m-01"));
+        $this->_StartTime = intval( $_SESSION['billingTimeStart'] )
+            ? $_SESSION['billingTimeStart']
+            : strtotime(date("Y-m-01"));
 
-		$this->_EndTime = intval( $_SESSION['billingTimeEnd'] )
-								? $_SESSION['billingTimeEnd']
-								: strtotime(date("Y-m-t"));
+        $this->_EndTime = intval( $_SESSION['billingTimeEnd'] )
+            ? $_SESSION['billingTimeEnd']
+            : strtotime(date("Y-m-t"));
 
-		$this->_SectorTime = in_array( $_SESSION['billingTimeSector'], array('D', 'M', 'Y') )
-								? $_SESSION['billingTimeSector']
-								: 'D';
+        $this->_SectorTime = in_array( $_SESSION['billingTimeSector'], array('D', 'M', 'Y') )
+            ? $_SESSION['billingTimeSector']
+            : 'D';
 
-		$this->_Querys = include DLEPlugins::Check( MODULE_PATH . '/helpers/statistics.querys.php' );
-	}
+        $this->_Querys = include DLEPlugins::Check( MODULE_PATH . '/helpers/statistics.querys.php' );
+    }
 
     /**
      * Расчетный доход
      * @return string
      */
-	public function main()
-	{
+    public function main()
+    {
         $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
 
         $Content = $this->menu();
@@ -200,44 +200,44 @@ HTML;
         $Content .= $this->Dashboard->ThemeEchoFoother();
 
         return $Content;
-	}
+    }
 
     /**
      * Статистика пользователя
      * @param $GET
      * @return string|void
      */
-	public function users( $GET )
-	{
-		$Result = [];
+    public function users( $GET )
+    {
+        $Result = [];
 
-		if( isset( $_POST['search_btn'] ) )
-		{
-			header( 'Location: /' . $this->Dashboard->dle['admin_path'] . '?mod=billing&c=statistics&m=users&p=user/' . $this->Dashboard->LQuery->parsVar( $_POST['search_user'] ) );
-			return;
-		}
-		else if( $GET['user'] )
-		{
-			$Result = $this->Dashboard->LQuery->DbSearchUserByName( $this->Dashboard->LQuery->parsVar( $GET['user'] ) );
-		}
-		else
-		{
-			$Result = $this->Dashboard->LQuery->DbSearchUserByName( $this->Dashboard->member_id['name'] );
-		}
+        if( isset( $_POST['search_btn'] ) )
+        {
+            header( 'Location: /' . $this->Dashboard->dle['admin_path'] . '?mod=billing&c=statistics&m=users&p=user/' . $this->Dashboard->LQuery->parsVar( $_POST['search_user'] ) );
+            return;
+        }
+        else if( $GET['user'] )
+        {
+            $Result = $this->Dashboard->LQuery->DbSearchUserByName( $this->Dashboard->LQuery->parsVar( $GET['user'] ) );
+        }
+        else
+        {
+            $Result = $this->Dashboard->LQuery->DbSearchUserByName( $this->Dashboard->member_id['name'] );
+        }
 
-		if( ! $Result['user_id'] )
-		{
-			return $this->Dashboard->ThemeMsg( $this->Dashboard->lang['error'], $this->Dashboard->lang['statistics_users_error'], "{$PHP_SELF}?mod=billing&c=statistics&m=users&p=user/{$this->Dashboard->member_id['name']}" );
-		}
+        if( ! $Result['user_id'] )
+        {
+            return $this->Dashboard->ThemeMsg( $this->Dashboard->lang['error'], $this->Dashboard->lang['statistics_users_error'], "{$PHP_SELF}?mod=billing&c=statistics&m=users&p=user/{$this->Dashboard->member_id['name']}" );
+        }
 
-		$this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
+        $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
 
-		$Content = $this->menu();
+        $Content = $this->menu();
 
-		$_RefundWait = $this->Dashboard->LQuery->db->super_query( sprintf($this->_Querys['users_refund'], $Result['name']) );
-		$GetMainStatistics = $this->Dashboard->LQuery->db->super_query( sprintf( $this->_Querys['users_plugins_main'], $this->_StartTime, $this->_EndTime, $Result['name'] ) );
+        $_RefundWait = $this->Dashboard->LQuery->db->super_query( sprintf($this->_Querys['users_refund'], $Result['name']) );
+        $GetMainStatistics = $this->Dashboard->LQuery->db->super_query( sprintf( $this->_Querys['users_plugins_main'], $this->_StartTime, $this->_EndTime, $Result['name'] ) );
 
-		$Content .= "<div class='row'>
+        $Content .= "<div class='row'>
 						<div class='col-md-8'>
 							<div id='general' class='box' style='padding: 10px'>
 								<table width='100%'>
@@ -270,68 +270,68 @@ HTML;
 						</div>
 						<div class='col-md-4'>
 							<form method='post' style='text-align:center'>" .
-									$this->Dashboard->MakeMsgInfo(
-										"<input name=\"search_user\" class=\"form-control\" type=\"text\" style=\"width: 60%\" value=\"" . $Result['name'] ."\" required>" .
-										$this->Dashboard->MakeButton("search_btn", $this->Dashboard->lang['users_btn'], "green"),
-										"icon-user",
-										"green"
-									) .
-							"</form>
+            $this->Dashboard->MakeMsgInfo(
+                "<input name=\"search_user\" class=\"form-control\" type=\"text\" style=\"width: 60%\" value=\"" . $Result['name'] ."\" required>" .
+                $this->Dashboard->MakeButton("search_btn", $this->Dashboard->lang['users_btn'], "green"),
+                "icon-user",
+                "green"
+            ) .
+            "</form>
 						</div>
 					</div>";
 
-		$tabs[] = array(
-				'id' => 'up',
-				'title' => $this->Dashboard->lang['statistics_2'],
-				'content' => $this->DrawPaymentsStatUp( sprintf($this->_Querys['users_billing_up'], $this->_StartTime, $this->_EndTime, $Result['name']), sprintf($this->_Querys['users_billing_up_null'], $this->_StartTime, $this->_EndTime, $Result['name']) )
-		);
+        $tabs[] = array(
+            'id' => 'up',
+            'title' => $this->Dashboard->lang['statistics_2'],
+            'content' => $this->DrawPaymentsStatUp( sprintf($this->_Querys['users_billing_up'], $this->_StartTime, $this->_EndTime, $Result['name']), sprintf($this->_Querys['users_billing_up_null'], $this->_StartTime, $this->_EndTime, $Result['name']) )
+        );
 
-		$tabs[] = array(
-				'id' => 'lvl',
-				'title' => $this->Dashboard->lang['statistics_2_tab_2'],
-				'content' => $this->DrawPaymentsExp( sprintf($this->_Querys['users_billing_exp'], $this->_StartTime, $this->_EndTime, $Result['name'], $this->_SectorTime) )
-		);
+        $tabs[] = array(
+            'id' => 'lvl',
+            'title' => $this->Dashboard->lang['statistics_2_tab_2'],
+            'content' => $this->DrawPaymentsExp( sprintf($this->_Querys['users_billing_exp'], $this->_StartTime, $this->_EndTime, $Result['name'], $this->_SectorTime) )
+        );
 
-		$tabs[] = array(
-				'id' => 'costs',
-				'title' => $this->Dashboard->lang['statistics_3'],
-				'content' => $this->DrawPluginsCosts( sprintf($this->_Querys['users_plugins_cost'], $this->_StartTime, $this->_EndTime, $Result['name'], $this->_SectorTime) )
-		);
+        $tabs[] = array(
+            'id' => 'costs',
+            'title' => $this->Dashboard->lang['statistics_3'],
+            'content' => $this->DrawPluginsCosts( sprintf($this->_Querys['users_plugins_cost'], $this->_StartTime, $this->_EndTime, $Result['name'], $this->_SectorTime) )
+        );
 
-		$tabs[] = array(
-				'id' => 'popular',
-				'title' => $this->Dashboard->lang['statistics_3_tab2'],
-				'content' => "<div class='row'><div class='col-md-6'>" .
-								$this->DrawPluginsPopulars(
-									sprintf($this->_Querys['users_plugins_populars_minus'], $this->_StartTime, $this->_EndTime, $Result['name']),
-									$GetMainStatistics['minus'] / 100,
-									$this->Dashboard->lang['statistics_d_title1'],
-									sprintf($this->Dashboard->lang['statistics_d_subtitle'], $this->Dashboard->API->Convert( $GetMainStatistics['minus'] ), $this->Dashboard->API->Declension( $GetMainStatistics['minus'] ))
-								) . "</div><div class='col-md-6'>" .
-								$this->DrawPluginsPopulars(
-									sprintf($this->_Querys['users_plugins_populars_plus'], $this->_StartTime, $this->_EndTime, $Result['name']),
-									$GetMainStatistics['plus'] / 100,
-									$this->Dashboard->lang['statistics_d_title2'],
-									sprintf($this->Dashboard->lang['statistics_d_subtitle'], $this->Dashboard->API->Convert( $GetMainStatistics['plus'] ), $this->Dashboard->API->Declension( $GetMainStatistics['plus'] ))
-								) . "</div></div>"
-		);
+        $tabs[] = array(
+            'id' => 'popular',
+            'title' => $this->Dashboard->lang['statistics_3_tab2'],
+            'content' => "<div class='row'><div class='col-md-6'>" .
+                $this->DrawPluginsPopulars(
+                    sprintf($this->_Querys['users_plugins_populars_minus'], $this->_StartTime, $this->_EndTime, $Result['name']),
+                    $GetMainStatistics['minus'] / 100,
+                    $this->Dashboard->lang['statistics_d_title1'],
+                    sprintf($this->Dashboard->lang['statistics_d_subtitle'], $this->Dashboard->API->Convert( $GetMainStatistics['minus'] ), $this->Dashboard->API->Declension( $GetMainStatistics['minus'] ))
+                ) . "</div><div class='col-md-6'>" .
+                $this->DrawPluginsPopulars(
+                    sprintf($this->_Querys['users_plugins_populars_plus'], $this->_StartTime, $this->_EndTime, $Result['name']),
+                    $GetMainStatistics['plus'] / 100,
+                    $this->Dashboard->lang['statistics_d_title2'],
+                    sprintf($this->Dashboard->lang['statistics_d_subtitle'], $this->Dashboard->API->Convert( $GetMainStatistics['plus'] ), $this->Dashboard->API->Declension( $GetMainStatistics['plus'] ))
+                ) . "</div></div>"
+        );
 
-		$Content .= $this->Dashboard->PanelTabs( $tabs );
+        $Content .= $this->Dashboard->PanelTabs( $tabs );
 
-		$Content .= $this->Dashboard->ThemeEchoFoother();
+        $Content .= $this->Dashboard->ThemeEchoFoother();
 
-		return $Content;
-	}
+        return $Content;
+    }
 
     /**
      * Payments
      * @return string
      */
-	public function billings()
-	{
-		$this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['statistics_2'] );
+    public function billings()
+    {
+        $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['statistics_2'] );
 
-		$Content = $this->menu();
+        $Content = $this->menu();
 
         $Content .= $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_2'] );
         $Content .= $this->DrawPaymentsStatUp( sprintf($this->_Querys['billing_up'], $this->_StartTime, $this->_EndTime), sprintf($this->_Querys['billing_up_null'], $this->_StartTime, $this->_EndTime) );
@@ -340,43 +340,43 @@ HTML;
         $Content .= $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_2_tab_2'] );
         $Content .= $this->DrawPaymentsExp( sprintf($this->_Querys['billing_exp'], $this->_StartTime, $this->_EndTime, $this->_SectorTime) );
         $Content .= $this->Dashboard->ThemeHeadClose();
-        
-		$Content .= $this->Dashboard->ThemeEchoFoother();
 
-		return $Content;
-	}
+        $Content .= $this->Dashboard->ThemeEchoFoother();
+
+        return $Content;
+    }
 
     /**
      * Статистика по плагинам
      * @return string
      */
-	public function plugins()
-	{
-		$GetPluginsArray = $this->Dashboard->Plugins();
+    public function plugins()
+    {
+        $GetPluginsArray = $this->Dashboard->Plugins();
 
-		$GetMainStatistics = $this->Dashboard->LQuery->db->super_query( sprintf( $this->_Querys['plugins_main'], $this->_StartTime, $this->_EndTime ) );
+        $GetMainStatistics = $this->Dashboard->LQuery->db->super_query( sprintf( $this->_Querys['plugins_main'], $this->_StartTime, $this->_EndTime ) );
 
-		$this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
+        $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
 
-		$Content = $this->menu();
+        $Content = $this->menu();
 
         $Content .= $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_3_tab2'] );
         $Content .= "<div class='row'>
                         <div class='col-md-6'>" .
-                            $this->DrawPluginsPopulars(
-                                sprintf($this->_Querys['plugins_populars_minus'], $this->_StartTime, $this->_EndTime),
-                                $GetMainStatistics['minus'] / 100,
-                                $this->Dashboard->lang['statistics_d_title1'],
-                                sprintf($this->Dashboard->lang['statistics_d_subtitle'], $this->Dashboard->API->Convert( $GetMainStatistics['minus'] ), $this->Dashboard->API->Declension( $GetMainStatistics['minus'] ))
-                            ) .
-                            "</div>
+            $this->DrawPluginsPopulars(
+                sprintf($this->_Querys['plugins_populars_minus'], $this->_StartTime, $this->_EndTime),
+                $GetMainStatistics['minus'] / 100,
+                $this->Dashboard->lang['statistics_d_title1'],
+                sprintf($this->Dashboard->lang['statistics_d_subtitle'], $this->Dashboard->API->Convert( $GetMainStatistics['minus'] ), $this->Dashboard->API->Declension( $GetMainStatistics['minus'] ))
+            ) .
+            "</div>
                         <div class='col-md-6'>" .
-                            $this->DrawPluginsPopulars(
-                                sprintf($this->_Querys['plugins_populars_plus'], $this->_StartTime, $this->_EndTime),
-                                $GetMainStatistics['plus'] / 100,
-                                $this->Dashboard->lang['statistics_d_title2'],
-                                sprintf($this->Dashboard->lang['statistics_d_subtitle'], $this->Dashboard->API->Convert( $GetMainStatistics['plus'] ), $this->Dashboard->API->Declension( $GetMainStatistics['plus'] ))
-                            ) . "
+            $this->DrawPluginsPopulars(
+                sprintf($this->_Querys['plugins_populars_plus'], $this->_StartTime, $this->_EndTime),
+                $GetMainStatistics['plus'] / 100,
+                $this->Dashboard->lang['statistics_d_title2'],
+                sprintf($this->Dashboard->lang['statistics_d_subtitle'], $this->Dashboard->API->Convert( $GetMainStatistics['plus'] ), $this->Dashboard->API->Declension( $GetMainStatistics['plus'] ))
+            ) . "
                         </div>
                     </div>";
         $Content .= $this->Dashboard->ThemeHeadClose();
@@ -385,192 +385,192 @@ HTML;
         $Content .= $this->DrawPluginsCosts( sprintf($this->_Querys['plugins_cost'], $this->_StartTime, $this->_EndTime, $this->_SectorTime) );
         $Content .= $this->Dashboard->ThemeHeadClose();
 
-		$Content .= $this->Dashboard->ThemeEchoFoother();
+        $Content .= $this->Dashboard->ThemeEchoFoother();
 
-		return $Content;
-	}
+        return $Content;
+    }
 
-	# Очистка
-	#
-	function clean()
-	{
-		$GetPluginsArray = $this->Dashboard->Plugins();
-		$GetPluginsArray['pay']['title'] = $this->Dashboard->lang['statistics_pay'];
-		$GetPluginsArray['users']['title'] = $this->Dashboard->lang['statistics_admin'];
+    # Очистка
+    #
+    function clean()
+    {
+        $GetPluginsArray = $this->Dashboard->Plugins();
+        $GetPluginsArray['pay']['title'] = $this->Dashboard->lang['statistics_pay'];
+        $GetPluginsArray['users']['title'] = $this->Dashboard->lang['statistics_admin'];
 
-		# Выполнить
-		#
-		if( isset( $_POST['act'] ) )
-		{
-			if( $_POST['user_hash'] == "" or $_POST['user_hash'] != $this->Dashboard->hash )
-			{
-				return "Hacking attempt! User not found {$_POST['user_hash']}";
-			}
+        # Выполнить
+        #
+        if( isset( $_POST['act'] ) )
+        {
+            if( $_POST['user_hash'] == "" or $_POST['user_hash'] != $this->Dashboard->hash )
+            {
+                return "Hacking attempt! User not found {$_POST['user_hash']}";
+            }
 
-			# .. транзакции по плагинам
-			#
-			foreach( $_POST['clean_plugins'] as $PlaginName )
-			{
-				$this->Dashboard->LQuery->db->super_query( "DELETE FROM " . USERPREFIX . "_billing_history
+            # .. транзакции по плагинам
+            #
+            foreach( $_POST['clean_plugins'] as $PlaginName )
+            {
+                $this->Dashboard->LQuery->db->super_query( "DELETE FROM " . USERPREFIX . "_billing_history
 															WHERE history_plugin='".$this->Dashboard->LQuery->db->safesql($PlaginName)."'" );
-			}
+            }
 
-			# .. квитанции
-			#
-			if( $_POST['clear_invoice'] == "all" )
-			{
-				$this->Dashboard->LQuery->db->super_query( "DELETE FROM " . USERPREFIX . "_billing_invoice" );
-			}
-			elseif( $_POST['clear_invoice'] == "ok" )
-			{
-				$this->Dashboard->LQuery->db->super_query( "DELETE FROM " . USERPREFIX . "_billing_invoice
+            # .. квитанции
+            #
+            if( $_POST['clear_invoice'] == "all" )
+            {
+                $this->Dashboard->LQuery->db->super_query( "DELETE FROM " . USERPREFIX . "_billing_invoice" );
+            }
+            elseif( $_POST['clear_invoice'] == "ok" )
+            {
+                $this->Dashboard->LQuery->db->super_query( "DELETE FROM " . USERPREFIX . "_billing_invoice
 																WHERE invoice_date_pay  != 0" );
-			}
-			elseif( $_POST['clear_invoice'] == "no" )
-			{
-				$this->Dashboard->LQuery->db->super_query( "DELETE FROM " . USERPREFIX . "_billing_invoice
+            }
+            elseif( $_POST['clear_invoice'] == "no" )
+            {
+                $this->Dashboard->LQuery->db->super_query( "DELETE FROM " . USERPREFIX . "_billing_invoice
 																WHERE invoice_date_pay  = 0" );
-			}
+            }
 
-			# .. запросы вывода
-			#
-			if( $_POST['clear_refund'] == "all" )
-			{
-				$this->Dashboard->LQuery->db->super_query( "DELETE FROM " . USERPREFIX . "_billing_refund" );
-			}
-			elseif( $_POST['clear_refund'] == "ok" )
-			{
-				$this->Dashboard->LQuery->db->super_query( "DELETE FROM " . USERPREFIX . "_billing_refund
+            # .. запросы вывода
+            #
+            if( $_POST['clear_refund'] == "all" )
+            {
+                $this->Dashboard->LQuery->db->super_query( "DELETE FROM " . USERPREFIX . "_billing_refund" );
+            }
+            elseif( $_POST['clear_refund'] == "ok" )
+            {
+                $this->Dashboard->LQuery->db->super_query( "DELETE FROM " . USERPREFIX . "_billing_refund
 																WHERE refund_date_return  != 0" );
-			}
-			elseif( $_POST['clear_refund'] == "no" )
-			{
-				$this->Dashboard->LQuery->db->super_query( "DELETE FROM " . USERPREFIX . "_billing_refund
+            }
+            elseif( $_POST['clear_refund'] == "no" )
+            {
+                $this->Dashboard->LQuery->db->super_query( "DELETE FROM " . USERPREFIX . "_billing_refund
 																WHERE refund_date_return  = 0" );
-			}
+            }
 
-			# .. баланс
-			#
-			if( $_POST['clear_balance'] )
-			{
-				$this->Dashboard->LQuery->db->query( "UPDATE " . USERPREFIX . "_users
+            # .. баланс
+            #
+            if( $_POST['clear_balance'] )
+            {
+                $this->Dashboard->LQuery->db->query( "UPDATE " . USERPREFIX . "_users
 														SET {$this->Dashboard->config['fname']} = 0");
-			}
+            }
 
-			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['statistics_clean_1_ok'] );
-		}
+            $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['statistics_clean_1_ok'] );
+        }
 
-		$this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
+        $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
 
-		$Content = $this->menu();
-		$Content .= $this->Dashboard->MakeMsgInfo( $this->Dashboard->lang['statistics_clean_info'], "icon-warning-sign", "red");
-		$Content .= $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_5_title'] );
+        $Content = $this->menu();
+        $Content .= $this->Dashboard->MakeMsgInfo( $this->Dashboard->lang['statistics_clean_info'], "icon-warning-sign", "red");
+        $Content .= $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_5_title'] );
 
-		# Список плагинов с транзакциями
-		#
-		$PluginsSelect = "<div class=\"checkbox\">
+        # Список плагинов с транзакциями
+        #
+        $PluginsSelect = "<div class=\"checkbox\">
 									<label>
 									  <input type=\"checkbox\" value=\"\" onclick=\"checkAll(this)\" /> {$this->Dashboard->lang['statistics_clean_2']}
 									</label>
 								</div>";
 
-		$this->Dashboard->LQuery->db->query( "SELECT history_plugin FROM " . USERPREFIX . "_billing_history
+        $this->Dashboard->LQuery->db->query( "SELECT history_plugin FROM " . USERPREFIX . "_billing_history
 												GROUP BY history_plugin" );
 
-		while ( $row = $this->Dashboard->LQuery->db->get_row() )
-		{
-			$PluginsSelect .= "<div class=\"checkbox\">
+        while ( $row = $this->Dashboard->LQuery->db->get_row() )
+        {
+            $PluginsSelect .= "<div class=\"checkbox\">
 									<label>
 									  <input type=\"checkbox\" name=\"clean_plugins[]\" value=\"{$row['history_plugin']}\"> " . ( $GetPluginsArray[$row['history_plugin']]['title'] ? $GetPluginsArray[$row['history_plugin']]['title'] : $row['history_plugin'] ) . "
 									</label>
 								</div>";
-		}
+        }
 
-		# Форма
-		#
-		$this->Dashboard->ThemeAddStr(
-			$this->Dashboard->lang['statistics_clean_3'],
-			$this->Dashboard->lang['statistics_clean_3d'],
-			$PluginsSelect
-		);
+        # Форма
+        #
+        $this->Dashboard->ThemeAddStr(
+            $this->Dashboard->lang['statistics_clean_3'],
+            $this->Dashboard->lang['statistics_clean_3d'],
+            $PluginsSelect
+        );
 
-		$this->Dashboard->ThemeAddStr(
-			$this->Dashboard->lang['statistics_clean_4'],
-			$this->Dashboard->lang['statistics_clean_4d'],
-			$this->Dashboard->GetSelect( $this->Dashboard->lang['statistics_clean_invoice'], "clear_invoice" )
-		);
+        $this->Dashboard->ThemeAddStr(
+            $this->Dashboard->lang['statistics_clean_4'],
+            $this->Dashboard->lang['statistics_clean_4d'],
+            $this->Dashboard->GetSelect( $this->Dashboard->lang['statistics_clean_invoice'], "clear_invoice" )
+        );
 
-		$this->Dashboard->ThemeAddStr(
-			$this->Dashboard->lang['statistics_clean_5'],
-			$this->Dashboard->lang['statistics_clean_5d'],
-			$this->Dashboard->GetSelect( $this->Dashboard->lang['statistics_clean_refund'], "clear_refund" )
-		);
+        $this->Dashboard->ThemeAddStr(
+            $this->Dashboard->lang['statistics_clean_5'],
+            $this->Dashboard->lang['statistics_clean_5d'],
+            $this->Dashboard->GetSelect( $this->Dashboard->lang['statistics_clean_refund'], "clear_refund" )
+        );
 
-		$this->Dashboard->ThemeAddStr(
-			$this->Dashboard->lang['statistics_clean_6'],
-			$this->Dashboard->lang['statistics_clean_6d'],
-			$this->Dashboard->GetSelect( $this->Dashboard->lang['statistics_clean_balance'], "clear_balance" ) );
+        $this->Dashboard->ThemeAddStr(
+            $this->Dashboard->lang['statistics_clean_6'],
+            $this->Dashboard->lang['statistics_clean_6d'],
+            $this->Dashboard->GetSelect( $this->Dashboard->lang['statistics_clean_balance'], "clear_balance" ) );
 
-		$Content .= $this->Dashboard->ThemeParserStr();
+        $Content .= $this->Dashboard->ThemeParserStr();
 
-		$Content .= $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("act", $this->Dashboard->lang['act'], "gold", true) );
+        $Content .= $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("act", $this->Dashboard->lang['act'], "gold", true) );
 
-		$Content .= $this->Dashboard->ThemeHeadClose();
-		$Content .= $this->Dashboard->ThemeEchoFoother();
+        $Content .= $this->Dashboard->ThemeHeadClose();
+        $Content .= $this->Dashboard->ThemeEchoFoother();
 
-		return $Content;
-	}
+        return $Content;
+    }
 
-	# Используемые способы пополнения баланса
-	#
-	private function DrawPaymentsStatUp( $sql, $sqlNull )
-	{
-		$this->draw ++;
+    # Используемые способы пополнения баланса
+    #
+    private function DrawPaymentsStatUp( $sql, $sqlNull )
+    {
+        $this->draw ++;
 
-		$arrBilings = [];
+        $arrBilings = [];
 
-		$PaysysArray = $this->Dashboard->Payments();
+        $PaysysArray = $this->Dashboard->Payments();
 
         $PaysysArray[''] = [
-          'title' => $this->Dashboard->lang['pay_not_payment']
+            'title' => $this->Dashboard->lang['pay_not_payment']
         ];
 
-		# JS vars
-		#
-		$jsNames = "";
-		$jsPay = "";
-		$jsWait = "";
+        # JS vars
+        #
+        $jsNames = "";
+        $jsPay = "";
+        $jsWait = "";
 
-		$this->Dashboard->LQuery->db->query( $sql );
+        $this->Dashboard->LQuery->db->query( $sql );
 
-		while ( $row = $this->Dashboard->LQuery->db->get_row() )
-		{
-			$arrBilings[$row['invoice_paysys']] = array();
-			$arrBilings[$row['invoice_paysys']]['ok_allids'] = intval( $row['rows'] );
-			$arrBilings[$row['invoice_paysys']]['ok_get'] = $row['get'];
-		}
+        while ( $row = $this->Dashboard->LQuery->db->get_row() )
+        {
+            $arrBilings[$row['invoice_paysys']] = array();
+            $arrBilings[$row['invoice_paysys']]['ok_allids'] = intval( $row['rows'] );
+            $arrBilings[$row['invoice_paysys']]['ok_get'] = $row['get'];
+        }
 
-		$this->Dashboard->LQuery->db->query( $sqlNull );
+        $this->Dashboard->LQuery->db->query( $sqlNull );
 
-		while ( $row = $this->Dashboard->LQuery->db->get_row() )
-		{
-			$arrBilings[$row['invoice_paysys']]['wait_allids'] = intval($row['rows']);
-			$arrBilings[$row['invoice_paysys']]['wait_get'] = $row['get'];
-		}
+        while ( $row = $this->Dashboard->LQuery->db->get_row() )
+        {
+            $arrBilings[$row['invoice_paysys']]['wait_allids'] = intval($row['rows']);
+            $arrBilings[$row['invoice_paysys']]['wait_get'] = $row['get'];
+        }
 
-		foreach( $arrBilings as $BillName => $BillInfo)
-		{
-			if( ! $BillInfo['wait_allids']) $BillInfo['wait_allids'] = 0;
-			if( ! $BillInfo['ok_allids']) $BillInfo['ok_allids'] = 0;
+        foreach( $arrBilings as $BillName => $BillInfo)
+        {
+            if( ! $BillInfo['wait_allids']) $BillInfo['wait_allids'] = 0;
+            if( ! $BillInfo['ok_allids']) $BillInfo['ok_allids'] = 0;
 
-			$jsNames .= "'{$PaysysArray[$BillName]['title']} <br>({$BillInfo['ok_allids']} {$this->Dashboard->lang['statistics_billings_invoices_0']} ".($BillInfo['wait_allids']+$BillInfo['ok_allids'])." {$this->Dashboard->lang['statistics_billings_invoices_1']})',";
-			$jsPay .= "". $this->Dashboard->API->Convert( $BillInfo['ok_get'] ) .", ";
-			$jsWait .= "". $this->Dashboard->API->Convert( $BillInfo['wait_get'] ) .", ";
-		}
+            $jsNames .= "'{$PaysysArray[$BillName]['title']} <br>({$BillInfo['ok_allids']} {$this->Dashboard->lang['statistics_billings_invoices_0']} ".($BillInfo['wait_allids']+$BillInfo['ok_allids'])." {$this->Dashboard->lang['statistics_billings_invoices_1']})',";
+            $jsPay .= "". $this->Dashboard->API->Convert( $BillInfo['ok_get'] ) .", ";
+            $jsWait .= "". $this->Dashboard->API->Convert( $BillInfo['wait_get'] ) .", ";
+        }
 
-		if( ! $jsNames ) return $this->Dashboard->lang['statistics_null'];
+        if( ! $jsNames ) return $this->Dashboard->lang['statistics_null'];
 
-		return <<<HTML
+        return <<<HTML
 <script>
 $(function () {
     $('#container_{$this->draw}').highcharts({
@@ -630,45 +630,45 @@ $(function () {
 
 <div id="container_{$this->draw}" style="min-width: 310px; width: 100%; height: 400px; margin: 0 auto"></div>
 HTML;
-	}
+    }
 
     /**
      * Рост значения привлеченных средств
      * @param $sql
      * @return mixed|string
      */
-	private function DrawPaymentsExp( $sql )
-	{
-		$this->draw ++;
+    private function DrawPaymentsExp( $sql )
+    {
+        $this->draw ++;
 
-		# Движение средств
-		#
-		$main_dates = [];
-		$main_get = [];
+        # Движение средств
+        #
+        $main_dates = [];
+        $main_get = [];
 
-		$this->Dashboard->LQuery->db->query( $sql );
+        $this->Dashboard->LQuery->db->query( $sql );
 
-		while ( $row = $this->Dashboard->LQuery->db->get_row() )
-		{
-			if( $this->_SectorTime == 'D' )
-			{
-				$main_dates[] = "'" . $row['D'] . " " . $this->Dashboard->lang['months'][$row['M']] . "'";
-			}
-			else if( $this->_SectorTime == 'M' )
-			{
-				$main_dates[] = "'" . $this->Dashboard->lang['months_full'][$row['M']] . "'";
-			}
-			else
-			{
-				$main_dates[] = "'" . $row['Y'] . "'";
-			}
+        while ( $row = $this->Dashboard->LQuery->db->get_row() )
+        {
+            if( $this->_SectorTime == 'D' )
+            {
+                $main_dates[] = "'" . $row['D'] . " " . $this->Dashboard->lang['months'][$row['M']] . "'";
+            }
+            else if( $this->_SectorTime == 'M' )
+            {
+                $main_dates[] = "'" . $this->Dashboard->lang['months_full'][$row['M']] . "'";
+            }
+            else
+            {
+                $main_dates[] = "'" . $row['Y'] . "'";
+            }
 
-			$main_get[] = $row['sum'];
-		}
+            $main_get[] = $row['sum'];
+        }
 
-		if( ! $main_dates ) return $this->Dashboard->lang['statistics_null'];
+        if( ! $main_dates ) return $this->Dashboard->lang['statistics_null'];
 
-		return "<script>
+        return "<script>
 		$(function () {
 			$('#container_{$this->draw}').highcharts({
 				 chart: {
@@ -713,45 +713,45 @@ HTML;
 		</script>
 
 		<div id=\"container_{$this->draw}\" style=\"height: 400px; margin: 10px\"></div>";
-	}
+    }
 
     /**
      * Объем расходов и доходов пользователей
      * @param $sql
      * @return string
      */
-	private function DrawPluginsCosts( $sql )
-	{
-		$this->draw ++;
+    private function DrawPluginsCosts( $sql )
+    {
+        $this->draw ++;
 
-		# JS vars
-		#
-		$categories = '';
-		$plus = '';
-		$minus = '';
+        # JS vars
+        #
+        $categories = '';
+        $plus = '';
+        $minus = '';
 
-		$this->Dashboard->LQuery->db->query( $sql );
+        $this->Dashboard->LQuery->db->query( $sql );
 
-		while ( $row = $this->Dashboard->LQuery->db->get_row() )
-		{
-			if( $this->_SectorTime == 'D' )
-			{
-				$categories .= "'" . $row['D'] . " " . $this->Dashboard->lang['months'][$row['M']] . "', ";
-			}
-			else if( $this->_SectorTime == 'M' )
-			{
-				$categories .= "'" . $this->Dashboard->lang['months_full'][$row['M']] . "', ";
-			}
-			else
-			{
-				$categories .= "'" . $row['Y'] . "', ";
-			}
+        while ( $row = $this->Dashboard->LQuery->db->get_row() )
+        {
+            if( $this->_SectorTime == 'D' )
+            {
+                $categories .= "'" . $row['D'] . " " . $this->Dashboard->lang['months'][$row['M']] . "', ";
+            }
+            else if( $this->_SectorTime == 'M' )
+            {
+                $categories .= "'" . $this->Dashboard->lang['months_full'][$row['M']] . "', ";
+            }
+            else
+            {
+                $categories .= "'" . $row['Y'] . "', ";
+            }
 
-			$plus .= "{$row['plus']}, ";
-			$minus .= "{$row['minus']}, ";
-		}
+            $plus .= "{$row['plus']}, ";
+            $minus .= "{$row['minus']}, ";
+        }
 
-		return "<script>
+        return "<script>
 		$(function () {
 		    $('#container_{$this->draw}').highcharts({
 		        chart: {
@@ -788,7 +788,7 @@ HTML;
 		</script>
 		<br />
 		<div id='container_{$this->draw}' style='" . ( $this->draw == 1 ? 'min-width: 310px' : '' )  . "; height: 400px; margin: 10px'></div>";
-	}
+    }
 
 
     /**
@@ -799,26 +799,26 @@ HTML;
      * @param $subtitle
      * @return string
      */
-	private function DrawPluginsPopulars( $sql, $onePercent, $title, $subtitle )
-	{
-		$this->draw ++;
+    private function DrawPluginsPopulars( $sql, $onePercent, $title, $subtitle )
+    {
+        $this->draw ++;
 
-		$jsDB = "";
+        $jsDB = "";
 
-		$GetPluginsArray = $this->Dashboard->Plugins();
-		$GetPluginsArray['pay']['title'] = $this->Dashboard->lang['statistics_pay'];
-		$GetPluginsArray['users']['title'] = $this->Dashboard->lang['statistics_admin'];
+        $GetPluginsArray = $this->Dashboard->Plugins();
+        $GetPluginsArray['pay']['title'] = $this->Dashboard->lang['statistics_pay'];
+        $GetPluginsArray['users']['title'] = $this->Dashboard->lang['statistics_admin'];
 
-		$this->Dashboard->LQuery->db->query( $sql );
+        $this->Dashboard->LQuery->db->query( $sql );
 
-		while ( $row = $this->Dashboard->LQuery->db->get_row() )
-		{
-			$name = $GetPluginsArray[$row['history_plugin']]['title'] ? $GetPluginsArray[$row['history_plugin']]['title'] : $row['history_plugin'];
+        while ( $row = $this->Dashboard->LQuery->db->get_row() )
+        {
+            $name = $GetPluginsArray[$row['history_plugin']]['title'] ? $GetPluginsArray[$row['history_plugin']]['title'] : $row['history_plugin'];
 
-			$jsDB .= '{name: "'.$name.' <br> '.$row['pay'].' '.$this->Dashboard->API->Declension( $row['pay'] ).' <br>('.$row['rows'] . $this->Dashboard->lang['statistics_d_per'] . ')", y: '.number_format(($row['pay']/$onePercent), 2, '.', '').'},';
-		}
+            $jsDB .= '{name: "'.$name.' <br> '.$row['pay'].' '.$this->Dashboard->API->Declension( $row['pay'] ).' <br>('.$row['rows'] . $this->Dashboard->lang['statistics_d_per'] . ')", y: '.number_format(($row['pay']/$onePercent), 2, '.', '').'},';
+        }
 
-		return <<<HTML
+        return <<<HTML
 		<script>
 $(function () {
 
@@ -864,42 +864,42 @@ $(function () {
 
 		<div id="container_{$this->draw}" style="width: 100%; margin: 10px auto"></div>
 HTML;
-	}
+    }
 
-	# График изменения дохода
-	#
-	private function DrawChartMain( $query_main )
-	{
-		$this->draw ++;
+    # График изменения дохода
+    #
+    private function DrawChartMain( $query_main )
+    {
+        $this->draw ++;
 
-		# Движение средств
-		#
-		$main_dates = array();
-		$main_plus = array();
-		$main_minus = array();
+        # Движение средств
+        #
+        $main_dates = array();
+        $main_plus = array();
+        $main_minus = array();
 
-		$this->Dashboard->LQuery->db->query( sprintf($query_main, $this->_StartTime, $this->_EndTime, $this->_SectorTime) );
+        $this->Dashboard->LQuery->db->query( sprintf($query_main, $this->_StartTime, $this->_EndTime, $this->_SectorTime) );
 
-		while ( $row = $this->Dashboard->LQuery->db->get_row() )
-		{
-			if( $this->_SectorTime == 'D' )
-			{
-				$main_dates[] = "'" . $row['D'] . " " . $this->Dashboard->lang['months'][$row['M']] . "'";
-			}
-			else if( $this->_SectorTime == 'M' )
-			{
-				$main_dates[] = "'" . $this->Dashboard->lang['months_full'][$row['M']] . "'";
-			}
-			else
-			{
-				$main_dates[] = "'" . $row['Y'] . "'";
-			}
+        while ( $row = $this->Dashboard->LQuery->db->get_row() )
+        {
+            if( $this->_SectorTime == 'D' )
+            {
+                $main_dates[] = "'" . $row['D'] . " " . $this->Dashboard->lang['months'][$row['M']] . "'";
+            }
+            else if( $this->_SectorTime == 'M' )
+            {
+                $main_dates[] = "'" . $this->Dashboard->lang['months_full'][$row['M']] . "'";
+            }
+            else
+            {
+                $main_dates[] = "'" . $row['Y'] . "'";
+            }
 
-			$main_plus[] = $row['plus'];
-			$main_minus[] = $row['minus'];
-		}
+            $main_plus[] = $row['plus'];
+            $main_minus[] = $row['minus'];
+        }
 
-		return "<script>
+        return "<script>
 		$(function () {
 		    $('#container_{$this->draw}').highcharts({
 			     chart: {
@@ -947,55 +947,55 @@ HTML;
 		</script>
 
 		<div id=\"container_{$this->draw}\" style=\"min-width: 310px; height: 400px; margin: 10px auto\"></div>";
-	}
+    }
 
-	# Фото пользователя
-	#
-	private function Foto( $foto )
-	{
-		if ( count(explode("@", $foto)) == 2 )
-    	{
-			return 'http://www.gravatar.com/avatar/' . md5(trim($foto)) . '?s=150';
-		}
-		else if( $foto and ( file_exists( ROOT_DIR . "/uploads/fotos/" . $foto )) )
-		{
-			return '/uploads/fotos/' . $foto;
-		}
+    # Фото пользователя
+    #
+    private function Foto( $foto )
+    {
+        if ( count(explode("@", $foto)) == 2 )
+        {
+            return 'http://www.gravatar.com/avatar/' . md5(trim($foto)) . '?s=150';
+        }
+        else if( $foto and ( file_exists( ROOT_DIR . "/uploads/fotos/" . $foto )) )
+        {
+            return '/uploads/fotos/' . $foto;
+        }
         elseif( $foto )
-		{
-			return $foto;
-		}
+        {
+            return $foto;
+        }
 
-		return "/templates/{$this->Dashboard->dle['skin']}/dleimages/noavatar.png";
-	}
+        return "/templates/{$this->Dashboard->dle['skin']}/dleimages/noavatar.png";
+    }
 
-	# Группа пользователя
-	#
-	private function UserGroup( $userInfo )
-	{
-		global $user_group;
+    # Группа пользователя
+    #
+    private function UserGroup( $userInfo )
+    {
+        global $user_group;
 
-		if( $userInfo['banned'] == 'yes' )
-			$answer = $this->Dashboard->lang['statistics_users_2'];
+        if( $userInfo['banned'] == 'yes' )
+            $answer = $this->Dashboard->lang['statistics_users_2'];
 
-		if( $user_group[$userInfo['user_group']]['time_limit'] )
-		{
-			if( $userInfo['time_limit'] )
-				$answer .= "&nbsp;<a style=\"cursor: info\" data-toggle=\"dropdown\" data-original-title=\"" . $this->lang['statistics_users_21'] . langdate( "j F Y H:i", $userInfo['time_limit'] ) . "\" class=\"status-info tip\"><i class=\"fa fa-info-sign\"></i></a>";
-			else
-				$answer .= $this->Dashboard->lang['statistics_users_22'];
-		}
+        if( $user_group[$userInfo['user_group']]['time_limit'] )
+        {
+            if( $userInfo['time_limit'] )
+                $answer .= "&nbsp;<a style=\"cursor: info\" data-toggle=\"dropdown\" data-original-title=\"" . $this->lang['statistics_users_21'] . langdate( "j F Y H:i", $userInfo['time_limit'] ) . "\" class=\"status-info tip\"><i class=\"fa fa-info-sign\"></i></a>";
+            else
+                $answer .= $this->Dashboard->lang['statistics_users_22'];
+        }
 
-		return $user_group[$userInfo['user_group']]['group_name'] . $answer;
-	}
+        return $user_group[$userInfo['user_group']]['group_name'] . $answer;
+    }
 
 
     /**
      * Menu
      * @return string
      */
-	private function menu()
-	{
+    private function menu()
+    {
         $menu = [
             '' => $this->Dashboard->lang['statistics_0'],
             'billings' => $this->Dashboard->lang['statistics_2_title'],
@@ -1027,22 +1027,22 @@ HTML;
         {$this->EditDate()}
         </div>
 HTML;
-	}
+    }
 
     /**
      * Top filter by date
      * @return string
      */
-	private function EditDate()
-	{
-		$_times_list = '';
+    private function EditDate()
+    {
+        $_times_list = '';
 
-		foreach ($this->Dashboard->lang['stats_filter_dates'] as $time => $name)
-		{
-			$_times_list .= $_SESSION['billingTime'] == $time
-								? "<a class=\"btn btn-sm btn-primary\" href=\"#\">{$name}</a>"
-								: "<a class=\"btn btn-sm btn-default\" href=\"?mod=billing&c=statistics&date={$time}\">{$name}</a>";
-		}
+        foreach ($this->Dashboard->lang['stats_filter_dates'] as $time => $name)
+        {
+            $_times_list .= $_SESSION['billingTime'] == $time
+                ? "<a class=\"btn btn-sm btn-primary\" href=\"#\">{$name}</a>"
+                : "<a class=\"btn btn-sm btn-default\" href=\"?mod=billing&c=statistics&date={$time}\">{$name}</a>";
+        }
 
         return "<form method='post'>
 					<div style='padding: 10px; width: 100%'>
@@ -1059,5 +1059,5 @@ HTML;
                         </table>
 					</div>
 				</form>";
-	}
+    }
 }

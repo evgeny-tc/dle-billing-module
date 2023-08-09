@@ -7,20 +7,20 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-Class ADMIN
+Class ADMIN extends PluginActions
 {
-	var $_Lang = array();
+	public array $_Lang = [];
 
 	function __construct()
 	{
-		$this->_Lang = require MODULE_PATH . '/plugins/bonuses/lang.php';
+		$this->_Lang = include MODULE_PATH . '/plugins/bonuses/lang.php';
 	}
 
 	public function main( array $Get = [] )
 	{
-		# Файл настроек
-		#
-		$_Config = $this->Dashboard->LoadConfig( "bonuses", true, array('status'=>"0") );
+		$this->checkInstall();
+
+		$_Config = $this->Dashboard->LoadConfig( 'bonuses' );
 
 		# Сохранить настройки
 		#
@@ -245,4 +245,3 @@ Class ADMIN
 		return $Content;
 	}
 }
-?>

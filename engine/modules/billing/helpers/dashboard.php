@@ -59,7 +59,7 @@ Class Dashboard
 	 * Current version
 	 * @var [type]
 	 */
-	public string $version = '0.8';
+	public string $version = '0.9';
 
 	/**
 	 * Config this module
@@ -118,14 +118,18 @@ Class Dashboard
 	protected $str_table_num = 0;
 	protected $str_table = [];
 
+    public string $controller = '';
+    protected string $action = '';
+
 	/**
 	 * Main loader
 	 */
 	private function Loader()
 	{
-		global $config, $member_id, $_TIME, $db, $dle_login_hash;
+		global $config, $member_id, $_TIME, $db, $dle_login_hash, $selected_language;
 
-		$this->lang 	= include MODULE_PATH . '/lang/admin.php';
+		$this->lang 	= file_exists(MODULE_PATH . '/lang/' . $selected_language . '/admin.php') ? include MODULE_PATH . '/lang/' . $selected_language . '/admin.php' : include MODULE_PATH . '/lang/admin.php';
+
 		$this->config 	= include MODULE_DATA . '/config.php';
 
 		$this->LQuery 	= new Database(
@@ -145,11 +149,18 @@ Class Dashboard
 
 		# Параметры страницы
 		#
-		$c = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $_GET['c'] ) ) ?: 'main';
-		$m = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $_GET['m'] ) ) ?: 'main';
+        $defaultRoute = explode('/', $this->config['start_admin']);
+
+        $defaultRoute[0] = $defaultRoute[0] ?: 'main';
+        $defaultRoute[1] = $defaultRoute[1] ?: 'main';
+
+		$this->controller = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $_GET['c'] ) ) ?: $defaultRoute[0];
+		$this->action = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $_GET['m'] ) ) ?: $defaultRoute[1];
+
+        unset($defaultRoute[0], $defaultRoute[1]);
 
 		$arrParams = [];
-		$getParams = explode('/', $this->LQuery->db->safesql($_GET['p']));
+		$getParams = $_GET['p'] ? explode('/', $this->LQuery->db->safesql($_GET['p'])) : $defaultRoute;
 
 		for( $i = 0; $i < count( $getParams ); $i++ )
 		{
@@ -165,15 +176,15 @@ Class Dashboard
 		}
 		# Подключение страницы
 		#
-		else if( file_exists( MODULE_PATH . '/controllers/adm.' . mb_strtolower( $c ) . '.php' ) )
+		else if( file_exists( MODULE_PATH . '/controllers/adm.' . mb_strtolower( $this->controller ) . '.php' ) )
 		{
-			require_once MODULE_PATH . '/controllers/adm.' . mb_strtolower( $c ) . '.php';
+			require_once MODULE_PATH . '/controllers/adm.' . mb_strtolower( $this->controller ) . '.php';
 		}
 		# Подключение плагина
 		#
-		else if( file_exists( MODULE_PATH . '/plugins/' . mb_strtolower( $c ) . '/adm.main.php' ) )
+		else if( file_exists( MODULE_PATH . '/plugins/' . mb_strtolower( $this->controller ) . '/adm.main.php' ) )
 		{
-			require_once MODULE_PATH . '/plugins/' . mb_strtolower( $c ) . '/adm.main.php';
+			require_once MODULE_PATH . '/plugins/' . mb_strtolower( $this->controller ) . '/adm.main.php';
 		}
 		else
 		{
@@ -182,11 +193,11 @@ Class Dashboard
 
 		$Admin = new ADMIN;
 
-		if( in_array($m, get_class_methods($Admin) ) )
+		if( in_array($this->action, get_class_methods($Admin) ) )
 		{
 			$Admin->Dashboard = $this;
 
-			echo $Admin->$m( $arrParams );
+			echo $Admin->{$this->action}( $arrParams );
 		}
 		else
 		{
@@ -420,7 +431,7 @@ Class Dashboard
 	{
 		$this->ThemeEchoHeader();
 
-		$linkText = $link ? $this->lang['main_next'] : $this->lang['main_back'];
+		$linkText = $link && $link != 'javascript:history.back()' ? $this->lang['main_next'] : $this->lang['main_back'];
 
 		$return = <<<HTML
 						<div class="content">
@@ -521,32 +532,34 @@ HTML;
 	 * @param string $other_tr
 	 * @return string|void
 	 */
-	public function ThemeParserTable( string $id = '', string $other_tr = '' )
-	{
-		if( ! $this->list_table_num ) return;
+    public function ThemeParserTable( string $id = '', string $other_tr = '', int|bool $row_key = false )
+    {
+        if( ! $this->list_table_num ) return;
 
-		$answer = "<table width=\"100%\" class=\"table table-normal table-hover\" ".( ( $id ) ? 'id="'.$id.'"':'' ).">";
+        $answer = "<table width=\"100%\" class=\"table table-normal table-hover\" ".( ( $id ) ? 'id="'.$id.'"':'' ).">";
 
-		for( $i = 1; $i <= $this->list_table_num; $i++ )
-		{
-			$answer .= "<tr>";
+        for( $i = 1; $i <= $this->list_table_num; $i++ )
+        {
+            $key = $row_key !== false ? 'id="' . preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $this->list_table[$i][$row_key] ) ) . '"' : '';
 
-			if( $i == 1 ) $answer .= "<thead>";
+            $answer .= "<tr {$key}>";
 
-			foreach( $this->list_table[$i] as $width=>$td )	$answer .= ( $i==1 ) ? $td: "<td>" . $td . "</td>";
+            if( $i == 1 ) $answer .= "<thead>";
 
-			if( $i == 1 ) $answer .= "</thead>";
-			$answer .= "</tr>";
-		}
+            foreach( $this->list_table[$i] as $width=>$td )	$answer .= ( $i==1 ) ? $td: "<td>" . $td . "</td>";
 
-		$answer .= $other_tr;
-		$answer .= "</table>";
+            if( $i == 1 ) $answer .= "</thead>";
+            $answer .= "</tr>";
+        }
 
-		$this->list_table_num = 0;
-		$this->list_table = array();
+        $answer .= $other_tr;
+        $answer .= "</table>";
 
-		return $answer;
-	}
+        $this->list_table_num = 0;
+        $this->list_table = array();
+
+        return $answer;
+    }
 
 	/**
 	 * Add row in table
@@ -658,7 +671,7 @@ HTML;
 	{
 		$JSmenu = '';
 
-		$Topmenu = ['?mod=billing' => $this->lang['desc']];
+		$Topmenu = ['?mod=billing&c=main' => $this->lang['desc']];
 
 		if( $section_name )
 		{
@@ -667,16 +680,18 @@ HTML;
 
 		foreach( ['transactions', 'statistics', 'invoice', 'users'] as $name )
 		{
-			$JSmenu .= $_GET['c'] == $name
-							? '<li class="active"><a href="'.$PHP_SELF.'?mod=billing&c='.$name.'"> &raquo; '.$this->lang[$name.'_title'].'</a></li>'
-							: '<li><a href="'.$PHP_SELF.'?mod=billing&c='.$name.'"> &raquo; '.$this->lang[$name.'_title'].'</a></li>';
+			$JSmenu .= $this->controller == $name
+							? '<li class="active"><a href="?mod=billing&c='.$name.'"> &raquo; '.$this->lang[$name.'_title'].'</a></li>'
+							: '<li><a href="?mod=billing&c='.$name.'"> &raquo; '.$this->lang[$name.'_title'].'</a></li>';
 		}
 
 	    foreach( $this->Plugins() as $name => $config )
 		{
-				$JSmenu .= $_GET['c'] == $name
-								? '<li class="active"><a href="'.$PHP_SELF.'?mod=billing&c='.$name.'"> &raquo; '.$config['title'].'</a></li>'
-								: '<li><a href="'.$PHP_SELF.'?mod=billing&c='.$name.'"> &raquo; '.$config['title'].'</a></li>';
+            $status = $config['config']['status'] == '1' ? '' : 'opacity: 0.5';
+
+				$JSmenu .= $this->controller == $name
+								? '<li style="' . $status . '" class="active"><a href="'.$PHP_SELF.'?mod=billing&c='.$name.'"> &raquo; '.$config['title'].'</a></li>'
+								: '<li style="' . $status . '"><a href="'.$PHP_SELF.'?mod=billing&c='.$name.'"> &raquo; '.$config['title'].'</a></li>';
 		}
 
 		$JSmenu = "<ul>" . $JSmenu . "</ul>";

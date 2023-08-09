@@ -122,9 +122,10 @@ Class ADMIN
 				$this->Dashboard->ThemeInfoUser( $Value['history_user_name'] ),
 				$this->Dashboard->API->Convert( $Value['history_balance'] ) . "&nbsp;	" . $this->Dashboard->API->Declension( $Value['history_balance'] ),
 				(
-					strlen( $Value['history_text'] ) > 20
-						? '<a href="#" onClick="logShowDialogByID( \'#log_' . $Value['history_id'] . '\' ); return false">' . mb_substr( strip_tags( $Value['history_text'] ), 0, 30, $this->Dashboard->dle['charset'] ) . '..</a>'
-						: $Value['history_text']
+                    '<a href="#" onClick="logShowDialogByID( \'#log_' . $Value['history_id'] . '\' ); return false">' .
+					(strlen( $Value['history_text'] ) > 20
+						? mb_substr( strip_tags( $Value['history_text'] ), 0, 30, $this->Dashboard->dle['charset'] ) . '..'
+						: $Value['history_text']) . '</a>'
 				),
 				"<center>" . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['history_id'], false) . '</center>
 					<div id="log_' . $Value['history_id'] . '" title="' . $this->Dashboard->lang['history_transaction'] . $Value['history_id'] . '" style="display:none">

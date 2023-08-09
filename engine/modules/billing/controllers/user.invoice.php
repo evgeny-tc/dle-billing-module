@@ -18,6 +18,8 @@ Class USER
             throw new Exception($this->DevTools->lang['pay_need_login']);
 		}
 
+        # Удалить
+        #
 		if( intval($_POST['invoice_delete']) )
 		{
             $this->DevTools->CheckHash( $_POST['bs_hash'] );
@@ -26,28 +28,30 @@ Class USER
 
 			$Del = $this->DevTools->LQuery->DbGetInvoiceByID( $Delete_id );
 
-			$Error = '';
-
 			if( ! $Del['invoice_id'] OR $Del['invoice_user_name'] != $this->DevTools->member_id['name'] )
 			{
-				$Error = $this->DevTools->lang['pay_invoice_error'];
+                throw new Exception($this->DevTools->lang['pay_invoice_error']);
 			}
 			else if( $Del['invoice_date_pay'] )
 			{
-				$Error = $this->DevTools->lang['invoice_paid_error'];
-			}
-
-			if( $Error )
-			{
-				return $this->DevTools->ThemeMsg( $this->DevTools->lang['pay_error_title'], $Error );
+                throw new Exception($this->DevTools->lang['invoice_paid_error']);
 			}
 
 			$this->DevTools->LQuery->DbInvoiceRemove( $Delete_id );
-
-			header( 'Location: /' . $this->DevTools->config['page'].'.html/invoice/' );
-
 		}
 
+        # Удалить старые квитанции
+        #
+        if( $this->DevTools->config['invoice_time'] )
+        {
+            $this->DevTools->LQuery->DbWhere( array(
+                "invoice_date_creat < {s}" => $this->DevTools->_TIME - ( $this->DevTools->config['invoice_time'] * 60 ),
+                "invoice_date_pay = '0' " => 1
+            ));
+
+            $this->DevTools->LQuery->DbInvoicesRemove();
+        }
+        
 		$Content = $this->DevTools->ThemeLoad( "invoice" );
 
 		$Line = '';

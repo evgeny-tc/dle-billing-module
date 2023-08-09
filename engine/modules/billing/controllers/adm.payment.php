@@ -64,25 +64,25 @@ Class ADMIN
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['paysys_name'],
 			$this->Dashboard->lang['paysys_name_desc'],
-			"<input name=\"save_con[title]\" class=\"form-control\" type=\"text\" value=\"" . $Payment['title'] ."\" style=\"width: 100%\">"
+			"<input name=\"save_con[title]\" class=\"form-control\" type=\"text\" value=\"" . $Payment['title'] ."\" style=\"width: 100%\" required>"
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['paysys_currency'],
 			$this->Dashboard->lang['paysys_currency_desc'],
-			"<input name=\"save_con[currency]\" class=\"form-control\" type=\"text\" value=\"" . $Payment['currency'] ."\"  style=\"width: 100%\">"
+			"<input name=\"save_con[currency]\" class=\"form-control\" type=\"text\" value=\"" . $Payment['currency'] ."\"  style=\"width: 100%\" required>"
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['paysys_minimum'],
 			$this->Dashboard->lang['paysys_minimum_desc'],
-			"<input name=\"save_con[minimum]\" class=\"form-control\" type=\"text\" value=\"" . $Payment['minimum'] ."\"  style=\"width: 100%\">"
+			"<input name=\"save_con[minimum]\" class=\"form-control\" type=\"text\" value=\"" . $Payment['minimum'] ."\"  style=\"width: 100%\" required>"
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['paysys_max'],
 			$this->Dashboard->lang['paysys_max_desc'],
-			"<input name=\"save_con[max]\" class=\"form-control\" type=\"text\" value=\"" . $Payment['max'] ."\"  style=\"width: 100%\">"
+			"<input name=\"save_con[max]\" class=\"form-control\" type=\"text\" value=\"" . $Payment['max'] ."\"  style=\"width: 100%\" required>"
 		);
 
 		$tabs[] = array(
@@ -96,7 +96,7 @@ Class ADMIN
 		$this->Dashboard->ThemeAddTR(
 			array(
 				"<center>" . $this->Dashboard->API->Convert( 1 ) . "&nbsp;" . $this->Dashboard->API->Declension( 1 ) . "</center>",
-				"<input name=\"save_con[convert]\" class=\"form-control\" type=\"text\" value=\"" . $Payment['convert'] . "\" style=\"width: 100%\">"
+				"<input name=\"save_con[convert]\" class=\"form-control\" type=\"text\" value=\"" . $Payment['convert'] . "\" style=\"width: 100%\" required>"
 			)
 		);
 
@@ -112,6 +112,12 @@ Class ADMIN
 			'<input type="text" class="form-control" value="' . $this->Dashboard->dle['http_home_url'] . $this->Dashboard->config['page'] . '.html/pay/handler/payment/' . $Name . '/key/' . $this->Dashboard->config['secret'] . '/' . '" disable>'
 		);
 
+        $this->Dashboard->ThemeAddStr(
+            $this->Dashboard->lang['paysys_url_v2'],
+            $this->Dashboard->lang['paysys_url_desc_v2'],
+            '<input type="text" class="form-control" value="' . $this->Dashboard->dle['http_home_url'] . '/index.php?do=static&page=' . $this->Dashboard->config['page'] . '&seourl=' . $this->Dashboard->config['page'] . '&route=pay/handler/payment/' . $Name . '/key/' . $this->Dashboard->config['secret'] . '/' . '" disable>'
+        );
+        
 		foreach( $Paysys->Settings( $Payment ) as $Form )
 		{
 			$this->Dashboard->ThemeAddStr( $Form[0], $Form[1], $Form[2] );

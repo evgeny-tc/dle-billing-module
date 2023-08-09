@@ -60,7 +60,7 @@ Class Payment
 
         $sign = md5 ( implode ( '|', $array ) );
 
-        return "<form action='https://payok.io/pay' method= 'POST'>
+        return "<form id='paysys_form' action='https://payok.io/pay' method= 'POST'>
                     <input type='hidden' name= 'amount' value='{$invoice['invoice_pay']}'>
                     <input type='hidden' name= 'payment' value='{$id}'>
                     <input type='hidden' name= 'shop' value= '{$config['shop_id']}'>

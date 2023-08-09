@@ -1,4 +1,4 @@
-<h4>Список квитанций</h4>
+<h5 class="blue">Список квитанций</h5>
 
 <form method="post">
 	<table class="billing-table">

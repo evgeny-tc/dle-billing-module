@@ -7,24 +7,17 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-Class ADMIN
+Class ADMIN extends PluginActions
 {
-	private array $_Config = [];
-
 	public function main( array $GET = [] )
 	{
-		# Настройки и установка
+        $this->checkInstall();
+
+        # Настройки и установка
 		#
 		$_Lang = include MODULE_PATH . "/plugins/referrals/lang.php";
 
-		if( ! file_exists( MODULE_DATA . "/plugin.referrals.php" ) )
-		{
-			$this->install();
-
-            $this->Dashboard->ThemeMsg( $this->Dashboard->lang['install_plugin'], sprintf($_Lang['install'], $this->Dashboard->config['page']) );
-		}
-
-		$_Config = $this->Dashboard->LoadConfig( "referrals" );
+		$_Config = $this->Dashboard->LoadConfig( 'referrals' );
 
         $_List = file_exists(MODULE_DATA . '/plugin.referrals.list.dat') ? file(MODULE_DATA . '/plugin.referrals.list.dat') : '';
 
@@ -249,29 +242,6 @@ HTML;
 		return $Content;
 	}
 
-	# Установка
-	#
-	private function install()
-	{
-		$tableSchema = [];
-
-		$tableSchema[] = "DROP TABLE IF EXISTS " . PREFIX . "_billing_referrals";
-		$tableSchema[] = "CREATE TABLE IF NOT EXISTS `" . PREFIX . "_billing_referrals` (
-							  `ref_id` int(11) NOT NULL AUTO_INCREMENT,
-							  `ref_time` int(11) NOT NULL,
-							  `ref_login` varchar(21) NOT NULL,
-							  `ref_user_id` int(11) NOT NULL,
-							  `ref_from` varchar(21) NOT NULL,
-							  PRIMARY KEY (`ref_id`)
-							) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
-
-		foreach( $tableSchema as $table )  $this->Dashboard->LQuery->db->query($table);
-
-		$this->Dashboard->SaveConfig("plugin.referrals", array('status'=>"0"));
-
-		return;
-	}
-
     private function clear(string $value)
     {
         $value = str_replace("'", '', $value);
@@ -288,5 +258,50 @@ HTML;
         fwrite( $handler, serialize($array) );
 
         fclose( $handler );
+    }
+
+    /**
+     * Процесс установки
+     * @return void
+     */
+    public function install()
+    {
+        $this->Dashboard->CheckHash();
+
+        @unlink(ROOT_DIR . '/engine/data/billing/plugin.referrals.php');
+
+        $tableSchema = [];
+
+        $tableSchema[] = "DROP TABLE IF EXISTS " . PREFIX . "_billing_referrals";
+        $tableSchema[] = "CREATE TABLE IF NOT EXISTS `" . PREFIX . "_billing_referrals` (
+							  `ref_id` int(11) NOT NULL AUTO_INCREMENT,
+							  `ref_time` int(11) NOT NULL,
+							  `ref_login` varchar(21) NOT NULL,
+							  `ref_user_id` int(11) NOT NULL,
+							  `ref_from` varchar(21) NOT NULL,
+							  PRIMARY KEY (`ref_id`)
+							) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+
+        foreach( $tableSchema as $table )  $this->Dashboard->LQuery->db->query($table);
+
+        $default = [
+            'status' => '0',
+            'version' => parse_ini_file( MODULE_PATH . '/plugins/referrals/info.ini' )['version']
+        ];
+
+        $this->Dashboard->SaveConfig('plugin.referrals', $default);
+
+        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_install'], '?mod=billing&c=' . $this->Dashboard->controller );
+    }
+
+    public function uninstall()
+    {
+        $this->Dashboard->CheckHash();
+
+        @unlink(ROOT_DIR . '/engine/data/billing/plugin.referrals.php');
+
+        $this->Dashboard->LQuery->db->query( "DROP TABLE IF EXISTS " . PREFIX . "_billing_referrals" );
+
+        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_uninstall'], '?mod=billing' );
     }
 }

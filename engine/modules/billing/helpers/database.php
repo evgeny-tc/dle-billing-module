@@ -143,6 +143,17 @@ Class Database
 		return $answer;
 	}
 
+    /**
+     * Удалить квитанции по параметрам
+     * @return void
+     */
+    public function DbInvoicesRemove()
+    {
+        $this->db->query( "DELETE FROM " . USERPREFIX . "_billing_invoice " . $this->where );
+
+        return;
+    }
+
 	/**
 	 * Get count invoices
 	 * @return mixed

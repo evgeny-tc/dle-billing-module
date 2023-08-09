@@ -1,8 +1,6 @@
 <link media="screen" href="/templates/{module.skin}/billing/css/styles.css" type="text/css" rel="stylesheet" />
 
 [panel]
-	<h1 class="title">Кабинет пользователя</h1>
-	
 	<div class="billing-panel">
 
 		<span class="billing-menu">

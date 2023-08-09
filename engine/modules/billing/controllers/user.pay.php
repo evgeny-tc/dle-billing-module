@@ -9,7 +9,7 @@
 
 Class USER
 {
-	private $PaymentsArray = [];
+	private array $PaymentsArray = [];
 
 	/**
 	 * Страница пополнения баланса

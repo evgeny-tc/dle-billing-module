@@ -8,10 +8,19 @@
 .billing-foto
 {
 	width: 50px;
+	height: 50px;
 	margin-right: 10px;
     border-radius: 100px;
     border: 1px solid #f0f0f0;
 	float: left;
+}
+
+.billing-history-item-image
+{
+	width: 40px;
+	height: 40px;
+	border-radius: 100px;
+	border: 1px solid #f0f0f0;
 }
 
 .billing-balance
@@ -59,7 +68,7 @@
 
 .billing-table tr
 {
-	border-bottom: 1px solid #ccc;
+	border-top: 1px solid #ededed;
 }
 
 .billing-table td

@@ -7,7 +7,7 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-Class ADMIN
+Class ADMIN extends PluginActions
 {
 	private array $plugin_config = [];
 	private array $local_lang = [];
@@ -21,12 +21,7 @@ Class ADMIN
 
 	public function main( array $GET = [] )
 	{
-		# Требуется установка
-		#
-		if( ! file_exists( MODULE_DATA . "/plugin.payhide.php" ) )
-		{
-			$this->install();
-		}
+        $this->checkInstall();
 
 		$this->plugin_config = include MODULE_DATA . "/plugin.payhide.php";
 
@@ -172,35 +167,6 @@ Class ADMIN
 		$Content .= $this->Dashboard->ThemeEchoFoother();
 
 		return $Content;
-	}
-
-	# Установка
-	#
-	private function install()
-	{
-        $tableSchema = [];
-
-        $tableSchema[] = "DROP TABLE IF EXISTS " . PREFIX . "_billing_payhide";
-        $tableSchema[] = "CREATE TABLE `" . PREFIX . "_billing_payhide` (
-                            `payhide_id` int(11) NOT NULL AUTO_INCREMENT,
-                            `payhide_user` varchar(40) NOT NULL,
-                            `payhide_pagelink` varchar(128) NOT NULL,
-                            `payhide_price` varchar(12) NOT NULL,
-                            `payhide_date` int(11) NOT NULL,
-                            `payhide_tag` varchar(12) NOT NULL,
-                            `payhide_post_id` int(11) NOT NULL,
-                            `payhide_time` int(11) NOT NULL,
-                            PRIMARY KEY (`payhide_id`)
-                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
-
-        foreach( $tableSchema as $table )
-        {
-            $this->Dashboard->LQuery->db->query($table);
-        }
-
-        $this->Dashboard->SaveConfig("plugin.payhide", array('status'=>"0"));
-
-        return;
 	}
 
 	# Форма настроек
@@ -390,4 +356,50 @@ HTML;
 
 		return $Content;
 	}
+
+    /**
+     * Процесс установки
+     * @return void
+     */
+    public function install()
+    {
+        $this->Dashboard->CheckHash();
+
+        @unlink(ROOT_DIR . '/engine/data/billing/plugin.payhide.php');
+
+        $tableSchema = [];
+
+        $tableSchema[] = "DROP TABLE IF EXISTS " . PREFIX . "_billing_payhide";
+        $tableSchema[] = "CREATE TABLE `" . PREFIX . "_billing_payhide` (
+                            `payhide_id` int(11) NOT NULL AUTO_INCREMENT,
+                            `payhide_user` varchar(40) NOT NULL,
+                            `payhide_pagelink` varchar(128) NOT NULL,
+                            `payhide_price` varchar(12) NOT NULL,
+                            `payhide_date` int(11) NOT NULL,
+                            `payhide_tag` varchar(12) NOT NULL,
+                            `payhide_post_id` int(11) NOT NULL,
+                            `payhide_time` int(11) NOT NULL,
+                            PRIMARY KEY (`payhide_id`)
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
+
+        foreach( $tableSchema as $table )
+        {
+            $this->Dashboard->LQuery->db->query($table);
+        }
+
+        $this->Dashboard->SaveConfig("plugin.payhide", ['status'=>"0", 'version' => parse_ini_file( MODULE_PATH . '/plugins/payhide/info.ini' )['version'] ]);
+
+        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_install'], '?mod=billing&c=' . $this->Dashboard->controller );
+    }
+
+    public function uninstall()
+    {
+        $this->Dashboard->CheckHash();
+
+        @unlink(ROOT_DIR . '/engine/data/billing/plugin.payhide.php');
+
+        $this->Dashboard->LQuery->db->query( "DROP TABLE IF EXISTS " . PREFIX . "_billing_payhide" );
+
+        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_uninstall'], '?mod=billing' );
+    }
 }

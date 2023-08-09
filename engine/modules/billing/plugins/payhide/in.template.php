@@ -84,7 +84,8 @@ if( ! function_exists('BillingPayhideParser') )
     {
         global $db, $config, $member_id, $is_logged, $row, $_TIME;
 
-        $_Config = include ENGINE_DIR . "/data/billing/config.php";
+        $_Config = @include ENGINE_DIR . "/data/billing/config.php";
+        $_ConfigPlugin = @include ENGINE_DIR . "/data/billing/plugin.payhide.php";
 
         $error_load_tpl = 'Error load template %s';
 
@@ -93,6 +94,9 @@ if( ! function_exists('BillingPayhideParser') )
         $Title = '';
 
         $Data['content'] = $Params[2];
+
+        if( ! $_Config['status'] or ! $_ConfigPlugin['status'] )
+            return $Data['content'];
 
         if( preg_match( "#\\[payclose\\](.*?)\\[/payclose\\]#is", $Data['content'], $match ) )
         {

@@ -7,11 +7,13 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-Class ADMIN
+Class ADMIN extends PluginActions
 {
 	public function main( array $Get = [] )
 	{
-		global $user_group, $cat_info;
+        $this->checkInstall();
+
+        global $user_group, $cat_info;
 
         $plugin_lang = include MODULE_PATH . "/plugins/fixednews/lang.php";
 
@@ -39,7 +41,7 @@ Class ADMIN
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
 		}
 
-		$_Config = $this->Dashboard->LoadConfig( "fixednews", true, array('status'=>"0") );
+		$_Config = $this->Dashboard->LoadConfig( 'fixednews' );
 
 		$this->Dashboard->ThemeEchoHeader( $plugin_lang['settings_title'] );
 

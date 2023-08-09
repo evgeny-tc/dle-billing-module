@@ -7,10 +7,12 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-Class ADMIN
+Class ADMIN extends PluginActions
 {
 	public function main()
 	{
+        $this->checkInstall();
+
 		# Сохранить
 		#
 		if( isset( $_POST['save'] ) )
@@ -22,7 +24,7 @@ Class ADMIN
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
 		}
 
-		$_Config = $this->Dashboard->LoadConfig( "transfer", true, array('status'=>"0") );
+		$_Config = $this->Dashboard->LoadConfig( 'transfer' );
 
 		$this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['transfer_title'] );
 

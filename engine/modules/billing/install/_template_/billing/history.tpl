@@ -1,17 +1,20 @@
+<h5 class="blue">История движения средств</h5>
+
 <table class="billing-table">
-	<tr>
-		<td colspan="4"><b>История движения средств</b></td>
-	</tr>
 	[history]
 	<tr>
-		<td width="80"><center>{date=j.m.Y G:i}</center></td>
-		<td style="padding: 0 10px">{comment}</td>
-		<td width="120">{sum}</td>
+		<td style="width: 5%">
+			<img src="/engine/skins/billing/plugins/{plugin}.png" onError="this.src='/engine/skins/billing/icons/transactions.png'" class="billing-history-item-image">
+		</td>
+		<td style="padding: 0 10px">
+			<div style="font-size: 11px; color: grey">{date=j.m.Y G:i}</div>
+			{comment}</td>
+		<td>{sum}</td>
 	</tr>
 	[/history]
 	[not_history]
 	<tr>
-		<td colspan="4">&raquo; Записей не найдено</td>
+		<td colspan="2">&raquo; Записей не найдено</td>
 	</tr>
 	[/not_history]
 </table>

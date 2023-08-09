@@ -206,7 +206,7 @@ Class DevTools
 	 */
 	public function Show(string $Content, bool $show_panel = true )
 	{
-		$Cabinet = @file_get_contents( ENGINE_DIR . "/cache/system/billing.php" );
+		#$Cabinet = @file_get_contents( ENGINE_DIR . "/cache/system/billing.php" );
 
 		if( ! $this->member_id['name'] )
 		{

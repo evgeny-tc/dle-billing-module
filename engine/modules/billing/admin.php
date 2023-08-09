@@ -19,13 +19,14 @@ if( ! in_array( $member_id['user_group'], array(1) ) )
 	msg( "error", $lang['index_denied'], $lang['index_denied'] );
 }
 
-define( 'BILLING_MODULE', TRUE );
-define( 'MODULE_PATH', ENGINE_DIR . "/modules/billing" );
-define( 'MODULE_DATA', ENGINE_DIR . "/data/billing" );
+const BILLING_MODULE = TRUE;
+
+const MODULE_PATH = ENGINE_DIR . "/modules/billing";
+const MODULE_DATA = ENGINE_DIR . "/data/billing";
 
 spl_autoload_register(function ($class)
 {
-    $file = MODULE_PATH . '/helpers/' . mb_strtolower($class).'.php';
+    $file = MODULE_PATH . '/helpers/' . preg_replace("/[^a-zA-Z\s]/", "", trim( mb_strtolower($class) ) ) .'.php';
 
     if (file_exists($file))
     {

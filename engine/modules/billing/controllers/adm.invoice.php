@@ -84,9 +84,21 @@ Class ADMIN
 			$this->Dashboard->ThemeMsg(
 				$this->Dashboard->lang['ok'],
 				$this->Dashboard->lang['invoice_ok'],
-				$PHP_SELF . "?mod=billing&c=invoice"
+				"?mod=billing&c=invoice"
 			);
 		}
+
+        # Удалить старые квитанции
+        #
+        if( $this->Dashboard->config['invoice_time'] )
+        {
+            $this->Dashboard->LQuery->DbWhere( array(
+                "invoice_date_creat < {s}" => $this->Dashboard->_TIME - ( $this->Dashboard->config['invoice_time'] * 60 ),
+                "invoice_date_pay = '0' " => 1
+            ));
+
+            $this->Dashboard->LQuery->DbInvoicesRemove();
+        }
 
 		$this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_4'] );
 
@@ -170,7 +182,7 @@ Class ADMIN
 			'<th>'.$this->Dashboard->lang['invoice_str_ps'].'</th>',
 			'<th>'.$this->Dashboard->lang['history_user'].'</th>',
 			'<th>'.$this->Dashboard->lang['invoice_str_status'].'</th>',
-			'<th width="5%"><center><input type="checkbox" class="icheck" value="" name="massact_list[]" onclick="checkAll(this)" /></center></th>',
+			'<th width="5%"><center><input type="checkbox" value="" name="massact_list[]" onclick="checkAll(this)" /></center></th>',
 		));
 
 		foreach( $Data as $Value )

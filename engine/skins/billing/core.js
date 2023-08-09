@@ -16,7 +16,7 @@ function logShowDialogByID( id )
     {
         autoOpen: true,
         show: 'fade',
-        width: 380,
+        width: 480,
         dialogClass: "modalfixed"
     });
 

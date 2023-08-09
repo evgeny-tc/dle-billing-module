@@ -7,7 +7,7 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-Class ADMIN
+Class ADMIN extends PluginActions
 {
 	private array $_Config = [];
 	private array $_Lang = [];
@@ -19,6 +19,8 @@ Class ADMIN
 
 	public function main( array $GET = [] )
 	{
+        $this->checkInstall();
+
 		# Сохранить настройки
 		#
 		if( isset( $_POST['save'] ) )
@@ -28,11 +30,6 @@ Class ADMIN
 			$this->Dashboard->SaveConfig("plugin.prcode", $_POST['save_con'], "plugin_config");
 
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
-		}
-
-		if( ! file_exists( MODULE_DATA . "/plugin.prcode.php" ) )
-		{
-			$this->install();
 		}
 
 		$_Config = $this->Dashboard->LoadConfig( "prcode" );
@@ -226,14 +223,27 @@ Class ADMIN
 		return $Content;
 	}
 
-	# Установка
-	#
-	private function install()
+	private function generate()
 	{
-		$tableSchema = [];
-        
-		$tableSchema[] = "DROP TABLE IF EXISTS " . PREFIX . "_billing_prcodes";
-		$tableSchema[] = "CREATE TABLE IF NOT EXISTS `" . PREFIX . "_billing_prcodes` (
+		$chars = 'ABDEFGHKNQRSTYZ23456789';
+
+		return substr($chars, rand(1, strlen($chars)) - 1, 1);
+	}
+
+    /**
+     * Процесс установки
+     * @return void
+     */
+    public function install()
+    {
+        $this->Dashboard->CheckHash();
+
+        @unlink(ROOT_DIR . '/engine/data/billing/plugin.prcode.php');
+
+        $tableSchema = [];
+
+        $tableSchema[] = "DROP TABLE IF EXISTS " . PREFIX . "_billing_prcodes";
+        $tableSchema[] = "CREATE TABLE IF NOT EXISTS `" . PREFIX . "_billing_prcodes` (
 							  `prcode_id` int(11) NOT NULL AUTO_INCREMENT,
 							  `prcode_tag` varchar(128) NOT NULL,
 							  `prcode_sum` varchar(21) NOT NULL,
@@ -242,20 +252,29 @@ Class ADMIN
 							  PRIMARY KEY (`prcode_id`)
 							) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
-		foreach( $tableSchema as $table )
+        foreach( $tableSchema as $table )
         {
             $this->Dashboard->LQuery->db->query($table);
         }
 
-		$this->Dashboard->SaveConfig("plugin.prcode", array('status'=>"0"));
+        $default = [
+            'status' => '0',
+            'version' => parse_ini_file( MODULE_PATH . '/plugins/prcode/info.ini' )['version']
+        ];
 
-		return;
-	}
+        $this->Dashboard->SaveConfig('plugin.prcode', $default);
 
-	private function generate()
-	{
-		$chars = 'ABDEFGHKNQRSTYZ23456789';
+        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_install'], '?mod=billing&c=' . $this->Dashboard->controller );
+    }
 
-		return substr($chars, rand(1, strlen($chars)) - 1, 1);
-	}
+    public function uninstall()
+    {
+        $this->Dashboard->CheckHash();
+
+        @unlink(ROOT_DIR . '/engine/data/billing/plugin.prcode.php');
+
+        $this->Dashboard->LQuery->db->query( "DROP TABLE IF EXISTS " . PREFIX . "_billing_prcodes" );
+
+        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_uninstall'], '?mod=billing' );
+    }
 }

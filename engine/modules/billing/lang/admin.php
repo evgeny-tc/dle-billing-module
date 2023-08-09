@@ -3,8 +3,53 @@
 return array
 (
 	'hash_error' => "Время ожидания модуля закончилось. Повторите попытку",
-	
-	# 0.7.4
+
+    'live_title' => 'События',
+
+    'stats_filter_dates' => [
+        'now' => "Сегодня",
+        'week' => "Текущая неделя",
+        'month'=> "Текущий месяц",
+        'year'=> "Текущий год"
+    ],
+
+    'settings_start_admin' => "Главная страница ПУ:",
+    'settings_start_admin_desc' => "Главная страница панели управления: плагин/метод/параметр/значение<br />Например: main/main",
+
+    'paysys_url_v2' => "URL обработчика платежей (без ЧПУ):",
+    'paysys_url_desc_v2' => "Если данные нужно получать через php://input",
+
+    'settings_invoice_delete_time' => "Время жизни квитанции:",
+    'settings_invoice_delete_time_desc' => "Удалять неоплаченные квитанции через указанное количество минут:",
+    'plugin_install' => "Плагин установлен!",
+    'plugin_uninstall' => "Плагин удален!",
+    'plugin_update' => "Плагин обновлен!",
+
+    'plugins_table_head' => [
+        '<th style="width: 40px"></th>',
+        '<th>Тег</th>',
+        '<th>Название</th>',
+        '<th>Автор</th>',
+        '<th>Версия</th>',
+        '<th style="width: 140px">Статус</th>',
+        '<th></th>'
+    ],
+
+    'plugins_table_status' => [
+        'delete' => "Удалить",
+        'install' => "Установить",
+        'not_install' => "Не установлен",
+        'off' => "Выключен",
+        'installed' => "Установлен",
+        'updating' => "Обновить",
+        'need_update' => "Обновите до",
+        'confirm' => "Вы уверены?"
+    ],
+
+    'need_install' => "Плагин не установлен",
+    'need_install_go' => "Установить",
+
+    # 0.7.4
 	#
 	'settings_invoice_max_num' => "Количество неоплаченных квитанций:",
 	'settings_invoice_max_num_desc' => "Укажите максимальное количество неоплаченных квитанций, которые могут быть созданы:",
@@ -52,14 +97,16 @@ return array
 	'menu_5_d' => "Статистика дохода и расхода пользователей, статистика плагинов и платежных систем, сводка по доходу сайта",
 	'menu_6' => "Каталог плагинов",
 	'menu_6_d' => "Каталог плагинов и платежных систем, проверка актуальных версий",
+    'menu_7' => "Режим отладки",
+    'menu_7_d' => "Просмотр лога входящих запросов на обработчик платежей",
 
 	'tab_1' => "Панель управления",
 	'tab_2' => "Платежные системы",
 	'tab_3' => "Плагины",
 
 	'logger_text_1' => "Дата и время",
-	'logger_text_2' => "Тип",
-	'logger_text_3' => "Сообщение",
+	'logger_text_2' => "Статус",
+	'logger_text_3' => "Тип",
 	'logger_text_4' => "Содержимое",
 
 	'logger_do_0' => "Получен запрос от платежной системы",
@@ -190,7 +237,7 @@ return array
 	'settings_test_desc' => "Включить <a href=\"" . $PHP_SELF."?mod=billing&m=log\">логирование входящих запросов</a>",
 	'settings_field' => "Поле в БД с балансом пользователя:",
 	'settings_field_desc' => "Название столбца в таблице " . PREFIX . "_users,  в которой хранится баланс пользователя",
-	'settings_start' => "Указатель стартовой страницы:",
+	'settings_start' => "Главная страница ЛК:",
 	'settings_start_desc' => "Главная страница личного кабинета: плагин/метод/параметр/значение<br />Например: log/main/page/1",
 	'settings_format' => "Формат у.е.:",
 	'settings_format_desc' => "В каком формате использователь средства при совершении транзакций",
@@ -500,21 +547,21 @@ return array
 
 	# 0.5.5
 	#
-	'statistics_0' => "<i class='fa fa-money'></i><br />Расчетный доход",
-	'statistics_0_title' => "Привлечено средств",
-	'statistics_1' => "Общая статистика",
-	'statistics_2' => "Используемые способы пополнения баланса",
-	'statistics_2_tab_2' => "Объем привлеченных средств",
-	'statistics_2_title' => "<i class='fa fa-bar-chart'></i><br />Платежные системы",
-	'statistics_3' => "Объем расходов и доходов пользователей",
-	'statistics_3_tab2' => "Классификация по плагинам",
-	'statistics_3_title' => "<i class='fa fa-cogs'></i><br />Статистика плагинов",
-	'statistics_4' => "Статистика пользователя",
-	'statistics_4_title' => "<i class='fa fa-group'></i><br />Пользователи",
-	'statistics_5_title' => "Сбросить статистику",
-	'statistics_5' => "<i class='fa fa-trash'></i><br />Сбросить статистику",
-	'statistics_6_title' => "Вернуться",
-	'statistics_6' => "Главное меню",
+    'statistics_0' => "<i class='fa fa-area-chart'></i> Динамика",
+    'statistics_0_title' => "Динамика за день",
+    'statistics_1' => "Общая статистика",
+    'statistics_2' => "Используемые способы пополнения баланса",
+    'statistics_2_tab_2' => "Объем привлеченных средств",
+    'statistics_2_title' => "<i class='fa fa-money'></i> Платежные системы",
+    'statistics_3' => "Объем расходов и доходов пользователей",
+    'statistics_3_tab2' => "Классификация по плагинам",
+    'statistics_3_title' => "<i class='fa fa-cogs'></i> Плагины",
+    'statistics_4' => "Статистика пользователя",
+    'statistics_4_title' => "<i class='fa fa-group'></i> Пользователи",
+    'statistics_5_title' => "Сбросить статистику",
+    'statistics_5' => "<i class='fa fa-trash'></i> Сбросить статистику",
+    'statistics_6_title' => "Вернуться",
+    'statistics_6' => "Главное меню",
 
 	'statistics_new_1' => "Статистика движения средств",
 	'statistics_new_1_graf' => "Рост доходов и расходов пользователей",

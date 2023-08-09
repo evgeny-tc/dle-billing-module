@@ -23,9 +23,9 @@ $blank =
 	'secret' => "",
 	'fname' => "user_balance",
 	'start' => "log/main/page/1",
+    'start_admin' => "main/main",
 	'format' => "float",
 	'version' => "0.8",
-	'url_catalog' => "https://dle-billing.ru/plugins.php",
 	'urls' => "refund-cashback"
 ];
 

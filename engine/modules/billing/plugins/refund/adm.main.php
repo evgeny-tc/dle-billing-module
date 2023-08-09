@@ -7,10 +7,12 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-Class ADMIN
+Class ADMIN extends PluginActions
 {
 	public function main( array $Get = [] )
 	{
+        $this->checkInstall();
+
 		# Сохранить настройки
 		#
 		if( isset( $_POST['save'] ) )
@@ -69,20 +71,22 @@ Class ADMIN
 
 		# Настройки
 		#
-		$_Config = $this->Dashboard->LoadConfig( "refund", true, array('status'=>"0") );
+		$_Config = $this->Dashboard->LoadConfig( 'refund' );
 
 		$this->Dashboard->ThemeEchoHeader($this->Dashboard->lang['refund_title']);
 
-		$this->Dashboard->ThemeAddTR( array(
-			'<th width="1%"><b>#</b></th>',
-			'<th>'.$this->Dashboard->lang['refund_summa'].'</th>',
-			'<th>'.$this->Dashboard->lang['refund_commision_list'].'</th>',
-			'<th>'.$this->Dashboard->lang['refund_requisites'].'</th>',
-			'<th>'.$this->Dashboard->lang['history_date'].'</th>',
-			'<th>'.$this->Dashboard->lang['history_user'].'</th>',
-			'<th>'.$this->Dashboard->lang['status'].'</th>',
-			'<th><center><input type="checkbox" value="" name="remove_list[]" onclick="checkAll(this)" /></center></th>'
-		));
+		$this->Dashboard->ThemeAddTR(
+            [
+                '<th width="1%"><b>#</b></th>',
+                '<th>'.$this->Dashboard->lang['refund_summa'].'</th>',
+                '<th>'.$this->Dashboard->lang['refund_commision_list'].'</th>',
+                '<th>'.$this->Dashboard->lang['refund_requisites'].'</th>',
+                '<th>'.$this->Dashboard->lang['history_date'].'</th>',
+                '<th>'.$this->Dashboard->lang['history_user'].'</th>',
+                '<th>'.$this->Dashboard->lang['status'].'</th>',
+                '<th><center><input type="checkbox" value="" name="remove_list[]" onclick="checkAll(this)" /></center></th>'
+            ]
+        );
 
 		# Поиск
 		#

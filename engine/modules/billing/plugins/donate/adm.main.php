@@ -7,10 +7,12 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-Class ADMIN
+Class ADMIN extends PluginActions
 {
 	public function main( array $Get = [] )
 	{
+        $this->checkInstall();
+
 		# Сохранить
 		#
 		if( isset( $_POST['save'] ) )
@@ -21,8 +23,7 @@ Class ADMIN
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
 		}
 
-		$_Config = $this->Dashboard->LoadConfig( "donate", true, ['status'=>"0"] );
-
+		$_Config = $this->Dashboard->LoadConfig( 'donate' );
 		$_Lang = include MODULE_PATH . "/plugins/donate/lang.php";
 
 		$this->Dashboard->ThemeEchoHeader( $_Lang['title']);
@@ -123,7 +124,6 @@ Class ADMIN
 				'title' => $_Lang['create'],
 				'content' => $ContentCreate
 		);
-
 
 		$Content = $this->Dashboard->PanelPlugin('plugins/donate', 'https://dle-billing.ru/doc/plugins/danate/' );
 

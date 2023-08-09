@@ -7,11 +7,13 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-Class ADMIN
+Class ADMIN extends PluginActions
 {
 	function main( array $Get = [] )
 	{
-		global $user_group;
+        $this->checkInstall();
+
+        global $user_group;
 
 		require_once MODULE_PATH . "/plugins/paygroups/lang.php";
 
@@ -66,8 +68,8 @@ Class ADMIN
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $plugin_lang['a_update'] );
 		}
 
-		$_Config = $this->Dashboard->LoadConfig( "paygroups", true, array('stop' => "1,2,4") );
-		$_GroupConfig = $this->Dashboard->LoadConfig( "paygroups_list", true );
+        $_Config = $this->Dashboard->LoadConfig( 'paygroups' );
+        $_GroupConfig = $this->Dashboard->LoadConfig( 'paygroups_list' );
 
 		$dle_groups = [];
 
@@ -193,4 +195,33 @@ Class ADMIN
 		$data = str_replace( "{", "&#123;", $data );
 		$data = str_replace( "}", "&#125;", $data );
 	}
+
+    public function install()
+    {
+        $this->Dashboard->CheckHash();
+
+        @unlink(ROOT_DIR . '/engine/data/billing/plugin.paygroups.php');
+        @unlink(ROOT_DIR . '/engine/data/billing/plugin.paygroups_list.php');
+
+        $default = [
+            'status' => '0',
+            'version' => parse_ini_file( MODULE_PATH . '/plugins/paygroups/info.ini' )['version'],
+            'stop' => "1,2,4"
+        ];
+
+        $this->Dashboard->SaveConfig( 'plugin.paygroups', $default );
+        $this->Dashboard->SaveConfig( 'plugin.paygroups_list', [] );
+
+        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_install'], '?mod=billing&c=paygroups' );
+    }
+
+    public function unistall()
+    {
+        $this->Dashboard->CheckHash();
+
+        @unlink(ROOT_DIR . '/engine/data/billing/plugin.paygroups.php');
+        @unlink(ROOT_DIR . '/engine/data/billing/plugin.paygroups_list.php');
+
+        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_uninstall'], '?mod=billing' );
+    }
 }

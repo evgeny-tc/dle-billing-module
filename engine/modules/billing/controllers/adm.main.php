@@ -18,7 +18,7 @@ Class ADMIN
 		$section = array(
 			array(
 				'icon' => "engine/skins/billing/icons/configure.png",
-				'link' => "?mod=billing&m=settings",
+				'link' => "?mod=billing&c=main&m=settings",
 				'title' => $this->Dashboard->lang['menu_1'],
 				'desc' => $this->Dashboard->lang['menu_1_d']
 			),
@@ -45,14 +45,18 @@ Class ADMIN
 				'link' => "?mod=billing&c=statistics",
 				'title' => $this->Dashboard->lang['menu_5'],
 				'desc' => $this->Dashboard->lang['menu_5_d']
-			),
-			array(
-				'icon' => "engine/skins/billing/icons/catalog.png",
-				'link' => "?mod=billing&c=catalog",
-				'title' => $this->Dashboard->lang['menu_6'],
-				'desc' => $this->Dashboard->lang['menu_6_d']
 			)
 		);
+
+        if( $this->Dashboard->config['test'] )
+        {
+            $section[] = [
+                'icon' => "engine/skins/billing/icons/log.png",
+                'link' => "?mod=billing&m=log",
+                'title' => $this->Dashboard->lang['menu_7'],
+                'desc' => $this->Dashboard->lang['menu_7_d']
+            ];
+        }
 
 		$tabs[] = array(
 			'id' => 'main',
@@ -79,26 +83,57 @@ Class ADMIN
 				'content' => $this->Dashboard->Menu( $sectionPayments, true )
 		);
 
+        # Вкладка №3
+        #
+        $this->Dashboard->ThemeAddTR( $this->Dashboard->lang['plugins_table_head'] );
+
 		foreach ($this->Dashboard->Plugins() as $name => $info )
 		{
-			$sectionPlugins[] = array(
-				'icon' => 'engine/skins/billing/plugins/' . $name . '.png',
-				'link' => '?mod=billing&c=' . $name,
-				'title' => $info['title'],
-				'desc' => $info['desc'],
-				'on' => $info['config']['status'],
-			);
+            $status_btn = '<a onClick="if( ! confirm(\'' . $this->Dashboard->lang['plugins_table_status']['confirm'] . '\') ) return false" href="?mod=billing&c=' . $name . '&m=uninstall&user_hash=' . $this->Dashboard->hash . '" class="btn bg-danger btn-sm btn-raised legitRipple">' . $this->Dashboard->lang['plugins_table_status']['delete'] . '</a>';
+
+            if( ! isset( $info['config']['status'] ) )
+            {
+                $status_plugin = '<font color="red">' . $this->Dashboard->lang['plugins_table_status']['not_install'] . '</font>';
+                $status_btn = '<a href="?mod=billing&c=' . $name . '&m=install&user_hash=' . $this->Dashboard->hash . '" class="btn bg-teal btn-sm btn-raised position-left legitRipple">' . $this->Dashboard->lang['plugins_table_status']['install'] . '</a>';
+            }
+            else if( $info['config']['status'] == '0' )
+            {
+                $status_plugin = '<font color="grey">' . $this->Dashboard->lang['plugins_table_status']['off'] . '</font>';
+            }
+            else
+            {
+                if( $info['config']['version'] and version_compare($info['version'], $info['config']['version']) > 0 )
+                {
+                    $status_plugin = '<a href="?mod=billing&c=' . $name . '&m=update&user_hash=' . $this->Dashboard->hash . '" class="btn bg-slate-600 btn-sm btn-raised position-left legitRipple">' . $this->Dashboard->lang['plugins_table_status']['updating'] . '</a>';
+                }
+                else
+                {
+                    $status_plugin = '<font color="green">' . $this->Dashboard->lang['plugins_table_status']['installed'] . '</font>';
+                }
+            }
+
+            $this->Dashboard->ThemeAddTR(
+                [
+                    '<img class="billing-plugin-item-image" src="engine/skins/billing/plugins/' . $name . '.png" onError="this.src=\'/engine/skins/billing/icons/plugin.png\'">',
+                    $name,
+                    "<a href='?mod=billing&c={$name}'>{$info['title']}</a><br><span style='color: grey; font-size: 12px'>{$info['desc']}</span>",
+                    $info['author'],
+                    $info['config']['version'] ? (
+                        version_compare($info['version'], $info['config']['version']) > 0 ? '<font color="red" class="tip" title="' . $this->Dashboard->lang['plugins_table_status']['need_update'] . ' ' . $info['version'] . '">' . $info['config']['version'] . '</font>' : '<font color="green">' . $info['config']['version'] . '</font>'
+                    ) : $info['version'],
+                    $status_plugin,
+                    $status_btn
+                ]
+            );
 		}
 
-		# Вкладка №3
-		#
 		$tabs[] = array(
 				'id' => 'plugins',
 				'title' => $this->Dashboard->lang['tab_3'],
-				'content' => $this->Dashboard->Menu( $sectionPlugins, true )
+				'content' => $this->Dashboard->ThemeParserTable()
 		);
 
-		$Content .= $this->Dashboard->PanelTabs( $tabs );
+		$Content = $this->Dashboard->PanelTabs( $tabs );
 		$Content .= $this->Dashboard->ThemeEchoFoother();
 
 		return $Content;
@@ -113,10 +148,7 @@ Class ADMIN
 		#
 		if( isset( $_POST['save'] ) )
 		{
-			if( $_POST['user_hash'] == "" or $_POST['user_hash'] != $this->Dashboard->hash )
-			{
-				return "Hacking attempt! User not found {$_POST['user_hash']}";
-			}
+            $this->Dashboard->CheckHash();
 
 			$_save_urls = array();
 
@@ -195,11 +227,23 @@ Class ADMIN
 			"<input name=\"save_con[start]\" class=\"form-control\" type=\"text\" value=\"" . $this->Dashboard->config['start'] ."\" style=\"width: 100%\">"
 		);
 
+        $this->Dashboard->ThemeAddStr(
+            $this->Dashboard->lang['settings_start_admin'],
+            $this->Dashboard->lang['settings_start_admin_desc'],
+            "<input name=\"save_con[start_admin]\" class=\"form-control\" type=\"text\" value=\"" . $this->Dashboard->config['start_admin'] ."\" style=\"width: 100%\">"
+        );
+
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['settings_invoice_max_num'],
 			$this->Dashboard->lang['settings_invoice_max_num_desc'],
 			"<input name=\"save_con[invoice_max_num]\" class=\"form-control\" type=\"text\" value=\"" . $this->Dashboard->config['invoice_max_num'] ."\" style=\"width: 20%\">"
 		);
+
+        $this->Dashboard->ThemeAddStr(
+            $this->Dashboard->lang['settings_invoice_delete_time'],
+            $this->Dashboard->lang['settings_invoice_delete_time_desc'],
+            "<input name=\"save_con[invoice_time]\" class=\"form-control\" type=\"text\" value=\"" . $this->Dashboard->config['invoice_time'] ."\" style=\"width: 20%\">"
+        );
 
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['settings_summ'],
@@ -229,12 +273,6 @@ Class ADMIN
 			$this->Dashboard->lang['settings_key'],
 			$this->Dashboard->lang['settings_key_desc'],
 			"<input name=\"save_con[secret]\" class=\"form-control\" type=\"text\" value=\"" . $this->Dashboard->config['secret'] ."\" style=\"width: 100%\">"
-		);
-
-		$this->Dashboard->ThemeAddStr(
-			$this->Dashboard->lang['settings_catalog'],
-			$this->Dashboard->lang['settings_catalog_desc'],
-			"<input name=\"save_con[url_catalog]\" class=\"form-control\" type=\"text\" value=\"" . $this->Dashboard->config['url_catalog'] ."\" style=\"width: 100%\">"
 		);
 
 		$tabs[] = [
@@ -311,7 +349,7 @@ Class ADMIN
 				'content' => $ChangeURL
 		);
 
-		$Content .= $this->Dashboard->PanelTabs( $tabs, $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton( "save", $this->Dashboard->lang['save'], "green" ) ) );
+		$Content = $this->Dashboard->PanelTabs( $tabs, $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton( "save", $this->Dashboard->lang['save'], "green" ) ) );
 
 		$Content .= $this->Dashboard->ThemeEchoFoother();
 
@@ -324,25 +362,24 @@ Class ADMIN
 		#
 		if( isset( $_POST['clear'] ) )
 		{
-			if( $_POST['user_hash'] == "" or $_POST['user_hash'] != $this->Dashboard->hash )
-			{
-				return "Hacking attempt! User not found {$_POST['user_hash']}";
-			}
+            $this->Dashboard->CheckHash();
 
-			unlink("pay.logger.php");
+			@unlink("pay.logger.php");
 		}
 
-		$this->Dashboard->ThemeEchoHeader();
+		$this->Dashboard->ThemeEchoHeader($this->Dashboard->lang['main_log']);
 
 		$Sections = 0;
 		$Content = $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['main_log'] );
 
-		$this->Dashboard->ThemeAddTR( array(
-			'<th width="15%">' . $this->Dashboard->lang['logger_text_1'] . '</th>',
-			'<th>' . $this->Dashboard->lang['logger_text_2'] . '</th>',
-			'<th>' . $this->Dashboard->lang['logger_text_3'] . '</th>',
-			'<th>' . $this->Dashboard->lang['logger_text_4'] . '</th>'
-		));
+		$this->Dashboard->ThemeAddTR(
+            [
+                '<th>' . $this->Dashboard->lang['logger_text_1'] . '</th>',
+                '<th>' . $this->Dashboard->lang['logger_text_2'] . '</th>',
+                '<th>' . $this->Dashboard->lang['logger_text_3'] . '</th>',
+                '<th>' . $this->Dashboard->lang['logger_text_4'] . '</th>'
+            ]
+        );
 
 		if( $_LogFile = file_exists( 'pay.logger.php' ) )
 		{
@@ -363,22 +400,24 @@ Class ADMIN
 					));
 				}
 
-				$Sections++;
+				$Sections ++;
 
 				if( ! $_Log[1] ) continue;
 
-				$this->Dashboard->ThemeAddTR( array(
-					$_Log[1],
-					$this->LogType( $_Log[0] ),
-					$this->Dashboard->lang['logger_do_' . $_Log[0]],
-					(
-						strlen( $_Log[2] ) > 20
-							? '<a href="#" onClick="logShowDialogByID( \'#log_' . $log_id . '\' ); return false">' . mb_substr( strip_tags( $_Log[2] ), 0, 40, $this->Dashboard->dle['charset'] ) . '..</a>'
-							: $_Log[2]
-					) . '<div id="log_' . $log_id . '" title="' . $this->Dashboard->lang['logger_text_4'] . '" style="display:none">
-							' . $_Log[2] . '
+				$this->Dashboard->ThemeAddTR(
+                    [
+                        $_Log[1],
+                        $this->LogType( $_Log[0] ),
+                        $this->Dashboard->lang['logger_do_' . $_Log[0]],
+                        (
+                        strlen( $_Log[2] ) > 20
+                            ? '<a href="#" onClick="logShowDialogByID( \'#log_' . $log_id . '\' ); return false">' . mb_substr( strip_tags( $_Log[2] ), 0, 40, $this->Dashboard->dle['charset'] ) . '..</a>'
+                            : $_Log[2]
+                        ) . '<div id="log_' . $log_id . '" title="' . $this->Dashboard->lang['logger_text_4'] . '" style="display:none">
+							<pre>' . $_Log[2] . '</pre>
 						</div>'
-				));
+                    ]
+                );
 			}
 
 			$Content .= $this->Dashboard->ThemeParserTable();

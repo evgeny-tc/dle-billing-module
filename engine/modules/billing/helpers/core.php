@@ -34,9 +34,7 @@ trait Core
         $msg = str_replace(array('\r\n', '\r', '\n', '|'), '/',  strip_tags(print_r($msg, 1)));
 
         fwrite( $handler,
-            $step . "\n" .
-            langdate( "j.m.Y H:i", time()) . '|' .
-            $msg . "\n --- END --- \n"
+            langdate( "j.m.Y H:i", time()) . '|' . $msg . "\n --- END --- \n"
         );
 
         fclose( $handler );
@@ -160,13 +158,13 @@ trait Core
 
     # Загрузить или создать файл настроек
     #
-    function LoadConfig( $file, $creat = false, $setStarting = array() )
+    function LoadConfig( $file, $creat = false, $setStarting = [] )
     {
         if( ! file_exists( MODULE_DATA . '/plugin.' . $file . '.php' ) )
         {
             if( $creat )
             {
-                $this->SaveConfig( "plugin." . $file, array( $setStarting ) );
+                $this->SaveConfig( "plugin." . $file, $setStarting );
 
                 return require MODULE_DATA . '/plugin.' . $file . '.php';
             }

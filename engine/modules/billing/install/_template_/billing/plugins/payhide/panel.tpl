@@ -1,4 +1,4 @@
-<h4>Оплаченный доступ</h4>
+<h5 class="blue">Оплаченный доступ</h5>
 
 <table class="billing-table">
 	<tr>
