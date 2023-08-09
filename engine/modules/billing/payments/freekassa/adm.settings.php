@@ -122,7 +122,7 @@ Class FreeKassa
         }
 
         $signatureGen = md5(implode(':', array(
-            $_REQUEST["MERCHANT_ID"],
+            $config["shop_id"],
             $_REQUEST["AMOUNT"],
             $config['secret_key2'],
             $_REQUEST["MERCHANT_ORDER_ID"],
