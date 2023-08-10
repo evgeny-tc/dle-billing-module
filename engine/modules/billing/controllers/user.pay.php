@@ -542,7 +542,7 @@ Class USER
 	 * @param $CheckPayerRequisites
 	 * @return bool|void
 	 */
-	private function RegisterPay( array $Invoice, string $CheckPayerRequisites = '' )
+	private function RegisterPay( array $Invoice, string|null $CheckPayerRequisites = '' )
 	{
 		$this->PaymentsArray = $this->DevTools->Payments();
 
