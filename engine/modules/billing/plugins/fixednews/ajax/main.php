@@ -15,7 +15,7 @@ if( !defined('BILLING_MODULE') ) {
 
 # Цена для группы / категории не указана
 #
-if( ! $_Price = $_Config["up_{$member_id['user_group']}_{$_PostCategory}"] )
+if( ! $_Price = $_Config["main_{$member_id['user_group']}_{$_PostCategory}"] )
 {
     billing_error( $_Lang['error']['off'] );
 }
