@@ -170,9 +170,14 @@ Class ADMIN extends PluginActions
 
         $ContentList .= <<<HTML
 <style>
-.btn-group .dropdown-menu
+.table-width-scroll .dropdown-menu
 {
 position: relative;
+}
+
+.table-width-scroll th, td
+{
+    white-space: nowrap;
 }
 </style>
 HTML;
@@ -189,7 +194,7 @@ HTML;
 								"<li class=\"active\"><span>{page_num}</span></li>",
 								$PerPage
 							) . '</ul>
-						<div class="table-bottom-select">
+						<div class="table-bottom-select" style="float: right">
 								<select name="act" class="uniform">
 									<option value="ok">' . $this->Dashboard->lang['refund_act_ok'] . '</option>
 									<option value="wait">' . $this->Dashboard->lang['refund_wait'] . '</option>
