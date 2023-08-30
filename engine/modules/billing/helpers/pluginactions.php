@@ -16,7 +16,7 @@ Class PluginActions
         $this->Dashboard->SaveConfig( "plugin." . $this->Dashboard->controller,
             [
                 'status' => 0,
-                'version' => parse_ini_file( MODULE_PATH . '/plugins/payhide/info.ini' )['version']
+                'version' => parse_ini_file( MODULE_PATH . '/plugins/' . $this->Dashboard->controller . '/info.ini' )['version']
             ]
         );
 
