@@ -25,7 +25,7 @@ $tableSchema = [
 ];
 
 
-if( isset( $_POST['next'] ) )
+if( isset( $_POST['next'] ) or isset($_GET['install']) )
 {
     if( $_GET['install'] !== 'ignore' )
     {
@@ -59,9 +59,12 @@ if( isset( $_POST['next'] ) )
         }
     }
 
-    foreach($tableSchema as $sqlquery)
+    if( ! $_GET['install'] )
     {
-        $this->Dashboard->LQuery->db->query($sqlquery);
+        foreach($tableSchema as $sqlquery)
+        {
+            $this->Dashboard->LQuery->db->query($sqlquery);
+        }
     }
 
     $newConfig = $this->Dashboard->config;
