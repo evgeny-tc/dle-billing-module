@@ -59,7 +59,7 @@ Class Dashboard
 	 * Current version
 	 * @var [type]
 	 */
-	public string $version = '0.9';
+	public string $version = '0.9.2';
 
 	/**
 	 * Config this module
@@ -532,11 +532,11 @@ HTML;
 	 * @param string $other_tr
 	 * @return string|void
 	 */
-    public function ThemeParserTable( string $id = '', string $other_tr = '', int|bool $row_key = false )
+    public function ThemeParserTable( string $id = '', string $other_tr = '', int|bool $row_key = false, string $added_table_class = '' )
     {
         if( ! $this->list_table_num ) return;
 
-        $answer = "<table width=\"100%\" class=\"table table-normal table-hover\" ".( ( $id ) ? 'id="'.$id.'"':'' ).">";
+        $answer = "<table width=\"100%\" class=\"table table-normal table-hover {$added_table_class}\" ".( ( $id ) ? 'id="'.$id.'"':'' ).">";
 
         for( $i = 1; $i <= $this->list_table_num; $i++ )
         {
@@ -678,7 +678,7 @@ HTML;
 			$Topmenu[] = $section_name;
 		}
 
-		foreach( ['transactions', 'statistics', 'invoice', 'users'] as $name )
+		foreach( ['coupons', 'transactions', 'statistics', 'invoice', 'users'] as $name )
 		{
 			$JSmenu .= $this->controller == $name
 							? '<li class="active"><a href="?mod=billing&c='.$name.'"> &raquo; '.$this->lang[$name.'_title'].'</a></li>'

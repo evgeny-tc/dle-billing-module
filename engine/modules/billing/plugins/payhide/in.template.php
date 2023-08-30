@@ -95,15 +95,15 @@ if( ! function_exists('BillingPayhideParser') )
 
         $Data['content'] = $Params[2];
 
-        if( ! $_Config['status'] or ! $_ConfigPlugin['status'] )
-            return $Data['content'];
-
         if( preg_match( "#\\[payclose\\](.*?)\\[/payclose\\]#is", $Data['content'], $match ) )
         {
             $_Content = $match[1];
 
             $Data['content'] = preg_replace("#\\[payclose\\](.*?)\\[/payclose\\]#is", '', $Data['content']);
         }
+
+        if( ! $_Config['status'] or ! $_ConfigPlugin['status'] )
+            return $Data['content'];
 
         if( preg_match( "#title=['\"](.+?)['\"]#is", $Params[1], $match ) )
         {
@@ -137,6 +137,11 @@ if( ! function_exists('BillingPayhideParser') )
             $Data['post_id'] = $row['id'];
         }
 
+        if( ! $Data['price'] )
+        {
+            $Data['price'] = 0;
+        }
+
         $Data['price'] = number_format($Data['price'], 2, '.', '');
 
         # Автор поста
@@ -163,7 +168,6 @@ if( ! function_exists('BillingPayhideParser') )
 											WHERE payhide_user='" . $db->safesql($userUid) . "'
 													and payhide_tag='" . $db->safesql($Data['key']) . "'
 													and	( payhide_post_id = '0' or payhide_post_id = '" . intval($Data['post_id']) . "' )
-													and	payhide_price='" . $db->safesql($Data['price']) . "'
 													and	( payhide_time = 0 or payhide_time >= '" . intval($_TIME) . "' )" );
 
         if( $SearchPay['payhide_id'] )
@@ -227,6 +231,7 @@ if( ! function_exists('BillingPayhideParser') )
         #
         unset( $Data['content'] );
         unset( $Data['post'] );
+        unset( $Data['title'] );
 
         $setSecret = '';
 

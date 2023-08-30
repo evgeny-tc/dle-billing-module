@@ -45,7 +45,13 @@ Class ADMIN
 				'link' => "?mod=billing&c=statistics",
 				'title' => $this->Dashboard->lang['menu_5'],
 				'desc' => $this->Dashboard->lang['menu_5_d']
-			)
+			),
+            array(
+                'icon' => "engine/skins/billing/icons/coupons.png",
+                'link' => "?mod=billing&c=coupons",
+                'title' => $this->Dashboard->lang['coupons']['menu']['name'],
+                'desc' => $this->Dashboard->lang['coupons']['menu']['desc']
+            )
 		);
 
         if( $this->Dashboard->config['test'] )
@@ -91,25 +97,28 @@ Class ADMIN
 		{
             $status_btn = '<a onClick="if( ! confirm(\'' . $this->Dashboard->lang['plugins_table_status']['confirm'] . '\') ) return false" href="?mod=billing&c=' . $name . '&m=uninstall&user_hash=' . $this->Dashboard->hash . '" class="btn bg-danger btn-sm btn-raised legitRipple">' . $this->Dashboard->lang['plugins_table_status']['delete'] . '</a>';
 
+            # not install
+            #
             if( ! isset( $info['config']['status'] ) )
             {
                 $status_plugin = '<font color="red">' . $this->Dashboard->lang['plugins_table_status']['not_install'] . '</font>';
                 $status_btn = '<a href="?mod=billing&c=' . $name . '&m=install&user_hash=' . $this->Dashboard->hash . '" class="btn bg-teal btn-sm btn-raised position-left legitRipple">' . $this->Dashboard->lang['plugins_table_status']['install'] . '</a>';
             }
+            # need update
+            #
+            else if( $info['config']['version'] and version_compare($info['version'], $info['config']['version']) > 0 )
+            {
+                $status_plugin = '<a href="?mod=billing&c=' . $name . '&m=update&user_hash=' . $this->Dashboard->hash . '" class="btn bg-slate-600 btn-sm btn-raised position-left legitRipple">' . $this->Dashboard->lang['plugins_table_status']['updating'] . '</a>';
+            }
+            # off
+            #
             else if( $info['config']['status'] == '0' )
             {
                 $status_plugin = '<font color="grey">' . $this->Dashboard->lang['plugins_table_status']['off'] . '</font>';
             }
             else
             {
-                if( $info['config']['version'] and version_compare($info['version'], $info['config']['version']) > 0 )
-                {
-                    $status_plugin = '<a href="?mod=billing&c=' . $name . '&m=update&user_hash=' . $this->Dashboard->hash . '" class="btn bg-slate-600 btn-sm btn-raised position-left legitRipple">' . $this->Dashboard->lang['plugins_table_status']['updating'] . '</a>';
-                }
-                else
-                {
-                    $status_plugin = '<font color="green">' . $this->Dashboard->lang['plugins_table_status']['installed'] . '</font>';
-                }
+                $status_plugin = '<font color="green">' . $this->Dashboard->lang['plugins_table_status']['installed'] . '</font>';
             }
 
             $this->Dashboard->ThemeAddTR(
@@ -348,6 +357,18 @@ Class ADMIN
 				'title' => $this->Dashboard->lang['url'],
 				'content' => $ChangeURL
 		);
+
+        $this->Dashboard->ThemeAddStr(
+            $this->Dashboard->lang['settings_status'],
+            $this->Dashboard->lang['refund_status_desc'],
+            $this->Dashboard->MakeCheckBox("save_con[coupons]",  $this->Dashboard->config['coupons'])
+        );
+
+        $tabs[] = array(
+            'id' => 'coupons',
+            'title' => $this->Dashboard->lang['coupons']['menu']['name'],
+            'content' => $this->Dashboard->ThemeParserStr()
+        );
 
 		$Content = $this->Dashboard->PanelTabs( $tabs, $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton( "save", $this->Dashboard->lang['save'], "green" ) ) );
 

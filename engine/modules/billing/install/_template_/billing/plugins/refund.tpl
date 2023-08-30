@@ -1,4 +1,4 @@
-<h5>Создать запрос</h5>
+<h5 class="blue">Создать запрос</h5>
 
 <form action="" method="post">
 	<ul class="ui-form">
@@ -20,37 +20,39 @@
 	<input type="hidden" name="bs_hash" value="{hash}" />
 </form>
 
-<h5>История вывода средств</h5>
+<hr>
+
+<h5 class="blue">Ваши запросы</h5>
 
 <table class="billing-table">
 	<tr>
 		<td><b>Дата</b></td>
-        <td><b>Сумма</b></td>
-        <td><b>Из них комисия</b></td>
-        <td><b>Реквизиты</b></td>
-        <td><b>Выполнено</b></td>
+		<td><b>Сумма</b></td>
+		<td><b>Из них комиссия</b></td>
+		<td><b>Реквизиты</b></td>
+		<td><b>Статус</b></td>
 	</tr>
 
-    [history]
+	[history]
 	<tr>
 		<td>{date=j.m.Y G:i}</td>
 		<td>{refund.sum} {refund.sum.currency}</td>
-        <td>{refund.commission} {refund.commission.currency}</td>
-        <td>{refund.requisites}</td>
-        <td>{refund.status}</td>
-    </tr>
-    [/history]
+		<td>{refund.commission} {refund.commission.currency}</td>
+		<td>{refund.requisites}</td>
+		<td>{refund.status}</td>
+	</tr>
+	[/history]
 
 	[not_history]
-    <tr>
+	<tr>
 		<td colspan="5">&raquo; Вывода средств не было</td>
-    </tr>
-    [/not_history]
+	</tr>
+	[/not_history]
 </table>
 
 [paging]
-	<div class="billing-pagination">
-		[page_link]<a href="{page_num_link}">{page_num}</a>[/page_link]
-		[page_this] <strong>{page_num}</strong> [/page_this]
-	</div>
+<div class="billing-pagination">
+	[page_link]<a href="{page_num_link}">{page_num}</a>[/page_link]
+	[page_this] <strong>{page_num}</strong> [/page_this]
+</div>
 [/paging]

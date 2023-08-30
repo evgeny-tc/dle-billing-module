@@ -153,6 +153,18 @@ Class USER
                 ]
             ];
 
+            # Купоны
+            #
+            if( $this->DevTools->config['coupons'] and $Invoice['invoice_handler'] )
+            {
+                $this->DevTools->ThemeSetElement( "[coupon]", '' );
+                $this->DevTools->ThemeSetElement( "[/coupon]", '' );
+            }
+            else
+            {
+                $this->DevTools->ThemeSetElementBlock( "coupon", '' );
+            }
+
             $this->DevTools->ThemeSetElement( "{invoice.id}", $Invoice['invoice_id'] );
             $this->DevTools->ThemeSetElement( "{invoice.date.create}", langdate( "j.m.Y H:i", $Invoice['invoice_date_creat']) );
             $this->DevTools->ThemeSetElement( "{invoice.date.pay}", langdate( "j.m.Y H:i", $Invoice['invoice_date_pay']) );
@@ -185,6 +197,9 @@ Class USER
 				$this->DevTools->ThemeSetElement( "{title}", str_replace("{id}", $GET['id'], $this->DevTools->lang['pay_invoice']) );
 
                 $from_balance = false;
+                $_coupon = false;
+
+                $couponData = [];
                 $more_data = [];
 
                 # есть обработчик
@@ -212,6 +227,59 @@ Class USER
                             $Handler->prepay($Invoice, $InfoPay, $more_data);
                         }
                     }
+                }
+
+                # Процесс проверки купона
+                #
+                if( $couponKey = trim( $_POST['coupon'] ) )
+                {
+                    $this->DevTools->CheckHash( $_POST['billingHash'] );
+
+                    if( $couponData = $this->DevTools->LQuery->getCoupon($couponKey) )
+                    {
+                        $_coupon = true;
+
+                        $this->DevTools->ThemeSetElement( "{coupon_result}", "<font color='green'>Купон применен</font>" );
+                    }
+                    else
+                    {
+                        $this->DevTools->ThemeSetElement( "{coupon_result}", "<font color='red'>Купон не найден</font>" );
+                    }
+                }
+                else
+                {
+                    $this->DevTools->ThemeSetElement( "{coupon_result}", "" );
+                }
+
+                if( $_coupon )
+                {
+                    $this->DevTools->ThemeSetElement( "[old]", "" );
+                    $this->DevTools->ThemeSetElement( "[/old]", "" );
+
+                    $this->DevTools->ThemeSetElement( "{coupon}", $couponData['coupon_key'] );
+
+                    $this->DevTools->ThemeSetElement( "{old.invoice.get}", $Invoice['invoice_get'] );
+                    $this->DevTools->ThemeSetElement( "{old.invoice.get.currency}", $this->DevTools->API->Declension( $Invoice['invoice_get'] ) );
+
+                    if( $couponData['coupon_type'] == '1' )
+                    {
+                        $Invoice['invoice_get'] -= $couponData['coupon_value'];
+                    }
+                    else
+                    {
+                        $Invoice['invoice_get'] -= $Invoice['invoice_get'] / 100 * intval($couponData['coupon_value']);
+                    }
+
+                    if( $Invoice['invoice_get'] <= 0 )
+                        $Invoice['invoice_get'] = 1;
+
+                    $this->DevTools->ThemeSetElement( "{invoice.get}", $Invoice['invoice_get'] );
+                    $this->DevTools->ThemeSetElement( "{invoice.get.currency}", $this->DevTools->API->Declension( $Invoice['invoice_get'] ) );
+                }
+                else
+                {
+                    $this->DevTools->ThemeSetElement( "{coupon}", '' );
+                    $this->DevTools->ThemeSetElementBlock( "old", '' );
                 }
 
                 $Content = $this->DevTools->FormSelectPay( $Invoice['invoice_get'], $from_balance, $more_data );
@@ -243,6 +311,11 @@ Class USER
                         if( floatval($Invoice['invoice_get']) <= floatval($this->DevTools->BalanceUser) )
                         {
                             $logData = (isset($Handler) and in_array('desc', get_class_methods($Handler))) ? $Handler->desc($InfoPay) : ['null', 0];
+
+                            if( $_coupon and ! $this->DevTools->LQuery->useCoupon($couponData, $Invoice) )
+                            {
+                                throw new Exception($this->DevTools->lang['coupon_use_error']);
+                            }
 
                             $resultPay = $this->DevTools->API->MinusMoney(
                                 $this->DevTools->member_id['name'],
@@ -302,6 +375,16 @@ Class USER
 						$RedirectForm = $this->DevTools->config['redirect']  ? '<script type="text/javascript">
 								window.onload = function() { document.getElementById("paysys_form").submit(); }
 						</script>' : '';
+
+                        if( $_coupon and $this->DevTools->LQuery->useCoupon($couponData, $Invoice) )
+                        {
+                            $this->DevTools->LQuery->DbInvoiceUpdate(
+                                $GET['id'],
+                                true,
+                                '',
+                                $Invoice['invoice_pay']
+                            );
+                        }
 
                         $payForm = $RedirectForm . $Paysys->Form(
                                 $GET['id'],
@@ -424,9 +507,17 @@ Class USER
 			}
 
 			$Invoice['invoice_paysys'] = $GetPaysys;
-			$Invoice['invoice_pay'] =  $this->DevTools->API->Convert($Invoice['invoice_get'] * $this->PaymentsArray[$GetPaysys]['config']['convert'], $this->PaymentsArray[$GetPaysys]['config']['format']);
 
-			# .. проверка параметров запроса пс
+            # если цена не по купону -> конвертируем
+            #
+            $InfoPay = unserialize($Invoice['invoice_payer_info']);
+
+            if( ! $InfoPay['coupon']['coupon_id'] )
+            {
+                $Invoice['invoice_pay'] = $this->DevTools->API->Convert($Invoice['invoice_pay'] * $this->PaymentsArray[$GetPaysys]['config']['convert'], $this->PaymentsArray[$GetPaysys]['config']['format']);
+            }
+
+            # .. проверка параметров запроса пс
 			#
 			$CheckInvoice = $Paysys->check_out( $DATA, $this->PaymentsArray[$GetPaysys]['config'], $Invoice );
 

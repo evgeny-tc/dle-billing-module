@@ -218,7 +218,10 @@ Class ADMIN
 		);
 
 		$ContentSearch = $this->Dashboard->ThemeParserStr();
-		$ContentSearch .= $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("search_btn", $this->Dashboard->lang['history_search_btn'], "green") . "<a href=\"\" class=\"btn btn-default\" style=\"margin:7px;\">{$this->Dashboard->lang['history_search_btn_null']}</a>" );
+		$ContentSearch .= $this->Dashboard->ThemePadded(
+            $this->Dashboard->MakeButton("search_btn", $this->Dashboard->lang['history_search_btn'], "green") .
+            "<a href=\"\" class=\"btn btn-sm btn-default\" style=\"margin-left:7px;\">{$this->Dashboard->lang['history_search_btn_null']}</a>"
+        );
 
 		$tabs[] = array(
 				'id' => 'search',

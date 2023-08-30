@@ -294,7 +294,7 @@ HTML;
 
         $tabs[] = array(
             'id' => 'costs',
-            'title' => $this->Dashboard->lang['statistics_3'],
+            'title' => $this->Dashboard->lang['statistics_3_user'],
             'content' => $this->DrawPluginsCosts( sprintf($this->_Querys['users_plugins_cost'], $this->_StartTime, $this->_EndTime, $Result['name'], $this->_SectorTime) )
         );
 
@@ -329,7 +329,7 @@ HTML;
      */
     public function billings()
     {
-        $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['statistics_2'] );
+        $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
 
         $Content = $this->menu();
 

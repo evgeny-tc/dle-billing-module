@@ -40,7 +40,49 @@ Class Database
 		$this->_TIME = $time;
 	}
 
-	/**
+    /**
+     * Check coupon
+     * @param string $coupon
+     * @return void
+     */
+    public function getCoupon(string $coupon)
+    {
+        return $this->db->super_query( "SELECT * FROM " . USERPREFIX . "_billing_coupons
+											WHERE coupon_key = '" . $this->db->safesql( $coupon ) . "'
+											        and coupon_use = ''
+											        and ( coupon_time_end = 0 or coupon_time_end > " . time() . " ) " );
+    }
+
+    /**
+     * Use coupon
+     * @param string $coupon
+     * @return mixed
+     */
+    public function useCoupon(array $coupon, array $invoice = [])
+    {
+        if( isset( $invoice['invoice_id'] ) )
+        {
+            $set_data = [];
+
+            if( $invoice['invoice_payer_info'] )
+            {
+                $set_data = unserialize($invoice['invoice_payer_info']);
+            }
+
+            $set_data['coupon'] = $coupon;
+
+
+            $this->db->query( "UPDATE " . USERPREFIX . "_billing_invoice
+									SET invoice_payer_info = '" . serialize( $set_data ) . "'
+									WHERE invoice_id = '" . intval( $invoice['invoice_id'] ) . "'" );
+        }
+
+        return $this->db->query( "UPDATE " . USERPREFIX . "_billing_coupons
+									SET coupon_use = '" . $invoice['invoice_user_name'] . "'
+									WHERE coupon_id = '" . intval( $coupon['coupon_id'] ) . "'" );
+    }
+
+    /**
 	 * Users list
 	 * @param $limit
 	 * @return array
@@ -110,6 +152,20 @@ Class Database
 
 		return;
 	}
+
+    /**
+     * Delete refund row
+     * @param $refund_id
+     * @return void
+     */
+    public function DbRefundCancel( $refund_id )
+    {
+        $this->db->query( "UPDATE " . USERPREFIX . "_billing_refund
+									SET refund_date_return='0', refund_date_cancel='" . $this->_TIME . "'
+									WHERE refund_id='" . intval( $refund_id ) . "'" );
+
+        return;
+    }
 
 	/**
 	 * Get count refund rows

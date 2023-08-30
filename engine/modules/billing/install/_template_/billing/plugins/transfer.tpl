@@ -1,4 +1,4 @@
-<h4>Перевести средств</h4>
+<h5 class="blue">Перевести средств</h5>
 
 <form action="" method="post">
 	<ul class="ui-form">
@@ -20,7 +20,9 @@
 	<input type="hidden" name="bs_hash" value="{hash}" />
 </form>
 
-<h4>История перевода средств</h4>
+<hr>
+
+<h5 class="blue">История переводов</h5>
 
 <table class="billing-table">
 	<tr>

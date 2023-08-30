@@ -40,7 +40,7 @@ return new class
 												(payhide_user, payhide_pagelink, payhide_price, payhide_date, payhide_tag, payhide_post_id, payhide_time)
 												values ('" . $Invoice['invoice_user_name'] . "',
 														'" . $InfoPay['params']['title'] . '|' . $InfoPay['params']['pagelink'] . "',
-														'" . $Invoice['invoice_get'] . "',
+														'" . $Invoice['invoice_pay'] . "',
 														'" . $API->_TIME . "',
 														'" . $InfoPay['params']['tag'] . "',
 														'" . $InfoPay['params']['post_id'] . "',

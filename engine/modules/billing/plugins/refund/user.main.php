@@ -128,6 +128,13 @@ Class USER
 		{
 			$TimeLine = $TplLine;
 
+            if( $Value['refund_date_return'] )
+                $refund_status = "<font color=\"green\">".$this->DevTools->lang['refund_ok'] . ": " . $this->DevTools->ThemeChangeTime( $Value['refund_date_return'], $TplLineDate ) . "</a>";
+            else if( $Value['refund_date_cancel'] )
+                $refund_status = "<font color=\"grey\">".$this->DevTools->lang['refund_cancel'] . ": " . $this->DevTools->ThemeChangeTime( $Value['refund_date_cancel'], $TplLineDate ) . "</a>";
+            else
+                $refund_status = $this->DevTools->lang['refund_wait'];
+
 			$params = array(
 				'{date=' . $TplLineDate . '}' => $this->DevTools->ThemeChangeTime( $Value['refund_date'], $TplLineDate ),
 				'{refund.requisites}' => $Value['refund_requisites'],
@@ -135,9 +142,7 @@ Class USER
 				'{refund.commission.currency}' => $this->DevTools->API->Declension( $Value['refund_commission'] ),
 				'{refund.sum}' => $Value['refund_summa'],
 				'{refund.sum.currency}' => $this->DevTools->API->Declension( $Value['refund_summa'] ),
-				'{refund.status}' => $Value['refund_date_return']
-										? '<font color="green">' . $this->DevTools->ThemeChangeTime( $Value['refund_date_return'], $TplLineDate ) . "</font>"
-										: '<font color="red">' . $this->DevTools->lang['refund_wait'] . '</font>'
+				'{refund.status}' => $refund_status
 			);
 
 			$TimeLine = str_replace(array_keys($params), array_values($params), $TimeLine);

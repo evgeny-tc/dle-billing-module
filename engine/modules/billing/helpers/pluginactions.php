@@ -13,7 +13,12 @@ Class PluginActions
     {
         $this->Dashboard->CheckHash();
 
-        $this->Dashboard->SaveConfig( "plugin." . $this->Dashboard->controller, ['status' => 0] );
+        $this->Dashboard->SaveConfig( "plugin." . $this->Dashboard->controller,
+            [
+                'status' => 0,
+                'version' => parse_ini_file( MODULE_PATH . '/plugins/payhide/info.ini' )['version']
+            ]
+        );
 
         $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_install'], '?mod=billing&c=' . $this->Dashboard->controller );
     }
@@ -45,6 +50,21 @@ Class PluginActions
             $this->Dashboard->ThemeMsg(
                 $this->Dashboard->lang['need_install'],
                 '<a href="?mod=billing&c=' . $this->Dashboard->controller . '&m=install&user_hash=' . $this->Dashboard->hash . '" class="btn bg-teal btn-sm btn-raised position-left legitRipple">' . $this->Dashboard->lang['plugins_table_status']['install'] . '</a>',
+                'javascript:history.back()',
+                'info'
+            );
+
+            return;
+        }
+        
+        $config =  $this->Dashboard->LoadConfig( $this->Dashboard->controller );
+        $info = parse_ini_file( MODULE_PATH . '/plugins/' . $this->Dashboard->controller . '/info.ini' );
+
+        if( $config['version'] and version_compare($info['version'], $config['version']) > 0 )
+        {
+            $this->Dashboard->ThemeMsg(
+                $this->Dashboard->lang['need_update'],
+                '<a href="?mod=billing&c=' . $this->Dashboard->controller . '&m=update&user_hash=' . $this->Dashboard->hash . '" class="btn bg-teal btn-sm btn-raised position-left legitRipple">' . $this->Dashboard->lang['plugins_table_status']['updating'] . '</a>',
                 'javascript:history.back()',
                 'info'
             );

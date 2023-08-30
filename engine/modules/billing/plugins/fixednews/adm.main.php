@@ -37,6 +37,8 @@ Class ADMIN extends PluginActions
 			$_POST['save_con']['stop'] = implode(",", $_POST['save_con']['stop']);
 			$_POST['save_con']['stop_categorys'] = implode(",", $_POST['save_con']['stop_categorys']);
 
+            $_POST['save_con']['version'] = parse_ini_file( MODULE_PATH . '/plugins/' . $this->Dashboard->controller . '/info.ini' )['version'];
+
 			$this->Dashboard->SaveConfig("plugin.fixednews", $_POST['save_con'], "plugin_config");
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
 		}

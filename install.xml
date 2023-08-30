@@ -3,7 +3,7 @@
 	<name>DLE Billing</name>
 	<description>Автоматизируйте прием платежей на сайте с помощью модуля DLE Billing</description>
 	<icon>engine/skins/billing/icons/billing.png</icon>
-	<version>0.9.1</version>
+	<version>0.9.2</version>
 	<dleversion>13.0</dleversion>
 	<versioncompare>greater</versioncompare>
 	<upgradeurl>https://dle-billing.ru/update.json</upgradeurl>
@@ -46,13 +46,34 @@ CREATE TABLE `{prefix}_billing_refund` (
 	`refund_commission` decimal(10,2) NOT NULL,
 	`refund_requisites` text NOT NULL,
 	`refund_date_return` int(11) NOT NULL,
+	`refund_date_cancel` int(11) NOT NULL,
 	PRIMARY KEY (`refund_id`)
+) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
+
+CREATE TABLE `{prefix}_billing_coupons` (
+  `coupon_id` int(11) NOT NULL AUTO_INCREMENT,
+  `coupon_use` varchar(40) NOT NULL,
+  `coupon_time_end` int(11) NOT NULL,
+  `coupon_type` int(11) NOT NULL,
+  `coupon_value` float NOT NULL,
+  `coupon_key` varchar(24) NOT NULL,
+    PRIMARY KEY (`coupon_id`)
 ) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
 
 ALTER TABLE `{prefix}_users` ADD `user_balance` decimal(10,2) NOT NULL;
 
 INSERT INTO `{prefix}_static` (`name`, `descr`, `template`, `allow_br`, `allow_template`, `grouplevel`, `tpl`, `metadescr`, `metakeys`, `views`, `template_folder`, `date`, `metatitle`, `allow_count`, `sitemap`, `disable_index`) VALUES ('billing', 'Личный кабинет', 'billing/cabinet', 1, 1, 'all', 'billing', 'billing/cabinet', 'cabinet, billing', 0, '', unix_timestamp(), '', 1, 1, 1);]]></mysqlinstall>
-	<mysqlupgrade><![CDATA[]]></mysqlupgrade>
+	<mysqlupgrade><![CDATA[ALTER TABLE `{prefix}_billing_refund` ADD `refund_date_cancel` int NOT NULL;
+
+CREATE TABLE `{prefix}_billing_coupons` (
+  `coupon_id` int(11) NOT NULL AUTO_INCREMENT,
+  `coupon_use` varchar(40) NOT NULL,
+  `coupon_time_end` int(11) NOT NULL,
+  `coupon_type` int(11) NOT NULL,
+  `coupon_value` float NOT NULL,
+  `coupon_key` varchar(24) NOT NULL,
+    PRIMARY KEY (`coupon_id`)
+) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;]]></mysqlupgrade>
 	<mysqlenable><![CDATA[INSERT INTO `{prefix}_admin_sections` (`name`, `title`, `descr`, `icon`, `allow_groups`) VALUES ('billing', 'DLE Billing', 'Автоматизируйте прием платежей на сайте с помощью модуля DLE-Billing', 'engine/skins/billing/icons/billing.png', '1');]]></mysqlenable>
 	<mysqldisable><![CDATA[DELETE FROM `{prefix}_admin_sections` WHERE name = 'billing';]]></mysqldisable>
 	<mysqldelete><![CDATA[DROP TABLE IF EXISTS `{prefix}_billing_history`;

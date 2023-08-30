@@ -19,6 +19,8 @@ Class ADMIN extends PluginActions
 		{
 			$this->Dashboard->CheckHash();
 
+            $_POST['save_con']['version'] = parse_ini_file( MODULE_PATH . '/plugins/' . $this->Dashboard->controller . '/info.ini' )['version'];
+
 			$this->Dashboard->SaveConfig("plugin.refund", $_POST['save_con']);
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
 		}
@@ -62,7 +64,7 @@ Class ADMIN extends PluginActions
 						$remove_id
 					);
 
-					$this->Dashboard->LQuery->DbRefundRemore( $remove_id );
+					$this->Dashboard->LQuery->DbRefundCancel( $remove_id );
 				}
 			}
 
@@ -145,6 +147,13 @@ Class ADMIN extends PluginActions
 		#
 		foreach( $Data as $Value )
 		{
+            if( $Value['refund_date_return'] )
+                $refund_status = "<font color=\"green\">".$this->Dashboard->lang['refund_act_ok'] . ": " . langdate( "j F Y  G:i", $Value['refund_date_return']) . "</a>";
+            else if( $Value['refund_date_cancel'] )
+                $refund_status = "<font color=\"grey\">".$this->Dashboard->lang['refund_date_cancel'] . ": " . langdate( "j F Y  G:i", $Value['refund_date_cancel']) . "</a>";
+            else
+                $refund_status = "<font color=\"red\">".$this->Dashboard->lang['refund_wait']."</a>";
+
 			$this->Dashboard->ThemeAddTR( array(
 				$Value['refund_id'],
 				$this->Dashboard->API->Convert( $Value['refund_summa']-$Value['refund_commission'] )." ".$this->Dashboard->API->Declension(($Value['refund_summa']-$Value['refund_commission']) ),
@@ -152,12 +161,21 @@ Class ADMIN extends PluginActions
 				$Value['refund_requisites'],
 				$this->Dashboard->ThemeChangeTime( $Value['refund_date']),
 				$this->Dashboard->ThemeInfoUser( $Value['refund_user'] ),
-				$Value['refund_date_return'] ? "<font color=\"green\">".$this->Dashboard->lang['refund_act_ok'] . ": " . langdate( "j F Y  G:i", $Value['refund_date_return'])."</font>": "<font color=\"red\">".$this->Dashboard->lang['refund_wait']."</a>",
+                $refund_status,
 				'<center><input name="remove_list[]" value="'.$Value['refund_id'].'" type="checkbox"></center>'
 			));
 		}
 
-		$ContentList = $this->Dashboard->ThemeParserTable();
+		$ContentList = '<div style="width: 100%; overflow: auto">' . $this->Dashboard->ThemeParserTable(added_table_class:'table-width-scroll') . '</div>';
+
+        $ContentList .= <<<HTML
+<style>
+.btn-group .dropdown-menu
+{
+position: relative;
+}
+</style>
+HTML;
 
 		if( $NumData )
 		{
@@ -166,12 +184,12 @@ Class ADMIN extends PluginActions
 							$this->Dashboard->API->Pagination(
 								$NumData,
 								$Get['page'],
-								$PHP_SELF . "?mod=billing&c=refund&p=user/{$Get['user']}/page/{p}",
+								"?mod=billing&c=refund&p=user/{$Get['user']}/page/{p}",
 								"<li><a href=\"{page_num_link}\">{page_num}</a></li>",
 								"<li class=\"active\"><span>{page_num}</span></li>",
 								$PerPage
 							) . '</ul>
-						<div style="float: right">
+						<div class="table-bottom-select">
 								<select name="act" class="uniform">
 									<option value="ok">' . $this->Dashboard->lang['refund_act_ok'] . '</option>
 									<option value="wait">' . $this->Dashboard->lang['refund_wait'] . '</option>

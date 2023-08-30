@@ -2,6 +2,8 @@
 
 return array
 (
+    'coupon_use_error' => "Ошибка применения купона",
+
     /* 0.8 */
 	'hash_error' => "Время ожидания модуля закончилось. Повторите попытку",
     'pay_handler_desc' => "Описание:",
@@ -57,6 +59,8 @@ return array
 	'refund_error_minimum' => "Минимальная сумма для вывода - %s %s",
 	'refund_msgOk' => "Вывод средств из системы, номер запроса - %s",
 	'refund_wait' => "Ожидается",
+    'refund_ok' => "Выполнен",
+    'refund_cancel' => "Отменен",
 	'refund_email_title' => "Запрос вывода средств",
 	'refund_email_msg' => "Пользователь %s запросил вывод средств в размере %s %s на реквизиты %s.<br /><br />Подробнее - %s",
 	'refund_ok_title' => "Запрос создан",

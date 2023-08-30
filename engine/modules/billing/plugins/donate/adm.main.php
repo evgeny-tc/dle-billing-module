@@ -19,6 +19,8 @@ Class ADMIN extends PluginActions
 		{
 			$this->Dashboard->CheckHash();
 
+            $_POST['save_con']['version'] = parse_ini_file( MODULE_PATH . '/plugins/' . $this->Dashboard->controller . '/info.ini' )['version'];
+
 			$this->Dashboard->SaveConfig("plugin.donate", $_POST['save_con']);
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
 		}

@@ -31,12 +31,11 @@ Class ADMIN extends PluginActions
 		{
 			$this->Dashboard->CheckHash();
 
-			if( ! $_POST['save_stop'] )
-			{
-				$_POST['save_stop'] = [];
-			}
+            $save_config = $_POST['save_con'];
 
-			$this->Dashboard->SaveConfig("plugin.payhide", $_POST['save_con']);
+            $save_config['version'] = parse_ini_file( MODULE_PATH . '/plugins/payhide/info.ini' )['version'];
+
+			$this->Dashboard->SaveConfig('plugin.payhide', $save_config);
 
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
 		}
@@ -94,7 +93,7 @@ Class ADMIN extends PluginActions
 		{
             $pay_description = '';
 
-            if (strripos($Value['payhide_pagelink'], '|'))
+            if (str_contains($Value['payhide_pagelink'], '|'))
             {
                 $Value['ex_pagelink'] = explode('|', $Value['payhide_pagelink']);
                 $Value['payhide_pagelink'] = $Value['ex_pagelink'][1];
