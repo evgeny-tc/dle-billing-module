@@ -254,11 +254,9 @@ Class Dashboard
 	 * @param bool $status
 	 * @return string
 	 */
-	public function Menu( array $sectins, bool $status = false )
+	public function Menu( array|null $sectins = [], bool $status = false )
 	{
-		$sectins = is_array( $sectins ) ? $sectins : array( $sectins );
-
-		if( ! count( $sectins ) ) return '<div style="text-align: center; padding: 40px">' . $this->lang['null'] . '</div>';
+		if( ! is_array( $sectins ) or ! count( $sectins ) ) return '<div style="text-align: center; padding: 40px">' . $this->lang['null'] . '</div>';
 
 		$answer = '<div class="list-bordered">';
 		$num = 0;

@@ -95,7 +95,7 @@ trait Core
 
         while ( $name = readdir($List) )
         {
-            if ( in_array($name, array(".", "..", "/", "index.php", ".htaccess")) ) continue;
+            if ( in_array($name, array(".", "..", "/", "index.php", ".htaccess")) or ! is_dir(MODULE_PATH . '/plugins/' . $name) ) continue;
 
             $this->Plugins[mb_strtolower($name)] = parse_ini_file( MODULE_PATH . '/plugins/' . $name . '/info.ini' );
             $this->Plugins[mb_strtolower($name)]['config'] = file_exists( MODULE_DATA . '/plugin.' . mb_strtolower($name) . '.php' ) ? include MODULE_DATA . '/plugin.' . mb_strtolower($name) . '.php' : array();
@@ -114,7 +114,7 @@ trait Core
 
         while ( $name = readdir($List) )
         {
-            if ( in_array($name, array(".", "..", "/", "index.php", ".htaccess")) ) continue;
+            if ( in_array($name, array(".", "..", "/", "index.php", ".htaccess")) or ! is_dir(MODULE_PATH . '/payments/' . $name) ) continue;
 
             $this->Payments[mb_strtolower($name)] = parse_ini_file( MODULE_PATH . '/payments/' . $name . '/info.ini' );
             $this->Payments[mb_strtolower($name)]['config'] = file_exists( MODULE_DATA . '/payment.' . mb_strtolower($name) . '.php' ) ? include MODULE_DATA . '/payment.' . mb_strtolower($name) . '.php' : array();
