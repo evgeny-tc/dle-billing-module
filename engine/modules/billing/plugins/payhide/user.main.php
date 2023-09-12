@@ -187,8 +187,8 @@ Class USER
 		$invoice_id = $this->DevTools->LQuery->DbCreatInvoice(
 			'',
 			$userUid,
-			$Get['price'],
-			$Get['price'],
+			floatval($Get['price']),
+			floatval($Get['price']),
 			[
 				'billing' => [
 					'from_balance' => $payFromBalance

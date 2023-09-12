@@ -142,8 +142,6 @@ if( ! function_exists('BillingPayhideParser') )
             $Data['price'] = 0;
         }
 
-        $Data['price'] = number_format($Data['price'], 2, '.', '');
-
         # Автор поста
         #
         if( $row['autor'] )
@@ -231,7 +229,6 @@ if( ! function_exists('BillingPayhideParser') )
         #
         unset( $Data['content'] );
         unset( $Data['post'] );
-        unset( $Data['title'] );
 
         $setSecret = '';
 
