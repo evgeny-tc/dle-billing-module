@@ -81,9 +81,7 @@ p.bt_catalog_desc
 
 .statistics_label
 {
-	float: right;
-	margin-right: 40px;
-	padding: 2px
+	padding-left: 20px;
 }
 
 .url-list

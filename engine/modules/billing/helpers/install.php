@@ -129,7 +129,7 @@ echo "<form action=\"\" method=\"post\">
 				</div>
 
 				<div class=\"panel-body\">
-					<div style=\"height: 200px; border: 1px solid #76774C; background-color: #FDFDD3; padding: 5px; overflow: auto;\">
+					<div style=\"height: 200px; border: 1px solid #76774C; background-color: #FDFDD3; padding: 5px; overflow: auto;color:black\">
 						{$_Lang['license']}
 					</div>
 				</div>

@@ -3,6 +3,8 @@
 return array
 (
     'coupon_use_error' => "Ошибка применения купона",
+    'coupon_use_ok' => "<font color='green'>Купон применен</font>",
+    'coupon_use_notfound' => "<font color='red'>Купон не найден</font>",
 
     /* 0.8 */
 	'hash_error' => "Время ожидания модуля закончилось. Повторите попытку",

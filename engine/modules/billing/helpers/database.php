@@ -482,7 +482,13 @@ Class Database
 		return $str;
 	}
 
-	function parsPage( &$intFrom, &$intPer )
+    /**
+     * Preprocess paging
+     * @param $intFrom
+     * @param $intPer
+     * @return void
+     */
+	public function parsPage( &$intFrom, &$intPer ) : void
 	{
 		$intFrom = intval( $intFrom );
 		$intPer = intval( $intPer );
@@ -491,7 +497,5 @@ Class Database
 		if( $intPer < 1 ) $intPer = 30;
 
 		$intFrom = ( $intFrom * $intPer ) - $intPer;
-
-		return;
 	}
 }

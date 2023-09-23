@@ -59,7 +59,7 @@ Class Dashboard
 	 * Current version
 	 * @var [type]
 	 */
-	public string $version = '0.9.2';
+	public string $version = '0.9.3';
 
 	/**
 	 * Config this module
@@ -379,7 +379,7 @@ Class Dashboard
 	{
 		$hash = $hash ? "<input type=\"hidden\" name=\"user_hash\" value=\"" . $this->hash . "\" />" : "";
 
-		return "<input class=\"btn bg-teal btn-sm btn-raised legitRipple " . $color . "\" name=\"" . $name . "\" " . $id . " type=\"submit\" value=\"" . $title . "\">" . $hash;
+		return "<input class=\"btn bg-teal btn-sm btn-raised legitRipple " . $color . "\" name=\"" . $name . "\" type=\"submit\" value=\"" . $title . "\">" . $hash;
 	}
 
 	/**
@@ -695,7 +695,9 @@ HTML;
 		$JSmenu = "<ul>" . $JSmenu . "</ul>";
 
         $JSmenu = "$('li .active').after('{$JSmenu}');
-					$('.curmod > ul').css('display', 'block');";
+					$('.curmod > ul').css('display', 'block');
+					$('.navigation-main > li').filter(':not(:nth-child(2),:first-child,:last-child)').hide();
+					$('.curmod').addClass('active');";
 
 		echoheader( "<div style=\"line-height: 1.2384616;\">
 						<span class=\"text-semibold\">{$this->lang['title']}</span> <br />
@@ -704,8 +706,9 @@ HTML;
 
 		echo "<link href=\"engine/skins/billing/styles.css\" media=\"screen\" rel=\"stylesheet\" type=\"text/css\" />";
 
-		echo '<script src="engine/skins/billing/highcharts.js"></script>
-			  <script src="engine/skins/billing/exporting.js"></script>
+		echo '
+		      <script src="engine/skins/billing/highcharts.js"></script>
+		      <script src="engine/skins/billing/accessibility.js"></script>
 			  <script src="engine/skins/billing/core.js"></script>
 			  <script type="text/javascript">
 			  	jQuery(document).ready(function(){'.$JSmenu.'});

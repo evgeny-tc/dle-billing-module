@@ -35,11 +35,9 @@ trait Utheme
      * @param string $value
      * @return void
      */
-    public function ThemeSetElementBlock( string $fields, $value = '' )
+    public function ThemeSetElementBlock(string $fields, $value = '' ) : void
     {
         $this->element_block[$fields] = $value;
-
-        return;
     }
 
     /**
@@ -76,10 +74,10 @@ trait Utheme
      * Replace content tag
      * @param string $tag
      * @param string $data
-     * @param string $update
+     * @param string|null $update
      * @return void
      */
-    public function ThemePregReplace( string $tag, string &$data, $update = '' )
+    public function ThemePregReplace(string $tag, string &$data, string|null $update = '' )
     {
         $data = preg_replace("'\\[$tag\\].*?\\[/$tag\\]'si", $update, $data);
 
@@ -101,4 +99,10 @@ trait Utheme
         return $answer[1];
     }
 
+    public static function TPL()
+    {
+        global $tpl;
+
+        return $tpl ?: throw new Exception("tpl class error load");
+    }
 }

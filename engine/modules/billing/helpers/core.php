@@ -9,6 +9,12 @@
 
 trait Core
 {
+    /**
+     * Проверить hash строку
+     * @param string $hash
+     * @return void
+     * @throws Exception
+     */
     public function CheckHash(string $hash = '')
     {
         $hash = $hash ?: $_REQUEST['user_hash'];
@@ -19,7 +25,11 @@ trait Core
         }
     }
 
-
+    /**
+     * @param string $file
+     * @param ...$msg
+     * @return void
+     */
     public function Logger(string $file, ...$msg) : void
     {
         if( ! file_exists( MODULE_PATH . "/log/{$file}.txt"  ) )
@@ -42,13 +52,16 @@ trait Core
         return;
     }
 
-    # Фото пользователя
-    #
-    private function Foto( $foto )
+    /**
+     * Фото пользователя
+     * @param $foto
+     * @return mixed|string
+     */
+    public function Foto( $foto )
     {
         if ( count(explode("@", $foto)) == 2 )
         {
-            return 'http://www.gravatar.com/avatar/' . md5(trim($foto)) . '?s=150';
+            return 'https://www.gravatar.com/avatar/' . md5(trim($foto)) . '?s=150';
         }
         else if( $foto and ( file_exists( ROOT_DIR . "/uploads/fotos/" . $foto )) )
         {
@@ -62,9 +75,12 @@ trait Core
         return "/templates/{$this->dle['skin']}/dleimages/noavatar.png";
     }
 
-    # Время и дата
-    #
-    function ThemeChangeTime( int $time )
+    /**
+     * Время и дата
+     * @param int $time
+     * @return string
+     */
+    public function ThemeChangeTime( int $time )
     {
         date_default_timezone_set( $this->dle['date_adjust'] );
 
@@ -85,9 +101,11 @@ trait Core
         }
     }
 
-    # Массив плагинов
-    #
-    function Plugins()
+    /**
+     * Plugins
+     * @return array
+     */
+    public function Plugins()
     {
         if( $this->Plugins ) return $this->Plugins;
 
@@ -104,9 +122,11 @@ trait Core
         return $this->Plugins;
     }
 
-    # Массив платежных систем
-    #
-    function Payments()
+    /**
+     * Payments list
+     * @return array
+     */
+    public function Payments()
     {
         if( $this->Payments ) return $this->Payments;
 
@@ -128,7 +148,13 @@ trait Core
         return $this->Payments;
     }
 
-    function GetGroups( $id = false, $none = false )
+    /**
+     * Usergroups in select
+     * @param $id
+     * @param $none
+     * @return string
+     */
+    public function GetGroups( $id = false, $none = false )
     {
         global $user_group;
 
@@ -156,9 +182,14 @@ trait Core
         return $returnstring;
     }
 
-    # Загрузить или создать файл настроек
-    #
-    function LoadConfig( $file, $creat = false, $setStarting = [] )
+    /**
+     * Загрузить или создать файл настроек
+     * @param $file
+     * @param $creat
+     * @param $setStarting
+     * @return false|mixed
+     */
+    public function LoadConfig( $file, $creat = false, $setStarting = [] )
     {
         if( ! file_exists( MODULE_DATA . '/plugin.' . $file . '.php' ) )
         {
@@ -177,9 +208,12 @@ trait Core
         }
     }
 
-    # Генерация строки
-    #
-    function genCode( $length = 8 )
+    /**
+     * Генерация строки
+     * @param $length
+     * @return string
+     */
+    public function genCode( $length = 8 )
     {
         $chars = 'abdefhiknrstyzABDEFGHKNQRSTYZ23456789';
         $numChars = strlen($chars);
@@ -192,7 +226,13 @@ trait Core
         return $string;
     }
 
-    function CreatCache( $file, $data )
+    /**
+     * Сохранить кеш в файл
+     * @param $file
+     * @param $data
+     * @return void
+     */
+    public function CreatCache( $file, $data )
     {
         file_put_contents (ENGINE_DIR . "/cache/" . $file . ".tmp", $data, LOCK_EX);
 
@@ -201,7 +241,12 @@ trait Core
         return;
     }
 
-    function GetCache( $file )
+    /**
+     * Проверить кеш и загрузить
+     * @param $file
+     * @return false|string
+     */
+    public function GetCache( $file )
     {
         $buffer = @file_get_contents( ENGINE_DIR . "/cache/" . $file . ".tmp" );
 

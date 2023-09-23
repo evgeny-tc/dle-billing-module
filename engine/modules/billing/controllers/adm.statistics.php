@@ -9,52 +9,16 @@
 
 Class ADMIN
 {
-    private $_StartTime = 0;
-    private $_EndTime = 0;
-    private $_SectorTime = 'D';
+    private int $_StartTime = 0;
+    private int $_EndTime = 0;
 
-    private $_Querys = array();
+    private string $_SectorTime = 'D';
 
-    private $draw = 0;
+    private array $_Querys = [];
 
     public function __construct()
     {
         session_start();
-
-        if( $_GET['date'] == 'now' )
-        {
-            $_SESSION['billingTimeStart'] = mktime(0,0,0);
-            $_SESSION['billingTimeEnd'] = mktime(0,0,0);
-            $_SESSION['billingTimeSector'] = 'D';
-        }
-        else if( $_GET['date'] == 'week' )
-        {
-            $_SESSION['billingTimeStart'] = strtotime(date("d.m.Y", strtotime("last Monday")));
-            $_SESSION['billingTimeEnd'] = strtotime(date("d.m.Y", strtotime("Sunday")));
-            $_SESSION['billingTimeSector'] = 'D';
-        }
-        else if( $_GET['date'] == 'month' )
-        {
-            $_SESSION['billingTimeStart'] = strtotime(date("Y-m-01"));
-            $_SESSION['billingTimeEnd'] = strtotime(date("Y-m-t"));
-            $_SESSION['billingTimeSector'] = 'D';
-        }
-        else if( $_GET['date'] == 'year' )
-        {
-            $_SESSION['billingTimeStart'] = strtotime(date("Y-01-01"));
-            $_SESSION['billingTimeEnd'] = strtotime(date("Y-12-31"));
-            $_SESSION['billingTimeSector'] = 'M';
-        }
-
-        if( $_GET['date'] )
-        {
-            $_SESSION['billingTime'] = $_GET['date'];
-            $_SESSION['billingTimeEnd'] += 86399;
-
-            header("Location: " . $_SERVER['HTTP_REFERER']);
-
-            exit();
-        }
 
         if( isset( $_POST['sort'] ) )
         {
@@ -93,33 +57,130 @@ Class ADMIN
             ? $_SESSION['billingTimeSector']
             : 'D';
 
-        $this->_Querys = include DLEPlugins::Check( MODULE_PATH . '/helpers/statistics.querys.php' );
+        $this->_Querys = include MODULE_PATH . '/helpers/statistics.querys.php';
     }
 
     /**
-     * Расчетный доход
+     * Navigation
+     * @param string $filter
+     * @return string
+     */
+    private function LeftBar(string $filter = '')
+    {
+        $selectDateRange = $this->Dashboard->MakeCalendar("date_edit_start", date( "Y-m-d", $this->_StartTime ), 'border:none; width: 35%; text-align: right; color:white;margin-right:10px' );
+        $selectDateRange .= '-  ' . $this->Dashboard->MakeCalendar("date_edit_end", date( "Y-m-d", $this->_EndTime ), 'border:none; width: 35%; color:white;margin-left:5px' );
+        $selectDateRange .= '<button class="btn bg-teal btn-sm " name="sort" type="submit"><i class="fa fa-filter" aria-hidden="true"></i></button>';
+
+        $menu = [
+            '' => $this->Dashboard->lang['statistics_0'],
+            'board' => $this->Dashboard->lang['statistics_7'],
+            'billings' => $this->Dashboard->lang['statistics_2_title'],
+            'plugins' => $this->Dashboard->lang['statistics_3_title'],
+            'users' => $this->Dashboard->lang['statistics_4_title'],
+            'clean' => $this->Dashboard->lang['statistics_5']
+        ];
+
+        $return_menu = '';
+
+        foreach ($menu as $tag => $name)
+        {
+            $return_menu .= '<li ' . ( $tag == $_GET['m'] ? 'class="active"' : '' ) . ' style="width: 100%;"><a href="?mod=billing&c=statistics' . ( $tag ? '&m=' . $tag : '' ) . '" class="tip legitRipple" title="" data-original-title="' . $this->Dashboard->lang['statistics_menu'][$tag] . '">' . $name . '</a></li>';
+        }
+
+        return <<<HTML
+            <div class=" bg-primary-700" style="padding:10px; margin-bottom: 10px">
+                <form method='post'>
+				    {$selectDateRange}
+				</form>
+			</div>
+      
+        {$filter}
+      
+      <div style="padding-right:0" class="navbar navbar-default navbar-component navbar-xs systemsettings">
+			<ul class="nav navbar-nav visible-xs-block">
+				<li class="full-width text-center"><a data-toggle="collapse" data-target="#navbar-filter" class="legitRipple"><i class="fa fa-bars"></i></a></li>
+			</ul>
+			<div class="navbar-collapse collapse" id="navbar-filter">
+				<ul class="nav navbar-nav">
+					{$return_menu}
+				</ul>
+			</div>
+		</div>
+
+        {$this->stats()}
+HTML;
+    }
+
+    /**
+     * Main page
      * @return string
      */
     public function main()
     {
         $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
 
-        $Content = $this->menu();
+        # График
+        #
+        $ContentPage = $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_new_1_graf'] );
+        $ContentPage .= $this->DrawChartMain( $this->_Querys['main'] );
+        $ContentPage .= $this->Dashboard->ThemeHeadClose();
+
+        $Content = <<<HTML
+            <div>
+                <div class="row">
+                  <div class="col-md-3">{$this->LeftBar()}</div>
+                  <div class="col-md-9">{$ContentPage}</div>
+                </div>
+            </div>
+HTML;
+
+        $Content .= $this->Dashboard->ThemeEchoFoother();
+
+        return $Content;
+    }
+
+    /**
+     * Payments page
+     * @return string
+     */
+    public function billings()
+    {
+        $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
+
+        $ContentPage = $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_2'] );
+        $ContentPage .= $this->DrawPaymentsStatUp( sprintf($this->_Querys['billing_up'], $this->_StartTime, $this->_EndTime), sprintf($this->_Querys['billing_up_null'], $this->_StartTime, $this->_EndTime) );
+        $ContentPage .= $this->Dashboard->ThemeHeadClose();
+
+        $ContentPage .= $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_2_tab_2'] );
+        $ContentPage .= $this->DrawPaymentsExp( sprintf($this->_Querys['billing_exp'], $this->_StartTime, $this->_EndTime, $this->_SectorTime) );
+        $ContentPage .= $this->Dashboard->ThemeHeadClose();
+
+        $Content = <<<HTML
+            <div>
+                <div class="row">
+                  <div class="col-md-3">{$this->LeftBar()}</div>
+                  <div class="col-md-9">{$ContentPage}</div>
+                </div>
+            </div>
+HTML;
+
+        $Content .= $this->Dashboard->ThemeEchoFoother();
+
+        return $Content;
+    }
+
+    /**
+     * Total page
+     * @return string
+     */
+    public function board()
+    {
+        $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
 
         # Сводка
         #
         $_BalanceAll = $this->Dashboard->LQuery->db->super_query( sprintf( $this->_Querys['balance_all'], $this->Dashboard->config['fname'] ) );
         $_BalanceToday = $this->Dashboard->LQuery->db->super_query( sprintf( $this->_Querys['balance_today'], mktime(0,0,0)) );
-        $_BalancePrev = $this->Dashboard->LQuery->db->super_query( sprintf( $this->_Querys['balance_yesterday'], ( mktime(0,0,0) - 86400 ), mktime(0,0,0)) );
-
-        if( $_BalanceToday['sum'] < $_BalancePrev['sum'] )
-        {
-            $_BalancePercents = intval(( ( $_BalanceToday['sum'] - $_BalancePrev['sum'] ) * 100 ) / ($_BalancePrev['sum'] ?: 1));
-        }
-        else
-        {
-            $_BalancePercents = intval(( ( $_BalanceToday['sum'] - $_BalancePrev['sum'] ) * 100 ) / ($_BalanceToday['sum'] ?: 1));
-        }
 
         $_RefundAll = $this->Dashboard->LQuery->db->super_query( $this->_Querys['refund_all'] );
         $_RefundWait = $this->Dashboard->LQuery->db->super_query( $this->_Querys['refund_wait'] );
@@ -132,28 +193,15 @@ Class ADMIN
         $_InvoiceClass = ! $_InvoiceWait['sum'] ?: 'money_plus';
         $_TransferClass = ! ($_TransferAll['minus'] - $_TransferAll['plus']) ?: 'money_plus';
 
-        if( $_BalancePercents > 0 )
-        {
-            $_BalancePercents = '<font color="green" class="tip" title="' . sprintf($this->Dashboard->lang['statistics_dashboard_yesterday_up'], $this->Dashboard->API->Convert( $_BalancePrev['sum'] ), $this->Dashboard->API->Declension( $_BalancePrev['sum'] ) ) . '">&#9650; ' . $_BalancePercents . '%</font>';
-        }
-        else if( $_BalancePercents < 0 )
-        {
-            $_BalancePercents = '<font color="red" class="tip" title="' . sprintf($this->Dashboard->lang['statistics_dashboard_yesterday_up'], $this->Dashboard->API->Convert( $_BalancePrev['sum'] ), $this->Dashboard->API->Declension( $_BalancePrev['sum'] ) ) . '">&#9660; ' . $_BalancePercents . '%</font>';
-        }
-        else
-        {
-            $_BalancePercents = '<font class="tip" title="' . sprintf($this->Dashboard->lang['statistics_dashboard_yesterday_up'], $this->Dashboard->API->Convert( $_BalancePrev['sum'] ), $this->Dashboard->API->Declension( $_BalancePrev['sum'] ) ) . '">' . $_BalancePercents . '%</font>';
-        }
+        $ContentPage = $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_0_title'] );
 
-        $Content .= $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_0_title'] );
-
-        $Content .= <<<HTML
+        $ContentPage .= <<<HTML
 			<table class="statistics_table">
 				<tr>
 					<td valign="top">
 						{$this->Dashboard->lang['statistics_dashboard_all']}
 						<h4>{$this->Dashboard->API->Convert( $_BalanceAll['sum'] )} {$this->Dashboard->API->Declension( $_BalanceAll['sum'] )}</h4>
-						<span class="statistics_label">{$_BalancePercents}</span>
+						
 						<span class="{$_BalanceTodayClass}">{$this->Dashboard->API->Convert( $_BalanceToday['sum'] )} {$this->Dashboard->API->Declension( $_BalanceToday['sum'] )}</span>
 						<br /><span class="statistics_table_desc">{$this->Dashboard->lang['statistics_dashboard_today']}</span>
 					</td>
@@ -189,13 +237,67 @@ Class ADMIN
 			</table><br />
 HTML;
 
-        $Content .= $this->Dashboard->ThemeHeadClose();
+        $ContentPage .= $this->Dashboard->ThemeHeadClose();
 
-        # График
-        #
-        $Content .= $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_new_1_graf'] );
-        $Content .= $this->DrawChartMain( $this->_Querys['main'] );
-        $Content .= $this->Dashboard->ThemeHeadClose();
+        $Content = <<<HTML
+            <div>
+                <div class="row">
+                  <div class="col-md-3">{$this->LeftBar()}</div>
+                  <div class="col-md-9">{$ContentPage}</div>
+                </div>
+            </div>
+HTML;
+
+        $Content .= $this->Dashboard->ThemeEchoFoother();
+
+        return $Content;
+    }
+
+    /**
+     * Статистика по плагинам
+     * @return string
+     */
+    public function plugins()
+    {
+        $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
+
+        $GetPluginsArray = $this->Dashboard->Plugins();
+
+        $GetMainStatistics = $this->Dashboard->LQuery->db->super_query( sprintf( $this->_Querys['plugins_main'], $this->_StartTime, $this->_EndTime ) );
+
+        $ContentPage = $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_3_tab2'] );
+        $ContentPage .= "<div class='row'>
+                        <div class='col-md-6'>" .
+            $this->DrawPluginsPopulars(
+                sprintf($this->_Querys['plugins_populars_minus'], $this->_StartTime, $this->_EndTime),
+                $GetMainStatistics['minus'] / 100,
+                $this->Dashboard->lang['statistics_d_title1'],
+                sprintf($this->Dashboard->lang['statistics_d_subtitle'], $this->Dashboard->API->Convert( $GetMainStatistics['minus'] ), $this->Dashboard->API->Declension( $GetMainStatistics['minus'] ))
+            ) .
+            "</div>
+                        <div class='col-md-6'>" .
+            $this->DrawPluginsPopulars(
+                sprintf($this->_Querys['plugins_populars_plus'], $this->_StartTime, $this->_EndTime),
+                $GetMainStatistics['plus'] / 100,
+                $this->Dashboard->lang['statistics_d_title2'],
+                sprintf($this->Dashboard->lang['statistics_d_subtitle'], $this->Dashboard->API->Convert( $GetMainStatistics['plus'] ), $this->Dashboard->API->Declension( $GetMainStatistics['plus'] ))
+            ) . "
+                        </div>
+                    </div>";
+        $ContentPage .= $this->Dashboard->ThemeHeadClose();
+
+        $ContentPage .= $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_3'] );
+        $ContentPage .= $this->DrawPluginsCosts( sprintf($this->_Querys['plugins_cost'], $this->_StartTime, $this->_EndTime, $this->_SectorTime) );
+        $ContentPage .= $this->Dashboard->ThemeHeadClose();
+
+        $Content = <<<HTML
+            <div>
+                <div class="row">
+                  <div class="col-md-3">{$this->LeftBar()}</div>
+                  <div class="col-md-9">{$ContentPage}</div>
+                </div>
+            </div>
+HTML;
 
         $Content .= $this->Dashboard->ThemeEchoFoother();
 
@@ -232,52 +334,32 @@ HTML;
 
         $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
 
-        $Content = $this->menu();
-
         $_RefundWait = $this->Dashboard->LQuery->db->super_query( sprintf($this->_Querys['users_refund'], $Result['name']) );
         $GetMainStatistics = $this->Dashboard->LQuery->db->super_query( sprintf( $this->_Querys['users_plugins_main'], $this->_StartTime, $this->_EndTime, $Result['name'] ) );
 
-        $Content .= "<div class='row'>
-						<div class='col-md-8'>
-							<div id='general' class='box' style='padding: 10px'>
-								<table width='100%'>
-									<tr>
-										<td width='62' valign='middle' class='bt_table_right'>
-											<img src='{$this->Foto( $Result['foto'] )}' style='max-width: 62px; border-radius: 5px' title='{$Result['name']}' alt='{$Result['name']}'>
-										</td>
-										<td class='bt_table_right'>
-											{$this->Dashboard->ThemeInfoUser( $Result['name'] )} <br />({$this->UserGroup( $Result )})
-										</td>
-										<td class='bt_table_right' style='font-size: 16px;margin:0;'>
-											{$this->Dashboard->API->Convert( $Result[ $this->Dashboard->config['fname'] ] )} {$this->Dashboard->API->Declension( $Result[ $this->Dashboard->config['fname'] ] )}
-											<div style='margin:0;font-size: 11px; color: #ccc'>{$this->Dashboard->lang['statistics_users_balance']}</div>
-										</td>
-										<td class='bt_table_right' style='font-size: 16px;margin:0;'>
-											{$this->Dashboard->API->Convert( $_RefundWait['sum'] )} {$this->Dashboard->API->Declension( $_RefundWait['sum'] )}
-											<div style='margin:0;font-size: 11px; color: #ccc'>{$this->Dashboard->lang['statistics_users_refund']}</div>
-										</td>
-										<td class='bt_table_right' style='border: none'>
-											<a href='/index.php?do=pm&doaction=newpm&username={$Result['name']}' target='_blank' class='tip' title='{$this->Dashboard->lang['statistics_users_9']}'>
-												<i class='fa fa-comments' style='font-size: 24px;margin-right: 10px; color: #428bca'></i>
-											</a>
-											<a href='/index.php?do=feedback&user={$Result['user_id']}' target='_blank' class='tip' title='{$this->Dashboard->lang['statistics_users_10']}'>
-												<i class='fa fa-envelope' class='settingsb' style='font-size: 24px; color: #428bca'></i>
-											</a>
-										</td>
-									</tr>
-								</table>
-							</div>
-						</div>
-						<div class='col-md-4'>
-							<form method='post' style='text-align:center'>" .
-            $this->Dashboard->MakeMsgInfo(
-                "<input name=\"search_user\" class=\"form-control\" type=\"text\" style=\"width: 60%\" value=\"" . $Result['name'] ."\" required>" .
-                $this->Dashboard->MakeButton("search_btn", $this->Dashboard->lang['users_btn'], "green"),
-                "icon-user",
-                "green"
-            ) .
-            "</form>
-						</div>
+        $Content = "<div class='row' style='padding: 10px; padding-bottom: 10px'>
+                        <div class='col-md-1'>
+                        	<img src='{$this->Dashboard->Foto( $Result['foto'] )}' style='max-width: 42px; border-radius: 5px' title='{$Result['name']}' alt='{$Result['name']}'>
+                        </div>
+                        <div class='col-md-3'>
+                        	 {$this->Dashboard->ThemeInfoUser( $Result['name'] )} <br />({$this->UserGroup( $Result )})
+                        </div>
+                        <div class='col-md-3'>
+                            {$this->Dashboard->API->Convert( $Result[ $this->Dashboard->config['fname'] ] )} {$this->Dashboard->API->Declension( $Result[ $this->Dashboard->config['fname'] ] )}
+							<div style='margin:0;font-size: 11px; color: #ccc'>{$this->Dashboard->lang['statistics_users_balance']}</div>
+                        </div>
+                        <div class='col-md-3'>
+                            {$this->Dashboard->API->Convert( $_RefundWait['sum'] )} {$this->Dashboard->API->Declension( $_RefundWait['sum'] )}
+							<div style='margin:0;font-size: 11px; color: #ccc'>{$this->Dashboard->lang['statistics_users_refund']}</div>
+                        </div>
+                        <div class='col-md-2' style='padding-top: 5px'>
+                            <a href='/index.php?do=pm&doaction=newpm&username={$Result['name']}' target='_blank' class='tip' title='{$this->Dashboard->lang['statistics_users_9']}'>
+									<i class='fa fa-comments' style='font-size: 24px;margin-right: 10px; color: #428bca'></i>
+							</a>
+							<a href='/index.php?do=feedback&user={$Result['user_id']}' target='_blank' class='tip' title='{$this->Dashboard->lang['statistics_users_10']}'>
+								<i class='fa fa-envelope' class='settingsb' style='font-size: 24px; color: #428bca'></i>
+							</a>
+                        </div>
 					</div>";
 
         $tabs[] = array(
@@ -318,80 +400,31 @@ HTML;
 
         $Content .= $this->Dashboard->PanelTabs( $tabs );
 
-        $Content .= $this->Dashboard->ThemeEchoFoother();
-
-        return $Content;
-    }
-
-    /**
-     * Payments
-     * @return string
-     */
-    public function billings()
-    {
-        $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
-
-        $Content = $this->menu();
-
-        $Content .= $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_2'] );
-        $Content .= $this->DrawPaymentsStatUp( sprintf($this->_Querys['billing_up'], $this->_StartTime, $this->_EndTime), sprintf($this->_Querys['billing_up_null'], $this->_StartTime, $this->_EndTime) );
-        $Content .= $this->Dashboard->ThemeHeadClose();
-
-        $Content .= $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_2_tab_2'] );
-        $Content .= $this->DrawPaymentsExp( sprintf($this->_Querys['billing_exp'], $this->_StartTime, $this->_EndTime, $this->_SectorTime) );
-        $Content .= $this->Dashboard->ThemeHeadClose();
-
-        $Content .= $this->Dashboard->ThemeEchoFoother();
-
-        return $Content;
-    }
-
-    /**
-     * Статистика по плагинам
-     * @return string
-     */
-    public function plugins()
-    {
-        $GetPluginsArray = $this->Dashboard->Plugins();
-
-        $GetMainStatistics = $this->Dashboard->LQuery->db->super_query( sprintf( $this->_Querys['plugins_main'], $this->_StartTime, $this->_EndTime ) );
-
-        $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
-
-        $Content = $this->menu();
-
-        $Content .= $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_3_tab2'] );
-        $Content .= "<div class='row'>
-                        <div class='col-md-6'>" .
-            $this->DrawPluginsPopulars(
-                sprintf($this->_Querys['plugins_populars_minus'], $this->_StartTime, $this->_EndTime),
-                $GetMainStatistics['minus'] / 100,
-                $this->Dashboard->lang['statistics_d_title1'],
-                sprintf($this->Dashboard->lang['statistics_d_subtitle'], $this->Dashboard->API->Convert( $GetMainStatistics['minus'] ), $this->Dashboard->API->Declension( $GetMainStatistics['minus'] ))
+        $userSearchPanel = "<form method='post' style='text-align:center'>" .
+            $this->Dashboard->MakeMsgInfo(
+                "<input name=\"search_user\" class=\"form-control\" type=\"text\" style=\"width: 60%\" value=\"" . $Result['name'] ."\" required>" .
+                $this->Dashboard->MakeButton("search_btn", $this->Dashboard->lang['users_btn'], "green"),
+                "icon-user",
+                "green"
             ) .
-            "</div>
-                        <div class='col-md-6'>" .
-            $this->DrawPluginsPopulars(
-                sprintf($this->_Querys['plugins_populars_plus'], $this->_StartTime, $this->_EndTime),
-                $GetMainStatistics['plus'] / 100,
-                $this->Dashboard->lang['statistics_d_title2'],
-                sprintf($this->Dashboard->lang['statistics_d_subtitle'], $this->Dashboard->API->Convert( $GetMainStatistics['plus'] ), $this->Dashboard->API->Declension( $GetMainStatistics['plus'] ))
-            ) . "
-                        </div>
-                    </div>";
-        $Content .= $this->Dashboard->ThemeHeadClose();
+            "</form>";
 
-        $Content .= $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_3'] );
-        $Content .= $this->DrawPluginsCosts( sprintf($this->_Querys['plugins_cost'], $this->_StartTime, $this->_EndTime, $this->_SectorTime) );
-        $Content .= $this->Dashboard->ThemeHeadClose();
-
-        $Content .= $this->Dashboard->ThemeEchoFoother();
+        $Content = <<<HTML
+            <div>
+                <div class="row">
+                  <div class="col-md-3">{$this->LeftBar($userSearchPanel)}</div>
+                  <div class="col-md-9">{$Content}</div>
+                </div>
+            </div>
+HTML;
 
         return $Content;
     }
 
-    # Очистка
-    #
+    /**
+     * Clear page
+     * @return string
+     */
     function clean()
     {
         $GetPluginsArray = $this->Dashboard->Plugins();
@@ -462,8 +495,7 @@ HTML;
 
         $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
 
-        $Content = $this->menu();
-        $Content .= $this->Dashboard->MakeMsgInfo( $this->Dashboard->lang['statistics_clean_info'], "icon-warning-sign", "red");
+        $Content = $this->Dashboard->MakeMsgInfo( $this->Dashboard->lang['statistics_clean_info'], "icon-warning-sign", "red");
         $Content .= $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['statistics_5_title'] );
 
         # Список плагинов с транзакциями
@@ -516,13 +548,27 @@ HTML;
         $Content .= $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("act", $this->Dashboard->lang['act'], "gold", true) );
 
         $Content .= $this->Dashboard->ThemeHeadClose();
+
+        $Content = <<<HTML
+            <div>
+                <div class="row">
+                  <div class="col-md-3">{$this->LeftBar()}</div>
+                  <div class="col-md-9">{$Content}</div>
+                </div>
+            </div>
+HTML;
+
         $Content .= $this->Dashboard->ThemeEchoFoother();
 
         return $Content;
     }
 
-    # Используемые способы пополнения баланса
-    #
+    /**
+     * Используемые способы пополнения баланса
+     * @param $sql
+     * @param $sqlNull
+     * @return mixed|string
+     */
     private function DrawPaymentsStatUp( $sql, $sqlNull )
     {
         $this->draw ++;
@@ -633,7 +679,7 @@ HTML;
     }
 
     /**
-     * Рост значения привлеченных средств
+     * Рост привлеченных средств
      * @param $sql
      * @return mixed|string
      */
@@ -716,158 +762,10 @@ HTML;
     }
 
     /**
-     * Объем расходов и доходов пользователей
-     * @param $sql
+     * График изменения дохода
+     * @param $query_main
      * @return string
      */
-    private function DrawPluginsCosts( $sql )
-    {
-        $this->draw ++;
-
-        # JS vars
-        #
-        $categories = '';
-        $plus = '';
-        $minus = '';
-
-        $this->Dashboard->LQuery->db->query( $sql );
-
-        while ( $row = $this->Dashboard->LQuery->db->get_row() )
-        {
-            if( $this->_SectorTime == 'D' )
-            {
-                $categories .= "'" . $row['D'] . " " . $this->Dashboard->lang['months'][$row['M']] . "', ";
-            }
-            else if( $this->_SectorTime == 'M' )
-            {
-                $categories .= "'" . $this->Dashboard->lang['months_full'][$row['M']] . "', ";
-            }
-            else
-            {
-                $categories .= "'" . $row['Y'] . "', ";
-            }
-
-            $plus .= "{$row['plus']}, ";
-            $minus .= "{$row['minus']}, ";
-        }
-
-        return "<script>
-		$(function () {
-		    $('#container_{$this->draw}').highcharts({
-		        chart: {
-		            type: 'column'
-		        },
-		        title: {
-		            text: ''
-		        },
-		        xAxis: {
-		            categories: [{$categories}]
-		        },
-				yAxis: {
-		            min: 0,
-		            title: {
-		                text: '{$this->Dashboard->lang['history_summa']}'
-		            }
-		        },
-		        credits: {
-		            enabled: false
-		        },
-				tooltip: {
-					split: true,
-					valueSuffix: ' ({$this->Dashboard->API->Declension( 10 )})'
-				},
-		        series: [{
-		            name: '{$this->Dashboard->lang['statistics_plus']}',
-		            data: [{$plus}]
-		        }, {
-		            name: '{$this->Dashboard->lang['statistics_minus']}',
-		            data: [{$minus}]
-		        }]
-		    });
-		});
-		</script>
-		<br />
-		<div id='container_{$this->draw}' style='" . ( $this->draw == 1 ? 'min-width: 310px' : '' )  . "; height: 400px; margin: 10px'></div>";
-    }
-
-
-    /**
-     * Диаграмма расходов и доходов
-     * @param $sql
-     * @param $onePercent
-     * @param $title
-     * @param $subtitle
-     * @return string
-     */
-    private function DrawPluginsPopulars( $sql, $onePercent, $title, $subtitle )
-    {
-        $this->draw ++;
-
-        $jsDB = "";
-
-        $GetPluginsArray = $this->Dashboard->Plugins();
-        $GetPluginsArray['pay']['title'] = $this->Dashboard->lang['statistics_pay'];
-        $GetPluginsArray['users']['title'] = $this->Dashboard->lang['statistics_admin'];
-
-        $this->Dashboard->LQuery->db->query( $sql );
-
-        while ( $row = $this->Dashboard->LQuery->db->get_row() )
-        {
-            $name = $GetPluginsArray[$row['history_plugin']]['title'] ? $GetPluginsArray[$row['history_plugin']]['title'] : $row['history_plugin'];
-
-            $jsDB .= '{name: "'.$name.' <br> '.$row['pay'].' '.$this->Dashboard->API->Declension( $row['pay'] ).' <br>('.$row['rows'] . $this->Dashboard->lang['statistics_d_per'] . ')", y: '.number_format(($row['pay']/$onePercent), 2, '.', '').'},';
-        }
-
-        return <<<HTML
-		<script>
-$(function () {
-
-    $('#container_{$this->draw}').highcharts({
-        chart: {
-            plotBackgroundColor: null,
-            plotBorderWidth: null,
-            plotShadow: false,
-            type: 'pie'
-        },
-        title: {
-            text: '{$title}'
-        },
-		subtitle: {
-        	text: '{$subtitle}'
-    	},
-        tooltip: {
-            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-        },
-        plotOptions: {
-            pie: {
-                allowPointSelect: true,
-                cursor: 'pointer',
-                dataLabels: {
-                    enabled: true,
-                    format: '<b>{point.name}</b>: {point.percentage:.1f} %',
-                    style: {
-                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-                    },
-                    connectorColor: 'silver'
-                }
-            }
-        },
-        series: [{
-            name: "{$this->Dashboard->lang['statistics_d_end']}",
-            data: [
-				{$jsDB}
-            ]
-        }]
-    });
-});
-		</script>
-
-		<div id="container_{$this->draw}" style="width: 100%; margin: 10px auto"></div>
-HTML;
-    }
-
-    # График изменения дохода
-    #
     private function DrawChartMain( $query_main )
     {
         $this->draw ++;
@@ -949,28 +847,210 @@ HTML;
 		<div id=\"container_{$this->draw}\" style=\"min-width: 310px; height: 400px; margin: 10px auto\"></div>";
     }
 
-    # Фото пользователя
-    #
-    private function Foto( $foto )
+    /**
+     * Leftbar total panel
+     * @return string
+     */
+    private function stats()
     {
-        if ( count(explode("@", $foto)) == 2 )
+        # Сводка
+        #
+        $_BalanceAll = $this->Dashboard->LQuery->db->super_query( sprintf( $this->_Querys['balance_all'], $this->Dashboard->config['fname'] ) );
+        $_BalanceToday = $this->Dashboard->LQuery->db->super_query( sprintf( $this->_Querys['balance_today'], mktime(0,0,0)) );
+        $_BalancePrev = $this->Dashboard->LQuery->db->super_query( sprintf( $this->_Querys['balance_yesterday'], ( mktime(0,0,0) - 86400 ), mktime(0,0,0)) );
+
+        if( $_BalanceToday['sum'] < $_BalancePrev['sum'] )
         {
-            return 'http://www.gravatar.com/avatar/' . md5(trim($foto)) . '?s=150';
+            $_BalancePercents = intval(( ( $_BalanceToday['sum'] - $_BalancePrev['sum'] ) * 100 ) / ($_BalancePrev['sum'] ?: 1));
         }
-        else if( $foto and ( file_exists( ROOT_DIR . "/uploads/fotos/" . $foto )) )
+        else
         {
-            return '/uploads/fotos/' . $foto;
-        }
-        elseif( $foto )
-        {
-            return $foto;
+            $_BalancePercents = intval(( ( $_BalanceToday['sum'] - $_BalancePrev['sum'] ) * 100 ) / ($_BalanceToday['sum'] ?: 1));
         }
 
-        return "/templates/{$this->Dashboard->dle['skin']}/dleimages/noavatar.png";
+        $_BalancePercentsText = sprintf(
+            $this->Dashboard->lang['statistics_dashboard_yesterday_up'],
+            $this->Dashboard->API->Convert( $_BalanceToday['sum'] ),
+            $this->Dashboard->API->Declension( $_BalanceToday['sum'] ),
+            $this->Dashboard->API->Convert( $_BalancePrev['sum'] ),
+            $this->Dashboard->API->Declension( $_BalancePrev['sum'] )
+        );
+
+        if( $_BalancePercents > 0 )
+        {
+            $_BalancePercents = '<font color="green" class="tip" title="' . $_BalancePercentsText . '">&#9650; ' . $_BalancePercents . '%</font>';
+        }
+        else if( $_BalancePercents < 0 )
+        {
+            $_BalancePercents = '<font color="red" class="tip" title="' . $_BalancePercentsText . '">&#9660; ' . $_BalancePercents . '%</font>';
+        }
+        else
+            $_BalancePercents = '';
+
+        return '<div class=" bg-success" style="padding:10px; text-align: center; border-radius: 5px; border: 1px solid #ececec;">
+                    <h4 class="tip" data-placement="right" title="' . $this->Dashboard->lang['statistics_dashboard_all'] . '">
+                        <span style="float: left;padding-left:20px"><i class="fa fa-university" aria-hidden="true"></i></span>
+                        ' . number_format($this->Dashboard->API->Convert( $_BalanceAll['sum'] ), 2, '.', ' ') . ' ' . $this->Dashboard->API->Declension( $_BalanceAll['sum'] ) . '
+                        ' . $_BalancePercents . '
+                    </h4>
+                </div>';
     }
 
-    # Группа пользователя
-    #
+    /**
+     * Диаграмма расходов и доходов
+     * @param $sql
+     * @param $onePercent
+     * @param $title
+     * @param $subtitle
+     * @return string
+     */
+    private function DrawPluginsPopulars( $sql, $onePercent, $title, $subtitle )
+    {
+        $this->draw ++;
+
+        $jsDB = "";
+
+        $GetPluginsArray = $this->Dashboard->Plugins();
+        $GetPluginsArray['pay']['title'] = $this->Dashboard->lang['statistics_pay'];
+        $GetPluginsArray['users']['title'] = $this->Dashboard->lang['statistics_admin'];
+
+        $this->Dashboard->LQuery->db->query( $sql );
+
+        while ( $row = $this->Dashboard->LQuery->db->get_row() )
+        {
+            $name = $GetPluginsArray[$row['history_plugin']]['title'] ? $GetPluginsArray[$row['history_plugin']]['title'] : $row['history_plugin'];
+
+            $jsDB .= '{name: "'.$name.' <br> '.$row['pay'].' '.$this->Dashboard->API->Declension( $row['pay'] ).' <br>('.$row['rows'] . $this->Dashboard->lang['statistics_d_per'] . ')", y: '.number_format(($row['pay']/$onePercent), 2, '.', '').'},';
+        }
+
+        return <<<HTML
+		<script>
+$(function () {
+
+    $('#container_{$this->draw}').highcharts({
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            type: 'pie'
+        },
+        title: {
+            text: '{$title}'
+        },
+		subtitle: {
+        	text: '{$subtitle}'
+    	},
+        tooltip: {
+            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                    style: {
+                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                    },
+                    connectorColor: 'silver'
+                }
+            }
+        },
+        series: [{
+            name: "{$this->Dashboard->lang['statistics_d_end']}",
+            data: [
+				{$jsDB}
+            ]
+        }]
+    });
+});
+		</script>
+
+		<div id="container_{$this->draw}" style="width: 100%; margin: 10px auto"></div>
+HTML;
+    }
+
+    /**
+     * Объем расходов и доходов пользователей
+     * @param $sql
+     * @return string
+     */
+    private function DrawPluginsCosts( $sql )
+    {
+        $this->draw ++;
+
+        # JS vars
+        #
+        $categories = '';
+        $plus = '';
+        $minus = '';
+
+        $this->Dashboard->LQuery->db->query( $sql );
+
+        while ( $row = $this->Dashboard->LQuery->db->get_row() )
+        {
+            if( $this->_SectorTime == 'D' )
+            {
+                $categories .= "'" . $row['D'] . " " . $this->Dashboard->lang['months'][$row['M']] . "', ";
+            }
+            else if( $this->_SectorTime == 'M' )
+            {
+                $categories .= "'" . $this->Dashboard->lang['months_full'][$row['M']] . "', ";
+            }
+            else
+            {
+                $categories .= "'" . $row['Y'] . "', ";
+            }
+
+            $plus .= "{$row['plus']}, ";
+            $minus .= "{$row['minus']}, ";
+        }
+
+        return "<script>
+		$(function () {
+		    $('#container_{$this->draw}').highcharts({
+		        chart: {
+		            type: 'column'
+		        },
+		        title: {
+		            text: ''
+		        },
+		        xAxis: {
+		            categories: [{$categories}]
+		        },
+				yAxis: {
+		            min: 0,
+		            title: {
+		                text: '{$this->Dashboard->lang['history_summa']}'
+		            }
+		        },
+		        credits: {
+		            enabled: false
+		        },
+				tooltip: {
+					split: true,
+					valueSuffix: ' ({$this->Dashboard->API->Declension( 10 )})'
+				},
+		        series: [{
+		            name: '{$this->Dashboard->lang['statistics_plus']}',
+		            data: [{$plus}]
+		        }, {
+		            name: '{$this->Dashboard->lang['statistics_minus']}',
+		            data: [{$minus}]
+		        }]
+		    });
+		});
+		</script>
+		<br />
+		<div id='container_{$this->draw}' style='" . ( $this->draw == 1 ? 'min-width: 310px' : '' )  . "; height: 400px; margin: 10px'></div>";
+    }
+
+    /**
+     * Группа пользователя
+     * @param $userInfo
+     * @return string
+     */
     private function UserGroup( $userInfo )
     {
         global $user_group;
@@ -987,77 +1067,5 @@ HTML;
         }
 
         return $user_group[$userInfo['user_group']]['group_name'] . $answer;
-    }
-
-
-    /**
-     * Menu
-     * @return string
-     */
-    private function menu()
-    {
-        $menu = [
-            '' => $this->Dashboard->lang['statistics_0'],
-            'billings' => $this->Dashboard->lang['statistics_2_title'],
-            'plugins' => $this->Dashboard->lang['statistics_3_title'],
-            'users' => $this->Dashboard->lang['statistics_4_title'],
-            'clean' => $this->Dashboard->lang['statistics_5']
-        ];
-
-        $return_menu = '';
-
-        foreach ($menu as $tag => $name)
-        {
-            $return_menu .= '<li ' . ( $tag == $_GET['m'] ? 'class="active"' : '' ) . '><a href="?mod=billing&c=statistics' . ( $tag ? '&m=' . $tag : '' ) . '" class="tip legitRipple" title="" data-original-title="' . $this->Dashboard->lang['statistics_menu'][$tag] . '">' . $name . '</a></li>';
-        }
-
-        return <<<HTML
-		<div class="navbar navbar-default navbar-component navbar-xs systemsettings">
-			<ul class="nav navbar-nav visible-xs-block">
-				<li class="full-width text-center"><a data-toggle="collapse" data-target="#navbar-filter" class="legitRipple"><i class="fa fa-bars"></i></a></li>
-			</ul>
-			<div class="navbar-collapse collapse" id="navbar-filter">
-				<ul class="nav navbar-nav">
-					{$return_menu}
-				</ul>
-			</div>
-		</div>
-
-        <div class="navbar navbar-default navbar-component navbar-xs systemsettings">
-        {$this->EditDate()}
-        </div>
-HTML;
-    }
-
-    /**
-     * Top filter by date
-     * @return string
-     */
-    private function EditDate()
-    {
-        $_times_list = '';
-
-        foreach ($this->Dashboard->lang['stats_filter_dates'] as $time => $name)
-        {
-            $_times_list .= $_SESSION['billingTime'] == $time
-                ? "<a class=\"btn btn-sm btn-primary\" href=\"#\">{$name}</a>"
-                : "<a class=\"btn btn-sm btn-default\" href=\"?mod=billing&c=statistics&date={$time}\">{$name}</a>";
-        }
-
-        return "<form method='post'>
-					<div style='padding: 10px; width: 100%'>
-                        <table width='100%'>
-                            <tr>
-                                <td width='60%'>{$_times_list}</td>
-                                <td>
-                                    " . $this->Dashboard->MakeCalendar("date_edit_start", date( "Y-m-d", $this->_StartTime ), 'width: 25%; text-align: center' ) . "
-                                            -
-                                        " . $this->Dashboard->MakeCalendar("date_edit_end", date( "Y-m-d", $this->_EndTime ), 'width: 25%; text-align: center; margin-right: 10px' ) . "
-                                        " . $this->Dashboard->MakeButton("sort", $this->Dashboard->lang['statistics_show'], "green") . "
-                                </td>
-                            </tr>
-                        </table>
-					</div>
-				</form>";
     }
 }

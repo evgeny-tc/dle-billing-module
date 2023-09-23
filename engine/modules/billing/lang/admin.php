@@ -168,7 +168,7 @@ return array
 	'logger_do_17' => "Платежная система не соответствует указанной в квитанции",
 	'logger_do_18' => "Загружен обработчик для %s",
 
-	'statistics_dashboard_all' => "Всего средств в системе",
+	'statistics_dashboard_all' => "Всего на счетах",
 	'statistics_dashboard_today' => "пополнено сегодня",
 	'statistics_dashboard_refund' => "Выведено из системы",
 	'statistics_dashboard_comission' => "комиссия составила",
@@ -185,7 +185,7 @@ return array
 	'statistics_graph_get' => "Привлечено средств",
 	'statistics_graph_plus' => "Доход пользователей",
 	'statistics_graph_minus' => "Расход пользователей",
-	'statistics_dashboard_yesterday_up' => "По сравнению со вчерашним днем (%s %s)",
+	'statistics_dashboard_yesterday_up' => "Сегодня пополнено на %s %s vs вчера: %s %s",
 
 	'catalog_get_update' => "Получить обновление",
 
@@ -586,15 +586,15 @@ return array
 
 	# 0.5.5
 	#
-    'statistics_0' => "<i class='fa fa-area-chart'></i> Динамика",
+    'statistics_0' => "<i class='fa fa-balance-scale'></i> Динамика",
     'statistics_0_title' => "Динамика за день",
     'statistics_1' => "Общая статистика",
-    'statistics_2' => "Используемые способы пополнения баланса",
+    'statistics_2' => "Пополнение баланса",
     'statistics_2_tab_2' => "Объем привлеченных средств",
     'statistics_2_title' => "<i class='fa fa-money'></i> Платежные системы",
     'statistics_3' => "Объем расходов и доходов пользователей",
     'statistics_3_user' => "Объем расходов и доходов",
-    'statistics_3_tab2' => "Классификация по плагинам",
+    'statistics_3_tab2' => "Плагины",
     'statistics_3_title' => "<i class='fa fa-cogs'></i> Плагины",
     'statistics_4' => "Статистика пользователя",
     'statistics_4_title' => "<i class='fa fa-group'></i> Пользователи",
@@ -602,9 +602,10 @@ return array
     'statistics_5' => "<i class='fa fa-trash'></i> Сбросить статистику",
     'statistics_6_title' => "Вернуться",
     'statistics_6' => "Главное меню",
+    'statistics_7' => "<i class='fa fa-area-chart'></i> Сводка",
 
 	'statistics_new_1' => "Статистика движения средств",
-	'statistics_new_1_graf' => "Рост доходов и расходов пользователей",
+	'statistics_new_1_graf' => "Динамика доходов и расходов пользователей",
 
 	'statistics_clean_1_ok' => "Очистка данных выполнена",
 	'statistics_clean_info' => "<p><b>Внимание!</b></p>
