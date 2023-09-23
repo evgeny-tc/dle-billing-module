@@ -1,6 +1,6 @@
 # DLE Billing
 
-![Version](https://img.shields.io/badge/Version-0.9.2-blue.svg?style=flat-square "Version")
+![Version](https://img.shields.io/badge/Version-0.9.3-blue.svg?style=flat-square "Version")
 ![DLE](https://img.shields.io/badge/DLE-13.0+-green.svg?style=flat-square "DLE")
 ![PHP](https://img.shields.io/badge/PHP-8+-blue.svg?style=flat-square "PHP")
 ![Charset](https://img.shields.io/badge/Charset-utf--8-red.svg?style=flat-square "Charset")
@@ -54,11 +54,17 @@
 - Tegro.money
 - Интеркасса
 - enot.io
+- betatransfer.io
 
 ## API
 Для разработчиков - [документация](https://dle-billing.ru/doc/api "документация").
 
 ## Журнал изменений
+### v.0.9.3 (23.09.2023)
+- Исправлены ошибки в отображении админпанели в темной версии
+- Обновлена страница статистики
+- Добавлена интеграция с платежной системой BetaTransfer.io
+
 ### v.0.9.2 (30.08.2023)
 - Добавлены купоны, дающие скидку на оплату услуг
 - Плагин Возврат средств - добавлен статус заявки "Отменен"
