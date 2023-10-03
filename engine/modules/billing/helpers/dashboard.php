@@ -601,15 +601,15 @@ HTML;
 	public function ThemeInfoUser( string $login )
 	{
 		return "<div class=\"btn-group\">
-					<a href=\"" . $this->dle['http_home_url'] . "user/" . urldecode( $login ) . "/\" target=\"_blank\"><i class=\"fa fa-user\" style=\"margin-left: 10px; margin-right: 5px; vertical-align: middle\"></i></a>
+					<a href=\"" . $this->dle['http_home_url'] . "user/" . urlencode( $login ) . "/\" target=\"_blank\"><i class=\"fa fa-user\" style=\"margin-left: 10px; margin-right: 5px; vertical-align: middle\"></i></a>
 					<a href=\"#\" target=\"_blank\" data-toggle=\"dropdown\" data-original-title=\"" . $this->lang['history_user'] . "\" class=\"status-info tip\"><b>{$login}</b></a>
 					<ul class=\"dropdown-menu text-left\">
-						<li><a href=\"" . $PHP_SELF . "?mod=billing&c=statistics&m=users&p=user/" . urldecode( $login ) . "\"><i class=\"fa fa-bar-chart\"></i> " . $this->lang['user_stats'] . "</a></li>
-						<li><a href=\"" . $PHP_SELF . "?mod=billing&c=transactions&p=user/" . urldecode( $login ) . "\"><i class=\"fa fa-money\"></i> " . $this->lang['user_history'] . "</a></li>
-						<li><a href=\"" . $PHP_SELF . "?mod=billing&c=refund&p=user/" . urldecode( $login ) . "\"><i class=\"fa fa-credit-card\"></i> " . $this->lang['user_refund'] . "</a></li>
-						<li><a href=\"" . $PHP_SELF . "?mod=billing&c=invoice&p=user/" . urldecode( $login ) . "\"><i class=\"fa fa-folder-open-o\"></i> " . $this->lang['user_invoice'] . "</a></li>
+						<li><a href=\"" . $PHP_SELF . "?mod=billing&c=statistics&m=users&p=user/" . urlencode( $login ) . "\"><i class=\"fa fa-bar-chart\"></i> " . $this->lang['user_stats'] . "</a></li>
+						<li><a href=\"" . $PHP_SELF . "?mod=billing&c=transactions&p=user/" . urlencode( $login ) . "\"><i class=\"fa fa-money\"></i> " . $this->lang['user_history'] . "</a></li>
+						<li><a href=\"" . $PHP_SELF . "?mod=billing&c=refund&p=user/" . urlencode( $login ) . "\"><i class=\"fa fa-credit-card\"></i> " . $this->lang['user_refund'] . "</a></li>
+						<li><a href=\"" . $PHP_SELF . "?mod=billing&c=invoice&p=user/" . urlencode( $login ) . "\"><i class=\"fa fa-folder-open-o\"></i> " . $this->lang['user_invoice'] . "</a></li>
 						<li class=\"divider\"></li>
-						<li><a href=\"" . $PHP_SELF . "?mod=billing&c=users&login=" . urldecode( $login ) . "\"><i class=\"fa fa-money\"></i> " . $this->lang['user_balance'] . "</a></li>					</ul>
+						<li><a href=\"" . $PHP_SELF . "?mod=billing&c=users&login=" . urlencode( $login ) . "\"><i class=\"fa fa-money\"></i> " . $this->lang['user_balance'] . "</a></li>					</ul>
 				</div>";
 	}
 
