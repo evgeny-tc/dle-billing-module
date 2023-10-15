@@ -59,7 +59,7 @@ Class Dashboard
 	 * Current version
 	 * @var [type]
 	 */
-	public string $version = '0.9.3';
+	public string $version = '0.9.4';
 
 	/**
 	 * Config this module

@@ -78,12 +78,19 @@ Class USER
 				$params['{time}'] = $this->local_lang['timeFull'];
 			}
 
-			if (strripos($Value['payhide_pagelink'], '|'))
+			$pay_desc = '';
+
+			if (str_contains($Value['payhide_pagelink'], '|'))
 			{
 				$Value['ex_pagelink'] = explode('|', $Value['payhide_pagelink']);
 				$Value['payhide_pagelink'] = $Value['ex_pagelink'][1];
 
-				$params['{pay_desc}'] = $Value['ex_pagelink'][0];
+				$pay_desc = trim($Value['ex_pagelink'][0]);
+			}
+
+			if( $pay_desc )
+			{
+				$params['{pay_desc}'] = $pay_desc;
 				$params['[pay_desc]'] = '';
 				$params['[/pay_desc]'] = '';
 

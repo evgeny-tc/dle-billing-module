@@ -1,6 +1,6 @@
 # DLE Billing
 
-![Version](https://img.shields.io/badge/Version-0.9.3-blue.svg?style=flat-square "Version")
+![Version](https://img.shields.io/badge/Version-0.9.4-blue.svg?style=flat-square "Version")
 ![DLE](https://img.shields.io/badge/DLE-13.0+-green.svg?style=flat-square "DLE")
 ![PHP](https://img.shields.io/badge/PHP-8+-blue.svg?style=flat-square "PHP")
 ![Charset](https://img.shields.io/badge/Charset-utf--8-red.svg?style=flat-square "Charset")
@@ -24,13 +24,13 @@
 [[issues](https://github.com/evgeny-tc/dle-billing-module/issues)]
 
 ## Установить
-1. [Загрузить](https://github.com/evgeny-tc/dle-billing-module/releases/download/beta-10-06/archive.zip "Скачать архив")  архив с модулем / [другие версии](https://github.com/evgeny-tc/dle-billing-module/releases)
+1. [Загрузить](https://github.com/evgeny-tc/dle-billing-module/releases/download/beta-10-06/archive.zip "Скачать архив") архив с модулем / [другие версии](https://github.com/evgeny-tc/dle-billing-module/releases)
 2. **Панель управления** -> **Утилиты** -> **Управление плагинами** - загрузить скачанный архив
 3. Открыть страницу ваш_сайт.ру/admin.php?mod=billing и запустить установщик
 
 ## Обновить
 1. Обновите модуль через систему плагинов
-2. Войдите в админ.панель модуля для автоматического обновления бд и конфигурации модуля.
+2. Войдите в админпанель модуля для автоматического обновления бд и конфигурации модуля.
 
 ## Плагины
 - Перевод средств между пользователями
@@ -107,5 +107,5 @@
 - Изменён принцип создание новых квитанций: теперь создается квитанция и её можна оплачивать любой платежной системой.
 
 ### v0.7.3 (06.06.2019)
-- Модуль адаптирован под DLE 13.0 и выше .
+- Модуль адаптирован под DLE 13.0 и выше.
 - Изменены иконки в админ панель модуля.
