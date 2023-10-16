@@ -338,6 +338,9 @@ HTML;
     {
         $_return = [];
 
+        if(!is_dir(ROOT_DIR . '/templates/' . $this->Dashboard->dle['skin'] . '/billing/plugins/forms/'))
+            return '';
+
         $List = opendir( ROOT_DIR . '/templates/' . $this->Dashboard->dle['skin'] . '/billing/plugins/forms/' );
 
         while ( $name = readdir($List) )
