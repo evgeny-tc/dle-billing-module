@@ -99,7 +99,7 @@ Class Payment
 	{
 		$hash = sha1($data['notification_type'].'&'.$data['operation_id'].'&'.$data['amount'].'&'.$data['currency'].'&'.$data['datetime'].'&'.$data['sender'].'&'.$data['codepro'].'&'.$config['key'].'&'.$data['label']);
 
-		if( $data['amount'] != $invoice['invoice_pay'] )
+		if( $data['withdraw_amount'] != $invoice['invoice_pay'] )
 		{
 			return "Error sum " . $data['amount'];
 		}
