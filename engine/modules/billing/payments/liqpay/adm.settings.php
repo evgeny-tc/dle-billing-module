@@ -31,12 +31,9 @@ Class Payment
 			"Валюта платежа:",
 			"Выберите валюту совершения платежа.",
 			"<select name=\"save_con[currency]\" class=\"uniform\">
-				<option value=\"RUB\" " . ( $config['currency'] == 'RUB' ? "selected" : "" ) . ">RUB</option>
 				<option value=\"USD\" " . ( $config['currency'] == 'USD' ? "selected" : "" ) . ">USD</option>
 				<option value=\"EUR\" " . ( $config['currency'] == 'EUR' ? "selected" : "" ) . ">EUR</option>
 				<option value=\"UAH\" " . ( $config['currency'] == 'UAH' ? "selected" : "" ) . ">UAH</option>
-				<option value=\"BYN\" " . ( $config['currency'] == 'BYN' ? "selected" : "" ) . ">BYN</option>
-				<option value=\"KZT\" " . ( $config['currency'] == 'KZT' ? "selected" : "" ) . ">KZT</option>
 			</select>"
 		);
 

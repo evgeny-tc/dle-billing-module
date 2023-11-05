@@ -44,31 +44,16 @@ Class USER
                 return $this->DevTools->ThemeMsg( $this->DevTools->lang['pay_error_title'], sprintf( $this->DevTools->lang['invoice_max_num'], $this->DevTools->config['invoice_max_num'] ) );
             }
 
-            $_Sum = $this->DevTools->LQuery->db->safesql( $_POST['billingPaySum'] );
-
-            $Error = "";
-
-            if( ! $this->DevTools->API->Convert( $_Sum ) )
+            if( ! $_ConvertSum = $this->DevTools->API->Convert( $_POST['billingPaySum'] ) )
             {
-                $Error = $this->DevTools->lang['pay_incorect_sum'];
+                throw new Exception($this->DevTools->lang['pay_summa_error']);
             }
-            else if( ! $_Sum )
-            {
-                $Error = $this->DevTools->lang['pay_summa_error'];
-            }
-
-            if( $Error )
-            {
-                return $this->DevTools->ThemeMsg( $this->DevTools->lang['pay_error_title'], $Error );
-            }
-
-            $_ConvertSum = $this->DevTools->API->Convert( $_POST['billingPaySum'] );
 
             $_InvoiceID = $this->DevTools->LQuery->DbCreatInvoice(
-                "",
-                $this->DevTools->member_id['name'],
-                $_ConvertSum,
-                $_ConvertSum,
+                payment_name: '',
+                username: $this->DevTools->member_id['name'],
+                sum_get: $_ConvertSum,
+                sum_pay: $_ConvertSum
             );
 
             $dataMail = array(
@@ -94,9 +79,7 @@ Class USER
 
         # Форма создания платежа
         #
-        $Tpl = $this->DevTools->ThemeLoad( "pay/start" );
-
-//		$this->DevTools->ThemePregMatch( $Tpl, '~\[payment\](.*?)\[/payment\]~is' );
+        $Tpl = $this->DevTools->ThemeLoad( 'pay/start' );
 
         $GetSum = $GET['sum'] ? $this->DevTools->API->Convert( $GET['sum'] ) : $this->DevTools->config['sum'];
 
@@ -127,6 +110,7 @@ Class USER
      * Квитанция, переход к оплате
      * @param array $GET
      * @return mixed|string
+     * @throws Exception
      */
     public function waiting( array $GET = [] )
     {
@@ -214,10 +198,7 @@ Class USER
                     $from_balance = true;
                 }
 
-                $parsHandler = explode(':', $Invoice['invoice_handler']);
-
-                $pluginHandler = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[0] ) );
-                $fileHandler = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[1] ) );
+                list($pluginHandler, $fileHandler) = DevTools::exInvoiceHandler($Invoice['invoice_handler']);
 
                 if( file_exists( MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php' ) )
                 {
@@ -333,18 +314,12 @@ Class USER
 
                         return $this->DevTools->Show( $this->DevTools->ThemeLoad( 'pay/fail' ) );
                     }
-                    else
-                    {
-                        throw new Exception(
-                            $Error = $this->DevTools->lang['pay_sum_error']
-                        );
-                    }
+
+                    throw new Exception( $this->DevTools->lang['pay_sum_error'] );
                 }
                 else if( ! $_Payment['status'] )
                 {
-                    throw new Exception(
-                        $this->DevTools->lang['pay_paysys_error']
-                    );
+                    throw new Exception( $this->DevTools->lang['pay_paysys_error'] );
                 }
                 else if( $Invoice['invoice_get'] < $_Payment['minimum'] )
                 {
@@ -468,7 +443,7 @@ Class USER
 
             $this->logging( 6 );
 
-            # .. номер квитанции
+            # ..номер квитанции
             #
             $CheckID = $Paysys->check_id( $DATA );
 
@@ -568,10 +543,8 @@ Class USER
         {
             return $payment->null_info( $text );
         }
-        else
-        {
-            return $text;
-        }
+
+        return $text;
     }
 
     /**
@@ -654,10 +627,7 @@ Class USER
         #
         if( $Invoice['invoice_handler'] )
         {
-            $parsHandler = explode(':', $Invoice['invoice_handler']);
-
-            $pluginHandler = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[0] ) );
-            $fileHandler = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[1] ) );
+            list($pluginHandler, $fileHandler) = DevTools::exInvoiceHandler($Invoice['invoice_handler']);
 
             $this->logging( 1, $Invoice['invoice_handler'] );
 
@@ -689,11 +659,9 @@ Class USER
 
         if( $this->DevTools->config['mail_payok_pm'] )
         {
-            $pmres = $this->DevTools->API->Alert( "payok", $dataMail, $SearchUser['user_id'] );
-
-            if( $pmres )
+            if( $this->DevTools->API->Alert( "payok", $dataMail, $SearchUser['user_id'] ) )
             {
-                $this->logging( 15, $pmres );
+                $this->logging( 15, "yes" );
             }
         }
 

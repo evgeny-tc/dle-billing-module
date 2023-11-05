@@ -27,7 +27,7 @@ return new class
 		#
 		if( $this->plugin['status'] and $countPay['count'] == 1 and $plus >= $this->plugin['f_sum'] )
 		{
-			$bonus_sum = $this->plugin['f_bonus_sum'] ? $this->plugin['f_bonus_sum'] : ( $plus / 100 * $this->plugin['f_bonus_percent']);
+			$bonus_sum = $this->plugin['f_bonus_sum'] ?: ( $plus / 100 * $this->plugin['f_bonus_percent']);
 
 			$this->api->PlusMoney(
 				$user,
@@ -42,7 +42,7 @@ return new class
 		#
 		if( $this->plugin['s_status'] and $countPay['count'] > 1 and $plus >= $this->plugin['s_sum'] )
 		{
-			$bonus_sum = $this->plugin['s_bonus_sum'] ? $this->plugin['s_bonus_sum'] : ( $plus / 100 * $this->plugin['s_bonus_percent']);
+			$bonus_sum = $this->plugin['s_bonus_sum'] ?: ( $plus / 100 * $this->plugin['s_bonus_percent']);
 
 			$this->api->PlusMoney(
 				$user,

@@ -297,20 +297,19 @@ Class Database
 		$this->db->query( "DELETE FROM " . USERPREFIX . "_billing_history WHERE history_id = '" . intval( $history_id ) . "'" );
 	}
 
-	/**
-	 * Create invoice
-	 * @param string $strPaySys
-	 * @param string $strUser
-	 * @param float $floatGet
-	 * @param float $floatPay
-	 * @param $payer_info
-	 * @param string $handler
-	 * @return mixed
-	 */
-	public function DbCreatInvoice( string $strPaySys, string $strUser, float $floatGet, float $floatPay = 0, $payer_info = '', string $handler = '' )
-	{
-		$this->parsVar( $strUser );
-
+    /**
+     * Create invoice
+     * @param string $payment_name
+     * @param string $username
+     * @param float $sum_get
+     * @param float $sum_pay
+     * @param string|null $payer_info
+     * @param string $handler
+     * @return mixed
+     */
+	public function DbCreatInvoice( string $payment_name, string $username, float $sum_get, float $sum_pay = 0, mixed $payer_info = '', string $handler = '' ): int
+    {
+		$this->parsVar( $username );
 		$this->parsVar( $handler, "/[^.a-z:\s]/" );
 
 		if( is_array( $payer_info ) )
@@ -335,13 +334,13 @@ Class Database
 		else
 			$payer_info = $this->db->safesql( $payer_info );
 
-		$this->parsVar( $strPaySys, "/[^a-zA-Z0-9\s]/" );
-		$this->parsVar( $floatGet, "/[^.0-9\s]/" );
-		$this->parsVar( $floatPay, "/[^.0-9\s]/" );
+		$this->parsVar( $payment_name, "/[^a-zA-Z0-9\s]/" );
+		$this->parsVar( $sum_get, "/[^.0-9\s]/" );
+		$this->parsVar( $sum_pay, "/[^.0-9\s]/" );
 
 		$this->db->query( "INSERT INTO " . USERPREFIX . "_billing_invoice
 							(invoice_paysys, invoice_user_name, invoice_get, invoice_pay, invoice_date_creat, invoice_payer_info, invoice_handler) values
-							('{$strPaySys}',  '{$strUser }', '{$floatGet}', '{$floatPay}', '{$this->_TIME}', '{$payer_info}', '{$handler}')" );
+							('{$payment_name}',  '{$username }', '{$sum_get}', '{$sum_pay}', '{$this->_TIME}', '{$payer_info}', '{$handler}')" );
 
 		return $this->db->insert_id();
 	}
@@ -360,16 +359,16 @@ Class Database
 		return $this->db->super_query( "SELECT * FROM " . USERPREFIX . "_billing_invoice WHERE invoice_id='" . $id . "'" );
 	}
 
-	/**
-	 * Update invoice by id
-	 * @param $invoice_id
-	 * @param $wait
-	 * @param $invoice_paysys
-	 * @param $invoice_pay
-	 * @param $check_payer_requisites
-	 * @return void
-	 */
-	public function DbInvoiceUpdate( $invoice_id, $wait = false, $invoice_paysys = '', $invoice_pay = '', $check_payer_requisites = '' )
+    /**
+     * Update invoice by id
+     * @param int $invoice_id
+     * @param bool $wait
+     * @param string $invoice_paysys
+     * @param float $invoice_pay
+     * @param string $check_payer_requisites
+     * @return void
+     */
+	public function DbInvoiceUpdate( int $invoice_id, bool $wait = false, string $invoice_paysys = '', float $invoice_pay, string $check_payer_requisites = '' ) : void
 	{
 		$time = ! $wait ? $this->_TIME : 0;
 
@@ -379,8 +378,6 @@ Class Database
 										invoice_pay = '" . $invoice_pay . "',
 										invoice_payer_requisites = '" . $check_payer_requisites . "'
 									WHERE invoice_id = '" . intval( $invoice_id ) . "'" );
-
-		return;
 	}
 
 	/**
@@ -388,11 +385,9 @@ Class Database
 	 * @param $invoice_id
 	 * @return void
 	 */
-	public function DbInvoiceRemove( $invoice_id )
+	public function DbInvoiceRemove( $invoice_id ) : void
 	{
 		$this->db->query( "DELETE FROM " . USERPREFIX . "_billing_invoice WHERE invoice_id='" . intval( $invoice_id ) . "'" );
-
-		return;
 	}
 
 	/**
@@ -403,7 +398,7 @@ Class Database
 	 * @param $strReq
 	 * @return mixed
 	 */
-	public function DbCreatRefund( $strUser, $floatSum, $floatComm, $strReq )
+	public function DbCreatRefund( $strUser, $floatSum, $floatComm, $strReq ) : int
 	{
 		$this->parsVar( $strUser );
 		$this->parsVar( $strReq );
@@ -426,7 +421,7 @@ Class Database
 	 * @param $where_array
 	 * @return void
 	 */
-	public function DbWhere( array $where_array = [] )
+	public function DbWhere( array $where_array = [] ) : void
 	{
 		$this->where = '';
 
@@ -438,8 +433,6 @@ Class Database
 
 			$this->where .= ! $this->where ? "where " . str_replace("{s}", $value, $key) : " and " . str_replace("{s}", $value, $key);
 		}
-
-		return;
 	}
 
 	# Примеры фильтров:
@@ -453,7 +446,7 @@ Class Database
 	 * @param $filter
 	 * @return void
 	 */
-	public function parsVar( &$str, $filter = '' )
+	public function parsVar( &$str, string $filter = '' )
 	{
 		if( is_array( $str ) )
 		{

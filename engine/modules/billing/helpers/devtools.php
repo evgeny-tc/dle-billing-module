@@ -206,7 +206,7 @@ Class DevTools
      */
     public function Show(string $Content, bool $show_panel = true )
     {
-        #$Cabinet = @file_get_contents( ENGINE_DIR . "/cache/system/billing.php" );
+        $Cabinet = @file_get_contents( ENGINE_DIR . "/cache/system/billing.php" );
 
         if( ! $this->member_id['name'] )
         {
@@ -261,7 +261,7 @@ Class DevTools
         $Cabinet = str_replace( "{module.skin}", $this->dle['skin'], $Cabinet);
 
         $Cabinet = str_replace( "{user.name}", $this->member_id['name'], $Cabinet);
-        $Cabinet = str_replace( "{user.balance}", $this->BalanceUser . ' ' . $this->API->Declension( $this->BalanceUser ), $Cabinet);
+        $Cabinet = str_replace( "{user.balance}", $this->API->Convert($this->BalanceUser, number_format_f: true) . ' ' . $this->API->Declension( $this->BalanceUser ), $Cabinet);
         $Cabinet = str_replace( "{user.foto}", $this->Foto( $this->member_id['foto'] ), $Cabinet);
 
         $Cabinet = str_replace( "[active]" . $this->get_plugin . "[/active]", "-active", $Cabinet);
@@ -510,5 +510,24 @@ Class DevTools
         }
 
         return true;
+    }
+
+    /**
+     * Invoice handler string to array
+     * @param string $invoice_handler
+     * @return array
+     *
+     */
+    public static function exInvoiceHandler(string $invoice_handler) : array
+    {
+        $parsHandler = explode(':', $invoice_handler);
+
+        if( count($parsHandler) !== 2 )
+            return [];
+
+        $parsHandler[0] = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[0] ) );
+        $parsHandler[1] = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[1] ) );
+
+        return $parsHandler;
     }
 }

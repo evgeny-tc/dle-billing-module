@@ -284,19 +284,19 @@ Class BillingAPI
     }
 
     /**
-     * Convert the number to the format
+     * Convert the number to billing format for pay
      * @param $money
-     * @param $format
-     * @return int|string
+     * @param string|null $format
+     * @return float|int
      */
-    public function Convert( $money, $format = '' )
+    public function Convert( mixed $money, string|null $format = '', bool $number_format_f = false )
     {
-        if( ! $format ) $format = $this->config['format'];
-        if( ! floatval($money) ) $money = 0;
+        $format = $format ?: $this->config['format'];
+        $money = floatval($money) ?: 0.00;
 
-        if( $format == 'int' ) return intval( $money );
+        if( $format == 'int' ) return $number_format_f ? number_format(intval($money), 0, '', ' ') : $money;
 
-        return number_format($money, 2, '.', '');
+        return $number_format_f ? number_format($money, 2, ',', ' ') : $money;
     }
 
     /**
