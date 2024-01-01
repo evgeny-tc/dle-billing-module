@@ -7,6 +7,8 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class Payment
 {
 	public $doc = 'https://dle-billing.ru/doc/payments/robokassa/';
@@ -18,23 +20,23 @@ Class Payment
 		$config['fiscalization'] = intval( $config['fiscalization'] );
 
 		echo <<<HTML
-<script>
-	window.onload = function ()
-	{
-		let robokassaFiscalizationOn = {$config['fiscalization']};
-		
-		if( ! robokassaFiscalizationOn )
-			robokassaFiscalizationToogle();
-	};
-	
-	function robokassaFiscalizationToogle()
-	{
-		$('.fiscalization_data').each(function(idx)
-		{
-			$( this ).parent().parent().parent().toggle();
-		});
-	}
-</script>
+        <script>
+            window.onload = function ()
+            {
+                let robokassaFiscalizationOn = {$config['fiscalization']};
+                
+                if( ! robokassaFiscalizationOn )
+                    robokassaFiscalizationToogle();
+            };
+            
+            function robokassaFiscalizationToogle()
+            {
+                $('.fiscalization_data').each(function(idx)
+                {
+                    $( this ).parent().parent().parent().toggle();
+                });
+            }
+        </script>
 HTML;
 
 		$Form[] = array(

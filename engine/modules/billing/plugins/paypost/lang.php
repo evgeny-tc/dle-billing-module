@@ -2,14 +2,45 @@
 
 return array
 (
+    'access' => [
+        'login' => 'Пользователь:',
+        'login_desc' => 'Логин или email пользователя',
+        'post' => 'Новость:',
+        'post_desc' => 'Открыть доступ к новости',
+        'time' => 'Доступ до:',
+        'time_desc' => 'Доступ будет открыт до указанной даты<br>Для неограниченного доступа - оставьте поле пустым',
+        'ok' => 'Доступ добавлен',
+    ],
+
+    'ap_create' => "Добавить доступ",
+    'ap_create_btn' => "Добавить",
+
+    'key' => "Ключ",
+    'post' => "Новость",
+    'form_edit' => "Редактировать ключ",
+    'save' => "Сохранить",
+    'error_id' => "Ошибка - ID",
+    'error_key' => "Ошибка - дата",
+    'edit_ok' => "Ключ сохранен",
+    'modal_null' => "Оплата невозможна!",
+    'modal_null_text' => "Нет доступных ключей",
+    'modal_price_text' => "Цена не получена",
+
+    'access_post' => "<a href=\"%s\" target=\"_blank\">%s</a>",
+
 	'pay_process' => "Процесс оплаты",
 	'pay_message' => 'Процесс оплаты...<a href="%s">перейти к оплате</a>.<br>После оплаты - закройте это окно и обновите страницу.',
 
 	'handler' => [
-		'title' => '<a href="%s" target="_blank">Оплата доступа</a>',
+        'er' => "Внутренняя ошибка!",
+        'post' => 'Пост:',
+		'title' => 'Покупка ключа',
+        'desc' => 'Оплата доступа к посту <%s> до %s',
+        'days' => 'Дней:',
 		'end' => 'Доступ открыт до:',
 		'error' => [
 			'tag' => 'Ошибка идентификации доступа',
+			'count' => 'Ключи закончились',
 		],
 	],
 
@@ -17,17 +48,14 @@ return array
 
 	'off' => "Оплата приостановлена",
 	'need_money' => "Недостаточно средств, Вам необходимо <a href='../../../pay/main/sum/%s' target='_blank' onClick='javascript: window.close();'>полнить баланс</a> на %s %s",
-	'already' => "Вы уже оплатили доступ к данному контенту<br /><br /><a href=\"javascript: window.opener.location.reload(); window.close();\">закрыть окно</a>",
-	'balance_desc' => "Оплата доступа на <a href=\"%s\">странице</a>",
-	'balance_ok' => "Оплата выполнена - доступ открыт<br /><br /><a href=\"javascript: window.opener.location.reload(); window.close();\">закрыть окно</a>",
-	'balance_log' => "К Вашей <a href=\"%s\">публикации</a> получен доступ для <a href=\"/user/%s\">%s</a>",
+	'already' => "Вы уже купили этот товар",
+	'balance_desc' => "Покупка ключа",
 	'error_hash' => "Hash данные не совпадают!",
 	'page' => "Страница",
 	'timeFull' => "Навсегда",
-	'timeTo' => "До ",
+	'timeTo' => "Доступ",
 	'error' => "Внимание",
 	'replay' => "Оплачено",
-	'access_post' => "Статья &laquo;<a href=\"%s\" target=\"_blank\">%s</a>&raquo;",
 	'access_page' => "Раздел на <a href=\"%s\" target=\"_blank\">странице</a>",
 	'settigns' => "Настройки",
 
@@ -38,9 +66,9 @@ return array
 	'user' => "Пользователь",
 	'paypage' => "Оплатил",
 	'gentags' => "Генератор тегов",
-	'summa' => "Сумма",
+	'summa' => "Оплачено",
 	'ok' => "Выполнено",
-	'remove' => "Выбранные доступы удалены",
+	'remove' => "Выбранные ключи удалены",
 	'remove_bad' => "Неверный hash",
 	'remove_desc' => "Удалить доступ",
 	'autor' => "Партнер",

@@ -7,9 +7,13 @@
  * @copyright     Copyright (c) 2012-2023, mr_Evgen
  */
 
+namespace Billing;
+
 Class ADMIN
 {
-	function main()
+    public Dashboard $Dashboard;
+
+    public function main() : string
 	{
 		global $user_group;
 
@@ -160,24 +164,28 @@ Class ADMIN
 
 		# Список пользователей
 		#
-		$this->Dashboard->ThemeAddTR( array(
-			'<th>'.$this->Dashboard->lang['users_tanle_login'].'</th>',
-			'<th>'.$this->Dashboard->lang['users_tanle_email'].'</th>',
-			'<th>'.$this->Dashboard->lang['users_tanle_group'].'</th>',
-			'<th>'.$this->Dashboard->lang['users_tanle_datereg'].'</th>',
-			'<th>'.$this->Dashboard->lang['users_tanle_balance'].'</th>'
-		) );
+		$this->Dashboard->ThemeAddTR(
+            [
+                '<th>'.$this->Dashboard->lang['users_tanle_login'].'</th>',
+                '<th>'.$this->Dashboard->lang['users_tanle_email'].'</th>',
+                '<th>'.$this->Dashboard->lang['users_tanle_group'].'</th>',
+                '<th>'.$this->Dashboard->lang['users_tanle_datereg'].'</th>',
+                '<th>'.$this->Dashboard->lang['users_tanle_balance'].'</th>'
+            ]
+        );
 
 		foreach( $Data as $Value )
 		{
-			$this->Dashboard->ThemeAddTR( array(
-				"<span onClick=\"usersAdd( '" . $Value['name'] . "' )\" id=\"user_".$Value['name']."\" style=\"cursor: pointer\"><i class=\"fa fa-plus\" style=\"margin-left: 10px; vertical-align: middle\"></i></span>" .
-				$this->Dashboard->ThemeInfoUser( $Value['name'] ),
-				$Value['email'],
-				$user_group[$Value['user_group']]['group_name'],
-				$this->Dashboard->ThemeChangeTime( $Value['reg_date']),
-				$this->Dashboard->API->Convert( $Value[$this->Dashboard->config['fname']] ) ." ". $this->Dashboard->API->Declension( $Value[$this->Dashboard->config['fname']] )
-			));
+			$this->Dashboard->ThemeAddTR(
+                [
+                    "<span onClick=\"usersAdd( '" . $Value['name'] . "' )\" id=\"user_".$Value['name']."\" style=\"cursor: pointer\"><i class=\"fa fa-plus\" style=\"margin-left: 10px; vertical-align: middle\"></i></span>" .
+                    $this->Dashboard->ThemeInfoUser( $Value['name'] ),
+                    $Value['email'],
+                    $user_group[$Value['user_group']]['group_name'],
+                    $this->Dashboard->ThemeChangeTime( $Value['reg_date']),
+                    $this->Dashboard->API->Convert( $Value[$this->Dashboard->config['fname']] ) ." ". $this->Dashboard->API->Declension( $Value[$this->Dashboard->config['fname']] )
+                ]
+            );
 		}
 
 		$ContentTab = $this->Dashboard->ThemeParserTable();
@@ -244,6 +252,8 @@ Class ADMIN
 				'title' => $this->Dashboard->lang['users_groups_title'],
 				'content' => $this->Dashboard->ThemeParserTable()
 		);
+
+        $Content = '';
 
 		if( isset( $_POST['search_btn'] ) )
 		{

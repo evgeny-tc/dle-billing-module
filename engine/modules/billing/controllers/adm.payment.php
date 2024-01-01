@@ -7,9 +7,13 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class ADMIN
 {
-    function main( $Get )
+    public Dashboard $Dashboard;
+
+    public function main( array $Get ) : string
     {
         $Name = $this->Dashboard->LQuery->parsVar( $Get['billing'], "/[^a-zA-Z0-9\s]/" );
 
@@ -35,9 +39,14 @@ Class ADMIN
 
         # Загрузить файл пс
         #
-        if( file_exists( DLEPlugins::Check( MODULE_PATH . '/payments/' . $Name . '/adm.settings.php' ) ) )
+        if( file_exists(  MODULE_PATH . '/payments/' . $Name . '/adm.settings.php' ) )
         {
-            require_once DLEPlugins::Check( MODULE_PATH . '/payments/' . $Name . '/adm.settings.php' );
+            require_once MODULE_PATH . '/payments/' . $Name . '/adm.settings.php';
+
+            if( ! isset($Paysys) )
+            {
+                $this->Dashboard->ThemeMsg( $this->Dashboard->lang['error'], $this->Dashboard->lang['paysys_fail_error'] );
+            }
         }
         else
         {

@@ -9,7 +9,9 @@
 
 if( ! defined( 'MODULE_PATH' ) )
 {
-    define( 'MODULE_PATH', ENGINE_DIR . "/modules/billing" );
+    define("BILLING_MODULE", TRUE);
+    define("MODULE_PATH", ENGINE_DIR . "/modules/billing");
+    define("MODULE_DATA", ENGINE_DIR . "/data/billing");
 }
 
 $List = opendir( MODULE_PATH . "/plugins/" );

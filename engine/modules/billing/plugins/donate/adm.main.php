@@ -7,9 +7,15 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class ADMIN extends PluginActions
 {
-	public function main( array $Get = [] )
+    const PLUGIN = 'donate';
+
+    public Dashboard $Dashboard;
+
+    public function main( array $Get ) : string
 	{
         $this->checkInstall();
 
@@ -25,8 +31,8 @@ Class ADMIN extends PluginActions
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
 		}
 
-		$_Config = $this->Dashboard->LoadConfig( 'donate' );
-		$_Lang = include MODULE_PATH . "/plugins/donate/lang.php";
+		$_Config = $this->Dashboard->LoadConfig( static::PLUGIN );
+        $_Lang = Dashboard::getLang(static::PLUGIN);
 
 		$this->Dashboard->ThemeEchoHeader( $_Lang['title']);
 
@@ -127,7 +133,7 @@ Class ADMIN extends PluginActions
 				'content' => $ContentCreate
 		);
 
-		$Content = $this->Dashboard->PanelPlugin('plugins/donate', 'https://dle-billing.ru/doc/plugins/danate/' );
+		$Content = $this->Dashboard->PanelPlugin('plugins/donate', 'https://dle-billing.ru/doc/plugins/donate/' );
 
 		$Content .= '<script>
 						let donate_lang_created = "' . $_Lang['js_ok'] . '";

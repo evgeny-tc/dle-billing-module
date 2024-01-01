@@ -7,11 +7,13 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 /**
  * API 1.0
  * TODO: update
  */
-Class BillingAPI
+Class API
 {
     /**
      * Config this module
@@ -285,27 +287,31 @@ Class BillingAPI
 
     /**
      * Convert the number to billing format for pay
-     * @param $money
+     * @param mixed $money
      * @param string|null $format
-     * @return float|int
+     * @param bool $number_format_f
+     * @return string
      */
-    public function Convert( mixed $money, string|null $format = '', bool $number_format_f = false )
+    public function Convert( mixed $money, string|null $format = '', bool $number_format_f = false ) : string
     {
         $format = $format ?: $this->config['format'];
-        $money = floatval($money) ?: 0.00;
+        $money = floatval($money) > 0 ? $money : 0.00;
 
-        if( $format == 'int' ) return $number_format_f ? number_format(intval($money), 0, '', ' ') : $money;
+        if( $format == 'int' )
+        {
+            return $number_format_f ? number_format(intval($money), 0, '', ' ') : $money;
+        }
 
-        return $number_format_f ? number_format($money, 2, ',', ' ') : $money;
+        return $number_format_f ? number_format($money, 3, '.', ' ') : $money;
     }
 
     /**
      * Name currency
-     * @param $number
-     * @param $titles
+     * @param mixed $number
+     * @param string $titles
      * @return string
      */
-    public function Declension( $number, $titles = '' )
+    public function Declension( mixed $number, string $titles = '' ): string
     {
         $number = intval( $number );
 
@@ -346,10 +352,15 @@ Class BillingAPI
             {
                 $Hook = include( MODULE_PATH . '/plugins/' . $name . '/hook.class.php' );
 
-                if( (new ReflectionClass($Hook))->isAnonymous() )
+                if( (new \ReflectionClass($Hook))->isAnonymous() )
                 {
-                    $Hook->plugin = include MODULE_DATA . '/plugin.' . $name . '.php';
-                    $Hook->api = $this;
+                    if( in_array('init', get_class_methods($Hook) ) )
+                    {
+                        $Hook->init(
+                            include MODULE_DATA . '/plugin.' . $name . '.php',
+                            $this
+                        );
+                    }
 
                     if( in_array('pay', get_class_methods($Hook) ) )
                     {
@@ -389,9 +400,8 @@ Class BillingAPI
         );
 
         # Уведомление об изменении баланса на сайте
-        # .. в лп
         #
-        if( $this->config['mail_balance_pm'] and $this->alert_pm )
+        if( isset($this->config['mail_balance_pm']) and $this->config['mail_balance_pm'] and $this->alert_pm )
         {
             $arrUser = $this->db->super_query( "SELECT user_id, email FROM " . USERPREFIX . "_users WHERE name='" . $user . "'" );
 
@@ -403,7 +413,7 @@ Class BillingAPI
 
         # .. на email
         #
-        if( $this->config['mail_balance_email'] and $this->alert_main )
+        if( isset($this->config['mail_balance_email']) and $this->config['mail_balance_email'] and $this->alert_main )
         {
             if( ! $arrUser['email'] )
             {

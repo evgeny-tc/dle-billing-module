@@ -7,9 +7,13 @@
  * @copyright     Copyright (c) 2012-2023, mr_Evgen
  */
 
+namespace Billing;
+
 Class ADMIN
 {
-	function main()
+    public Dashboard $Dashboard;
+
+    public function main() : void
 	{
 		$List = opendir( MODULE_PATH . '/upgrades/' );
 

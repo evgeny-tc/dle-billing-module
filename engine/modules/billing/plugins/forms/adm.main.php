@@ -7,9 +7,14 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class ADMIN extends PluginActions
 {
-	private array $_Config = [];
+    const PLUGIN = 'forms';
+
+    public Dashboard $Dashboard;
+
 	private array $_Lang = [];
 
     private string $selKey = '';
@@ -17,7 +22,7 @@ Class ADMIN extends PluginActions
 
 	function __construct()
 	{
-		$this->_Lang = include MODULE_PATH . "/plugins/forms/lang.php";
+        $this->_Lang = Dashboard::getLang(static::PLUGIN);
 	}
 
     /**
@@ -25,7 +30,7 @@ Class ADMIN extends PluginActions
      * @param array $GET
      * @return string
      */
-	public function main( array $GET = [] )
+	public function main( array $GET ) : string
 	{
         $this->checkInstall();
 
@@ -42,30 +47,28 @@ Class ADMIN extends PluginActions
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
 		}
 
-		$_Config = $this->Dashboard->LoadConfig( "forms" );
-
         $this->Dashboard->ThemeEchoHeader( $this->_Lang['title'] );
 
         $Content = $this->Dashboard->PanelPlugin('plugins/forms', 'https://dle-billing.ru/doc/plugins/forms/' );
         $Content .= $this->Groups($GET['key']?:'' );
 
-        $tabs[] = array(
+        $tabs[] = [
             'id' => 'forms',
             'title' => $this->_Lang['title'],
             'content' => $this->Forms($GET['key']?:$this->selKey, intval($GET['page']))
-        );
+        ];
 
-        $tabs[] = array(
+        $tabs[] = [
             'id' => 'gen',
             'title' => $this->_Lang['tag'],
             'content' => $this->tag()
-        );
+        ];
 
-        $tabs[] = array(
+        $tabs[] = [
             'id' => 'settings',
             'title' => $this->_Lang['settings'],
             'content' => $this->settings()
-        );
+        ];
 
         $Content .= $this->Dashboard->PanelTabs( $tabs );
         $Content .= $this->Dashboard->ThemeEchoFoother();
@@ -77,7 +80,7 @@ Class ADMIN extends PluginActions
      * Вкладка "Формы"
      * @return void
      */
-    private function Forms(string $key = '', int $page)
+    private function Forms(string $key = '', int $page) : string
     {
         if( ! $key )
         {
@@ -275,10 +278,10 @@ HTML;
     }
 
     /**
-     * Группировака по ключу
+     * Группировка по ключу
      * @return void
      */
-    private function Groups(string $getKey = '')
+    private function Groups(string $getKey = '') : string
     {
         $_return = '';
 
@@ -312,9 +315,9 @@ HTML;
 
     /**
      * Вкладка "Настройки"
-     * @return void
+     * @return string
      */
-    private function settings()
+    private function settings() : string
     {
         $_Config = $this->Dashboard->LoadConfig( "forms" );
 
@@ -332,9 +335,9 @@ HTML;
 
     /**
      * Доступные шаблоны
-     * @return void
+     * @return string
      */
-    private function themes()
+    private function themes() : string
     {
         $_return = [];
 
@@ -364,7 +367,7 @@ HTML;
      * Форма генерации тега
      * @return string
      */
-    private function tag()
+    private function tag() : string
     {
         $genKey = $this->Dashboard->genCode( 10 );
 
@@ -410,7 +413,7 @@ HTML;
             "<textarea style=\"width:100%;height:60px\" class=\"form-control\" onClick=\"this.focus(); this.select()\" id=\"fGenFormInclude\"></textarea>"
         );
 
-        $Content .= <<<HTML
+        $Content = <<<HTML
 		<script type="text/javascript">
 			function fGenForm()
 			{
@@ -448,7 +451,7 @@ HTML;
      * Установка
      * @return void
      */
-    public function install()
+    public function install() : void
 	{
         $this->Dashboard->CheckHash();
 
@@ -481,7 +484,7 @@ HTML;
         $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_install'], '?mod=billing&c=' . $this->Dashboard->controller );
     }
 
-    public function uninstall()
+    public function uninstall() : void
     {
         $this->Dashboard->CheckHash();
 
@@ -492,7 +495,10 @@ HTML;
         $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_uninstall'], '?mod=billing' );
     }
 
-	private function generate()
+    /**
+     * @return string
+     */
+	private function generate() : string
 	{
 		$chars = 'ABDEFGHKNQRSTYZ23456789';
 

@@ -7,6 +7,8 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class Database
 {
 	/**
@@ -19,24 +21,29 @@ Class Database
 	 * Connect db
 	 * @var
 	 */
-	public $db;
+	public \db $db;
 
 	/**
 	 * String balance field in db
 	 * @var
 	 */
-	public $BalanceField;
+	public string $BalanceField;
 
 	/**
 	 * Local time
 	 * @var
 	 */
-	public $_TIME;
+	public int $_TIME;
 
-	function __construct( $db, $field, $time )
+    /**
+     * @param object $db
+     * @param string $field
+     * @param int $time
+     */
+	function __construct( object $db, string $field, int $time )
 	{
 		$this->db = $db;
-		$this->BalanceField = $field;
+		$this->BalanceField = (string)$field;
 		$this->_TIME = $time;
 	}
 

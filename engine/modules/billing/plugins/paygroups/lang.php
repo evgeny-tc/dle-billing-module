@@ -1,8 +1,12 @@
 <?php
 
-$plugin_lang = array
+return array
 (
-	'error_tpl' => "Неудалось загрузить шаблон плагина",
+    'plugin_install' => '<div style="text-align: left">Остался последний шаг, подключите следующие js-скрипты в файл main.tpl вашего шаблона:<br><br><pre>
+{include file="{THEME}/billing/js/scripts.js"}
+{include file="{THEME}/billing/js/paygroups.js"}</pre></div>',
+
+	'error_tpl' => "Не удалось загрузить шаблон плагина",
 	'error_group' => "Группа не найдена",
 	'error_login' => "Войдите на сайт как пользователь",
 	'error_off' => "Оплата временно недоступна",

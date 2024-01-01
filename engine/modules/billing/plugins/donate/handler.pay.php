@@ -7,7 +7,6 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-
 return new class
 {
     public function pay(array $Invoice, BillingAPI $API)

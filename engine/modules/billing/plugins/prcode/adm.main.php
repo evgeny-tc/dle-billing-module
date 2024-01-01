@@ -7,17 +7,23 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class ADMIN extends PluginActions
 {
-	private array $_Config = [];
+    const PLUGIN = 'prcode';
+
+    public Dashboard $Dashboard;
+
+    private array $_Config = [];
 	private array $_Lang = [];
 
 	function __construct()
 	{
-		$this->_Lang = include MODULE_PATH . "/plugins/prcode/lang.php";
+		$this->_Lang = Dashboard::getLang(static::PLUGIN);
 	}
 
-	public function main( array $GET = [] )
+	public function main( array $GET ) : string
 	{
         $this->checkInstall();
 
@@ -225,7 +231,7 @@ Class ADMIN extends PluginActions
 		return $Content;
 	}
 
-	private function generate()
+	private function generate() : string
 	{
 		$chars = 'ABDEFGHKNQRSTYZ23456789';
 
@@ -236,7 +242,7 @@ Class ADMIN extends PluginActions
      * Процесс установки
      * @return void
      */
-    public function install()
+    public function install() : void
     {
         $this->Dashboard->CheckHash();
 
@@ -269,7 +275,7 @@ Class ADMIN extends PluginActions
         $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_install'], '?mod=billing&c=' . $this->Dashboard->controller );
     }
 
-    public function uninstall()
+    public function uninstall() : void
     {
         $this->Dashboard->CheckHash();
 

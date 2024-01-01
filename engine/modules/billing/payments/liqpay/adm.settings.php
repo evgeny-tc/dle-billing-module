@@ -7,6 +7,8 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class Payment
 {
 	public $doc = 'https://dle-billing.ru/doc/payments/liqpay/';

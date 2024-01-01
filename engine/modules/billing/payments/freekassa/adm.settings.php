@@ -1,11 +1,13 @@
-<?php if (!defined('BILLING_MODULE')) die("Hacking attempt!");
-
+<?php
 /**
  * FreeKassa
  *
  * @link          https://www.free-kassa.ru/
  * @faq           https://www.free-kassa.ru/faq.php
  */
+
+namespace Billing;
+
 Class FreeKassa
 {
     public string $doc = 'http://www.free-kassa.ru/modules.php?id=6';

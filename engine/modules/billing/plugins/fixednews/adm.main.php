@@ -7,15 +7,21 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class ADMIN extends PluginActions
 {
-	public function main( array $Get = [] )
+    const PLUGIN = 'fixednews';
+
+    public Dashboard $Dashboard;
+
+    public function main( array $Get = [] )
 	{
         $this->checkInstall();
 
         global $user_group, $cat_info;
 
-        $plugin_lang = include MODULE_PATH . "/plugins/fixednews/lang.php";
+        $pluginLang = Dashboard::getLang(static::PLUGIN);
 
 		# Сохранить настройки
 		#
@@ -45,7 +51,7 @@ Class ADMIN extends PluginActions
 
 		$_Config = $this->Dashboard->LoadConfig( 'fixednews' );
 
-		$this->Dashboard->ThemeEchoHeader( $plugin_lang['settings_title'] );
+		$this->Dashboard->ThemeEchoHeader( $pluginLang['settings_title'] );
 
 		# Форма настроек
 		#
@@ -72,14 +78,14 @@ Class ADMIN extends PluginActions
 		);
 
 		$this->Dashboard->ThemeAddStr(
-			$plugin_lang['stop'],
-			$plugin_lang['stop_desc'],
+			$pluginLang['stop'],
+			$pluginLang['stop_desc'],
 			$this->Dashboard->GetSelect($dle_groups, "save_con[stop][]", explode(",", $_Config['stop']), true )
 		);
 
 		$this->Dashboard->ThemeAddStr(
-			$plugin_lang['stop_cat'],
-			$plugin_lang['stop_cat_desc'],
+			$pluginLang['stop_cat'],
+			$pluginLang['stop_cat_desc'],
 			$this->Dashboard->GetSelect($dle_categorys, "save_con[stop_categorys][]", explode(",", $_Config['stop_categorys']), true )
 		);
 
@@ -88,7 +94,7 @@ Class ADMIN extends PluginActions
 
 		$tabs[] = array(
 				'id' => 'settings',
-				'title' => $plugin_lang['settings_title'],
+				'title' => $pluginLang['settings_title'],
 				'content' => $SettingForm
 		);
 
@@ -138,22 +144,22 @@ Class ADMIN extends PluginActions
 		$ContentFix = $this->Dashboard->ThemeParserTable('',
 			'<tr>
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $plugin_lang['link'] . '
+					' . $pluginLang['link'] . '
 				</td>
 			</tr>
 			<tr>
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $plugin_lang['link_name_1'] . '
+					' . $pluginLang['link_name_1'] . '
 				</td>
 			</tr>
 			<tr>
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $plugin_lang['link_help'] . '
+					' . $pluginLang['link_help'] . '
 				</td>
 			</tr>
 			<tr>
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $plugin_lang['link_help_instr'] . '
+					' . $pluginLang['link_help_instr'] . '
 				</td>
 			</tr>'
 		);
@@ -161,7 +167,7 @@ Class ADMIN extends PluginActions
 
 		$tabs[] = array(
 				'id' => 'fix',
-				'title' => $plugin_lang['fix'],
+				'title' => $pluginLang['fix'],
 				'content' => $ContentFix
 		);
 
@@ -177,12 +183,12 @@ Class ADMIN extends PluginActions
 		$ContentUp = $this->Dashboard->ThemeParserTable('',
 			'<tr>
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $plugin_lang['link'] . '
+					' . $pluginLang['link'] . '
 				</td>
 			</tr>
 			<tr>
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $plugin_lang['link_name_2'] . '
+					' . $pluginLang['link_name_2'] . '
 				</td>
 			</tr>'
 		);
@@ -190,7 +196,7 @@ Class ADMIN extends PluginActions
 
 		$tabs[] = array(
 				'id' => 'up_post',
-				'title' => $plugin_lang['up'],
+				'title' => $pluginLang['up'],
 				'content' => $ContentUp
 		);
 
@@ -206,12 +212,12 @@ Class ADMIN extends PluginActions
 		$ContentUp = $this->Dashboard->ThemeParserTable('',
 			'<tr>
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $plugin_lang['link'] . '
+					' . $pluginLang['link'] . '
 				</td>
 			</tr>
 			<tr>
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $plugin_lang['link_name_3'] . '
+					' . $pluginLang['link_name_3'] . '
 				</td>
 			</tr>'
 		);
@@ -219,7 +225,7 @@ Class ADMIN extends PluginActions
 
 		$tabs[] = array(
 				'id' => 'post_main',
-				'title' => $plugin_lang['post_main'],
+				'title' => $pluginLang['post_main'],
 				'content' => $ContentUp
 		);
 

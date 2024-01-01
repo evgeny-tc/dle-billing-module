@@ -17,7 +17,7 @@ return new class
 	{
 		# Плагин отключен
 		#
-		if( ! $this->plugin['status'] ) return;
+		if( ! isset($this->plugin['status']) or ! intval($this->plugin['status']) ) return;
 
         $_List = file_exists(MODULE_DATA . '/plugin.referrals.list.dat') ? file(MODULE_DATA . '/plugin.referrals.list.dat') : '';
 

@@ -7,35 +7,38 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class USER
 {
-	var $_Config = array();
-	var $_Lang = array();
+    const PLUGIN = 'forms';
+
+    private array $_Config;
+    private array $_Lang;
 
 	function __construct()
 	{
-		if( file_exists( MODULE_DATA . "/plugin.prcode.php" ) )
-		{
-			$this->_Config = include MODULE_DATA . "/plugin.prcode.php";
-		}
-
-		$this->_Lang = include MODULE_PATH . "/plugins/prcode/lang.php";
+        $this->_Config = DevTools::getConfig(static::PLUGIN);
+        $this->_Lang = DevTools::getLang(static::PLUGIN);
 	}
 
-	public function main( array $GET = [] )
+    /**
+     * @throws \Exception
+     */
+    public function main(array $GET = [] )
 	{
 		# Проверка авторизации
 		#
 		if( ! $this->DevTools->member_id['name'] )
 		{
-			throw new Exception($this->DevTools->lang['pay_need_login']);
+			throw new \Exception($this->DevTools->lang['pay_need_login']);
 		}
 
 		# Плагин выключен
 		#
 		if( ! $this->_Config['status'] )
 		{
-			throw new Exception($this->DevTools->lang['cabinet_off']);
+			throw new \Exception($this->DevTools->lang['cabinet_off']);
 		}
 
 		# Проверка промокода
@@ -55,8 +58,7 @@ Class USER
 
 			if( ! $Error )
 			{
-				$_SearchPromoCode = $this->DevTools->LQuery->db->super_query( "SELECT * FROM " . USERPREFIX . "_billing_prcodes
-														WHERE prcode_tag = '" . $PromoCode . "' and prcode_active_date = '0'" );
+				$_SearchPromoCode = $this->DevTools->LQuery->db->super_query( "SELECT * FROM " . USERPREFIX . "_billing_prcodes WHERE prcode_tag = '" . $PromoCode . "' and prcode_active_date = '0'" );
 
 				if( ! $_SearchPromoCode['prcode_sum'] )
 				{
@@ -78,19 +80,19 @@ Class USER
 				$this->DevTools->member_id['name'],
 				$_SearchPromoCode['prcode_sum'],
 				sprintf($this->_Lang['ui_active_desc'], $PromoCode),
-				'prcode',
+                static::PLUGIN,
 				$_SearchPromoCode['prcode_id']
 			);
 
 			return $this->DevTools->ThemeMsg(
 				$this->_Lang['ui_active_ok'],
 				sprintf($this->_Lang['ui_active_ok_balance'], $_SearchPromoCode['prcode_sum'], $this->DevTools->API->Declension( $_SearchPromoCode['prcode_sum'] )),
-				'prcode'
+                static::PLUGIN
 			);
 		}
 
-		$Content = $this->DevTools->ThemeLoad( "plugins/prcode" );
+		$Content = $this->DevTools->ThemeLoad( 'plugins/forms' );
 
-		return $this->DevTools->Show( $Content, "prcode" );
+		return $this->DevTools->Show( $Content, static::PLUGIN );
 	}
 }

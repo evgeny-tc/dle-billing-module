@@ -7,13 +7,19 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class ADMIN
 {
-	public function main( array $Get = [] )
-	{
-		$GetPaysysArray = $this->Dashboard->Payments();
+    public Dashboard $Dashboard;
 
-        $GetPaysysArray['balance'] = [
+    public function main( array $Get = [] ) : string
+	{
+		$listPayments = $this->Dashboard->Payments();
+
+        # pay from balance
+        #
+        $listPayments['balance'] = [
             'title' => $this->Dashboard->lang['title_short'],
             'config' => [
                 'status' => $this->Dashboard->config['status'],
@@ -72,7 +78,7 @@ Class ADMIN
 							$this->Dashboard->API->PlusMoney(
 								$Invoice['invoice_user_name'],
 								$Invoice['invoice_get'],
-								sprintf( $this->Dashboard->lang['pay_msgOk'], $GetPaysysArray[$Invoice['invoice_paysys']]['title'], $Invoice['invoice_pay'], $GetPaysysArray[$Invoice['invoice_paysys']]['config']['currency'] ),
+								sprintf( $this->Dashboard->lang['pay_msgOk'], $listPayments[$Invoice['invoice_paysys']]['title'], $Invoice['invoice_pay'], $listPayments[$Invoice['invoice_paysys']]['config']['currency'] ),
 								'pay',
 								$id
 							);
@@ -84,7 +90,7 @@ Class ADMIN
 			$this->Dashboard->ThemeMsg(
 				$this->Dashboard->lang['ok'],
 				$this->Dashboard->lang['invoice_ok'],
-				"?mod=billing&c=invoice"
+				'?mod=billing&c=invoice'
 			);
 		}
 
@@ -102,7 +108,7 @@ Class ADMIN
 
 		$this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_4'] );
 
-		$Content = $Get['user'] ? $this->Dashboard->MakeMsgInfo( "<a href='{$PHP_SELF}?mod=billing&c=invoice' title='{$this->Dashboard->lang['remove']}' class='btn bg-danger btn-sm btn-raised position-left legitRipple' style='vertical-align: middle;'><i class='fa fa-repeat'></i> " . $Get['user'] . "</a> <span style='vertical-align: middle;'>{$this->Dashboard->lang['info_login']}</span>", "icon-user", "blue") : "";
+		$Content = $Get['user'] ? $this->Dashboard->MakeMsgInfo( "<a href='?mod=billing&c=invoice' title='{$this->Dashboard->lang['remove']}' class='btn bg-danger btn-sm btn-raised position-left legitRipple' style='vertical-align: middle;'><i class='fa fa-repeat'></i> " . $Get['user'] . "</a> <span style='vertical-align: middle;'>{$this->Dashboard->lang['info_login']}</span>", "icon-user", "blue") : "";
 
 		# Поиск
 		#
@@ -174,49 +180,53 @@ Class ADMIN
 
 		$NumData = $this->Dashboard->LQuery->DbGetInvoiceNum();
 
-		$this->Dashboard->ThemeAddTR( array(
-		 	'<th width="1%">#</th>',
-			'<th>'.$this->Dashboard->lang['invoice_str_payok'].'</th>',
-			'<th>'.$this->Dashboard->lang['invoice_str_get'].'</th>',
-			'<th>'.$this->Dashboard->lang['history_date'].'</th>',
-			'<th>'.$this->Dashboard->lang['invoice_str_ps'].'</th>',
-			'<th>'.$this->Dashboard->lang['history_user'].'</th>',
-			'<th>'.$this->Dashboard->lang['invoice_str_status'].'</th>',
-			'<th width="5%"><center><input type="checkbox" value="" name="massact_list[]" onclick="checkAll(this)" /></center></th>',
-		));
+		$this->Dashboard->ThemeAddTR(
+            [
+                '<th width="1%">#</th>',
+                '<th>'.$this->Dashboard->lang['invoice_str_payok'].'</th>',
+                '<th>'.$this->Dashboard->lang['invoice_str_get'].'</th>',
+                '<th>'.$this->Dashboard->lang['history_date'].'</th>',
+                '<th>'.$this->Dashboard->lang['invoice_str_ps'].'</th>',
+                '<th>'.$this->Dashboard->lang['history_user'].'</th>',
+                '<th>'.$this->Dashboard->lang['invoice_str_status'].'</th>',
+                '<th width="5%"><center><input type="checkbox" value="" name="massact_list[]" onclick="checkAll(this)" /></center></th>'
+            ]
+        );
 
 		foreach( $Data as $Value )
 		{
-			$this->Dashboard->ThemeAddTR( array(
-				$Value['invoice_id'],
-				$Value['invoice_pay'] . '&nbsp;' . $GetPaysysArray[$Value['invoice_paysys']]['config']['currency'],
-				$this->Dashboard->API->Convert($Value['invoice_get']) . '&nbsp;' . $this->Dashboard->API->Declension( $Value['invoice_pay'] ),
-				$this->Dashboard->ThemeChangeTime( $Value['invoice_date_creat'] ),
-				$this->Dashboard->ThemeInfoBilling( $GetPaysysArray[$Value['invoice_paysys']] ),
-				$Value['invoice_user_name'] ? $this->Dashboard->ThemeInfoUser( $Value['invoice_user_name'] ) : $this->Dashboard->lang['history_user_null'],
-				'<center>' .
-					( $Value['invoice_date_pay']
-						? '<span class="label bt_lable_green" onClick="logShowDialogByID( \'#invoice_' . $Value['invoice_id'] . '\' ); return false">' . $this->Dashboard->ThemeChangeTime( $Value['invoice_date_pay'] ) . '</span>'
-						: '<span class="label bt_lable_blue" onClick="logShowDialogByID( \'#invoice_' . $Value['invoice_id'] . '\' ); return false">' . $this->Dashboard->lang['refund_wait'] . '</span>' ) .
-				'</center>',
-				'<center>' .
-					$this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['invoice_id'], false) .
-				'</center>
-				<div id="invoice_' . $Value['invoice_id'] . '" title="' . $this->Dashboard->lang['history_search_oper'] . $Value['invoice_id'] . '" style="display:none">
-						<p>
-							<b>' . $this->Dashboard->lang['072_payer_info'] . '</b>
-							' . ( @unserialize($Value['invoice_payer_info']) !== false ? '<pre>' . print_r(unserialize($Value['invoice_payer_info']), 1) . '</pre>' : $Value['invoice_payer_info'] ) . '
-						</p>
-						<p>
-							<b>' . $this->Dashboard->lang['076_handler'] . '</b>
-							' . $Value['invoice_handler'] . '
-						</p>
-						' . ( $Value['invoice_payer_requisites'] ? '<p>
-								<b>' . $this->Dashboard->lang['072_req'] . '</b>
-								' . $Value['invoice_payer_requisites'] . '
-							</p>' : '' ) . '
-					</div>'
-			) );
+			$this->Dashboard->ThemeAddTR(
+                [
+                    $Value['invoice_id'],
+                    $Value['invoice_pay'] . '&nbsp;' . $listPayments[$Value['invoice_paysys']]['config']['currency'],
+                    $this->Dashboard->API->Convert($Value['invoice_get']) . '&nbsp;' . $this->Dashboard->API->Declension( $Value['invoice_pay'] ),
+                    $this->Dashboard->ThemeChangeTime( $Value['invoice_date_creat'] ),
+                    $this->Dashboard->ThemeInfoBilling( $listPayments[$Value['invoice_paysys']] ),
+                    $Value['invoice_user_name'] ? $this->Dashboard->ThemeInfoUser( $Value['invoice_user_name'] ) : $this->Dashboard->lang['history_user_null'],
+                    '<span style="text-align: center">' .
+                    ( $Value['invoice_date_pay']
+                        ? '<span class="label bt_lable_green" onClick="logShowDialogByID( \'#invoice_' . $Value['invoice_id'] . '\' ); return false">' . $this->Dashboard->ThemeChangeTime( $Value['invoice_date_pay'] ) . '</span>'
+                        : '<span class="label bt_lable_blue" onClick="logShowDialogByID( \'#invoice_' . $Value['invoice_id'] . '\' ); return false">' . $this->Dashboard->lang['refund_wait'] . '</span>' ) .
+                    '</span>',
+                    '<span style="text-align: center">' .
+                        $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['invoice_id'], false) .
+                    '</span>
+                        <div id="invoice_' . $Value['invoice_id'] . '" title="' . $this->Dashboard->lang['history_search_oper'] . $Value['invoice_id'] . '" style="display:none">
+                                <p>
+                                    <b>' . $this->Dashboard->lang['072_payer_info'] . '</b>
+                                    ' . ( @unserialize($Value['invoice_payer_info']) !== false ? '<pre>' . print_r(unserialize($Value['invoice_payer_info']), 1) . '</pre>' : $Value['invoice_payer_info'] ) . '
+                                </p>
+                                <p>
+                                    <b>' . $this->Dashboard->lang['076_handler'] . '</b>
+                                    ' . $Value['invoice_handler'] . '
+                                </p>
+                                ' . ( $Value['invoice_payer_requisites'] ? '<p>
+                                        <b>' . $this->Dashboard->lang['072_req'] . '</b>
+                                        ' . $Value['invoice_payer_requisites'] . '
+                                    </p>' : '' ) . '
+                            </div>'
+                ]
+            );
 		}
 
 		$ContentList = $this->Dashboard->ThemeParserTable();
@@ -228,7 +238,7 @@ Class ADMIN
 							' . $this->Dashboard->API->Pagination(
                                     $NumData,
                                     $Get['page'],
-                                    $PHP_SELF . "?mod=billing&c=invoice&p=user/{$Get['user']}/page/{p}",
+                                    "?mod=billing&c=invoice&p=" . ( $Get['user'] ? "user/{$Get['user']}/" : "" ) . "page/{p}",
                                     "<li><a href=\"{page_num_link}\">{page_num}</a></li>",
                                     "<li class=\"active\"><span>{page_num}</span></li>",
                                     $PerPage
@@ -259,7 +269,7 @@ Class ADMIN
 		$SelectPaysys = array();
 		$SelectPaysys[] = $this->Dashboard->lang['invoice_all_payments'];
 
-		foreach( $GetPaysysArray as $name=>$info )
+		foreach( $listPayments as $name=>$info )
 		{
 			$SelectPaysys[$name] = $info['title'];
 		}
@@ -343,7 +353,7 @@ Class ADMIN
 
     # есть обработчик
     #
-	private function handler(array $Invoice)
+	private function handler(array $Invoice) : void
 	{
         $parsHandler = explode(':', $Invoice['invoice_handler']);
 

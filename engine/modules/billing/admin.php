@@ -14,42 +14,26 @@
  	die( "Hacking attempt!" );
  }
 
-if( ! in_array( $member_id['user_group'], array(1) ) )
+const BILLING_MODULE = TRUE;
+const MODULE_PATH = ENGINE_DIR . '/modules/billing';
+const MODULE_DATA = ENGINE_DIR . '/data/billing';
+
+if( ! in_array( $member_id['user_group'], [1] ) )
 {
 	msg( "error", $lang['index_denied'], $lang['index_denied'] );
 }
 
-const BILLING_MODULE = TRUE;
+require_once MODULE_PATH . '/helpers/autoloader.php';
 
-const MODULE_PATH = ENGINE_DIR . "/modules/billing";
-const MODULE_DATA = ENGINE_DIR . "/data/billing";
-
-spl_autoload_register(function ($class)
-{
-    $file = MODULE_PATH . '/helpers/' . preg_replace("/[^a-zA-Z\s]/", "", trim( mb_strtolower($class) ) ) .'.php';
-
-    if (file_exists($file))
-    {
-        require_once $file;
-        return true;
-    }
-    return false;
-});
-
-# Установка
+# Install (?)
 #
-if( ! file_exists( MODULE_DATA . '/config.php' ) )
-{
-	require_once MODULE_PATH . '/helpers/install.php';
-
-	exit;
-}
-
-require_once MODULE_PATH . '/helpers/api.php';
+\Billing\Dashboard::isInstall(function (){
+    require_once MODULE_PATH . '/helpers/install.php';
+});
 
 try
 {
-    Dashboard::Start();
+    Billing\Dashboard::Start();
 }
 catch (\Exception $e)
 {

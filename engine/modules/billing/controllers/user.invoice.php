@@ -7,20 +7,24 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class USER
 {
+    public DevTools $DevTools;
+
     public function main( array $GET = [] )
     {
         # Проверка авторизации
         #
         if( ! $this->DevTools->member_id['name'] )
         {
-            throw new Exception($this->DevTools->lang['pay_need_login']);
+            throw new \Exception($this->DevTools->lang['pay_need_login']);
         }
 
         # Удалить
         #
-        if( intval($_POST['invoice_delete']) )
+        if( isset($_POST['invoice_delete']) and intval($_POST['invoice_delete']) )
         {
             $this->DevTools->CheckHash( $_POST['bs_hash'] );
 
@@ -30,11 +34,11 @@ Class USER
 
             if( ! $Del['invoice_id'] OR $Del['invoice_user_name'] != $this->DevTools->member_id['name'] )
             {
-                throw new Exception($this->DevTools->lang['pay_invoice_error']);
+                throw new \Exception($this->DevTools->lang['pay_invoice_error']);
             }
             else if( $Del['invoice_date_pay'] )
             {
-                throw new Exception($this->DevTools->lang['invoice_paid_error']);
+                throw new \Exception($this->DevTools->lang['invoice_paid_error']);
             }
 
             $this->DevTools->LQuery->DbInvoiceRemove( $Delete_id );

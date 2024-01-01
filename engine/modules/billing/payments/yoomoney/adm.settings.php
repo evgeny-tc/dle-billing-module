@@ -7,6 +7,8 @@
  * @copyright     Copyright (c) 2012-2023, mr_Evgen
  */
 
+namespace Billing;
+
 Class Payment
 {
 	public string $doc = 'https://dle-billing.ru/doc/payments/yoomoney';

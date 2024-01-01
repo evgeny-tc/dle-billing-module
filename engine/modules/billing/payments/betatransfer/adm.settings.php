@@ -1,5 +1,4 @@
 <?php
-
 /**
  * DLE Billing
  *
@@ -7,6 +6,9 @@
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
  * @copyright     Copyright (c) 2012-2023, mr_Evgen
  */
+
+namespace Billing;
+
 Class Payment
 {
     public string $doc = 'https://betatransfer.io/';

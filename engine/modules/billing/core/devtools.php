@@ -7,15 +7,16 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 /**
  * Пользовательский интерфейс
- * @var [type]
  */
 Class DevTools
 {
     use Core, Utheme;
 
-    private static $instance;
+    private static self $instance;
 
     private function __construct(){}
     private function __clone()    {}
@@ -32,19 +33,16 @@ Class DevTools
 
     /**
      * DLE config
-     * @var [type]
      */
     public array $dle = [];
 
     /**
      * Authorized user
-     * @var [type]
      */
     public array $member_id = [];
 
     /**
      * Local time
-     * @var [type]
      */
     public int $_TIME;
 
@@ -76,7 +74,7 @@ Class DevTools
      * Connect api module
      * @var bool
      */
-    public $API = false;
+    public object $API;
 
     /**
      * Helper sql
@@ -88,7 +86,7 @@ Class DevTools
      * User balance
      * @var float|int
      */
-    public $BalanceUser = 0;
+    public int|float $BalanceUser = 0;
 
     /**
      * Hash string to form
@@ -106,7 +104,7 @@ Class DevTools
     /**
      * Main loader
      */
-    private function Loader()
+    private function Loader(): void
     {
         global $config, $member_id, $_TIME, $db, $dle_login_hash;
 
@@ -131,7 +129,7 @@ Class DevTools
         }
 
         $this->LQuery 	= new Database( $db, $this->config['fname'], $_TIME );
-        $this->API 		= new BillingAPI( $db, $member_id, $this->config, $_TIME );
+        $this->API 		= new API( $db, $member_id, $this->config, $_TIME );
 
         $this->dle 		= $config;
         $this->member_id = $member_id;
@@ -145,6 +143,8 @@ Class DevTools
         #
         $arrParams = [];
 
+        $_GET['route'] = $_GET['route'] ?? '';
+
         $parseRoute = array_map(function($value) {
             return ( preg_match( "/[\||\'|\<|\>|\"|\!|\?|\$|\@|\/|\\\|\&\~\*\+]/", $value ) || empty($value) ) ? '': $value;
         }, explode('/', $_GET['route']));
@@ -152,7 +152,7 @@ Class DevTools
         $defaultRoute = explode('/', $this->config['start']);
 
         $this->get_plugin 		= $parseRoute[0] ?: $defaultRoute[0];
-        $this->get_method = $m	= $parseRoute[1] ?: $defaultRoute[1];
+        $this->get_method   	= $parseRoute[1] ?: $defaultRoute[1];
 
         $RealURL = $this->URL( $this->get_plugin );
 
@@ -186,11 +186,14 @@ Class DevTools
 
         $Cabinet = new USER;
 
-        if( in_array($m, get_class_methods($Cabinet) ) )
+        if( in_array($this->get_method, get_class_methods($Cabinet) ) )
         {
-            $Cabinet->DevTools = $this;
+            if( property_exists($Cabinet, 'DevTools') )
+            {
+                $Cabinet->DevTools = $this;
+            }
 
-            echo $Cabinet->$m( $arrParams );
+            echo $Cabinet->{$this->get_method}( $arrParams );
         }
         else
         {
@@ -202,9 +205,9 @@ Class DevTools
      * Show page
      * @param string $Content
      * @param bool $show_panel
-     * @return array|false|string|string[]|null
+     * @return string
      */
-    public function Show(string $Content, bool $show_panel = true )
+    public function Show(string $Content, bool $show_panel = true ) : string
     {
         $Cabinet = @file_get_contents( ENGINE_DIR . "/cache/system/billing.php" );
 
@@ -213,7 +216,7 @@ Class DevTools
             $show_panel = false;
         }
 
-        if( $_GET['modal'] )
+        if( isset($_GET['modal']) )
         {
             $Cabinet = $this->ThemeLoad( 'modal' );
         }
@@ -261,10 +264,11 @@ Class DevTools
         $Cabinet = str_replace( "{module.skin}", $this->dle['skin'], $Cabinet);
 
         $Cabinet = str_replace( "{user.name}", $this->member_id['name'], $Cabinet);
-        $Cabinet = str_replace( "{user.balance}", $this->API->Convert($this->BalanceUser, number_format_f: true) . ' ' . $this->API->Declension( $this->BalanceUser ), $Cabinet);
+        $Cabinet = str_replace( "{user.balance}", $this->API->Convert($this->BalanceUser, number_format_f: true), $Cabinet);
+        $Cabinet = str_replace( "{user.balance.currency}", $this->API->Declension( $this->BalanceUser ), $Cabinet);
         $Cabinet = str_replace( "{user.foto}", $this->Foto( $this->member_id['foto'] ), $Cabinet);
 
-        $Cabinet = str_replace( "[active]" . $this->get_plugin . "[/active]", "-active", $Cabinet);
+        $Cabinet = str_replace( "[active]{$this->get_plugin}[/active]", "-active", $Cabinet);
 
         if( $show_panel )
         {
@@ -286,7 +290,7 @@ Class DevTools
             $Cabinet = preg_replace("'\\[".$key."\\].*?\\[/".$key."\\]'si", $value, $Cabinet);
         }
 
-        if( $_GET['modal'] )
+        if( isset($_GET['modal']) )
         {
             echo $Cabinet; exit;
         }
@@ -300,9 +304,9 @@ Class DevTools
      * @param array $_Payment
      * @param bool $from_balance
      * @return void
-     * @throws Exception
+     * @throws \Exception
      */
-    public function FormPayCheck( float $sum, array $_Payment, bool $from_balance = false )
+    public function FormPayCheck( float $sum, array $_Payment, bool $from_balance = false ): void
     {
         $this->CheckHash($_POST['billingHash']);
 
@@ -345,8 +349,6 @@ Class DevTools
                 $this->API->Declension( $_Payment['max'] )
             ) );
         }
-
-        return;
     }
 
     /**
@@ -356,7 +358,7 @@ Class DevTools
      * @param array $more_info
      * @return string
      */
-    public function FormSelectPay( float $sum, bool $from_balance = false, array $more_info = [] )
+    public function FormSelectPay( float $sum, bool $from_balance = false, array $more_info = [] ): string
     {
         $PaymentsArray = $this->Payments();
 
@@ -409,8 +411,6 @@ Class DevTools
         {
             $TplSelect = $this->ThemePregMatch( $Tpl, '~\[more\](.*?)\[/more\]~is' );
 
-            $TimeLine = '';
-
             $arrMore = [];
 
             foreach( $more_info as $title => $value )
@@ -433,21 +433,21 @@ Class DevTools
 
     /**
      * Parse user xfields
-     * @param string $xfields_str
+     * @param string $xfields
      * @return array
      */
-    public function ParsUserXFields( string $xfields_str = '' )
+    public function ParsUserXFields( string $xfields = '' ) : array
     {
-        $arrUserfields = array();
+        $return = [];
 
-        foreach( explode("||", $xfields_str) as $xfield_str )
+        foreach( explode("||", $xfields) as $xfield )
         {
-            $value = explode("|", $xfield_str);
+            $value = explode("|", $xfield);
 
-            $arrUserfields[$value[0]] = $value[1];
+            $return[$value[0]] = $value[1];
         }
 
-        return $arrUserfields;
+        return $return;
     }
 
     /**
@@ -455,7 +455,7 @@ Class DevTools
      * @param string $plugin
      * @return string
      */
-    public function URL( string $plugin )
+    public function URL( string $plugin ): string
     {
         foreach (explode(',', $this->config['urls']) as $url_param)
         {

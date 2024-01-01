@@ -13,7 +13,7 @@ return new class
     {
         global $db, $_TIME;
 
-        require_once MODULE_PATH . "/plugins/paygroups/lang.php";
+        $plugin_lang = include MODULE_PATH . "/plugins/paygroups/lang.php";
 
         $InfoPay = unserialize($Invoice['invoice_payer_info']);
 
@@ -46,7 +46,7 @@ return new class
     {
         global $user_group;
 
-        include MODULE_PATH . "/plugins/paygroups/lang.php";
+        $plugin_lang = include MODULE_PATH . "/plugins/paygroups/lang.php";
         
         return [
             sprintf(
@@ -60,7 +60,7 @@ return new class
     {
         global $_TIME;
 
-        include MODULE_PATH . "/plugins/paygroups/lang.php";
+        $plugin_lang = include MODULE_PATH . "/plugins/paygroups/lang.php";
 
         if( ! intval($infopay['params']['group_id']) )
             throw new Exception($plugin_lang['handler']['error']['group_id']);
@@ -76,7 +76,7 @@ return new class
     {
         global $user_group;
 
-        include MODULE_PATH . "/plugins/paygroups/lang.php";
+        $plugin_lang = include MODULE_PATH . "/plugins/paygroups/lang.php";
 
         $more_data[$plugin_lang['handler']['group']] = $user_group[$infopay['params']['group_id']]['group_name'];
         $more_data[$plugin_lang['handler']['days']] = $infopay['params']['type'] ? $infopay['params']['days'] : $plugin_lang['handler']['time_null'];

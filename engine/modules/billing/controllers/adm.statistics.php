@@ -7,8 +7,12 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class ADMIN
 {
+    public Dashboard $Dashboard;
+
     private int $_StartTime = 0;
     private int $_EndTime = 0;
 
@@ -65,7 +69,7 @@ Class ADMIN
      * @param string $filter
      * @return string
      */
-    private function LeftBar(string $filter = '')
+    private function LeftBar(string $filter = '') : string
     {
         $selectDateRange = $this->Dashboard->MakeCalendar("date_edit_start", date( "Y-m-d", $this->_StartTime ), 'border:none; width: 35%; text-align: right; color:white;margin-right:10px' );
         $selectDateRange .= '-  ' . $this->Dashboard->MakeCalendar("date_edit_end", date( "Y-m-d", $this->_EndTime ), 'border:none; width: 35%; color:white;margin-left:5px' );
@@ -115,7 +119,7 @@ HTML;
      * Main page
      * @return string
      */
-    public function main()
+    public function main() : string
     {
         $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
 
@@ -143,7 +147,7 @@ HTML;
      * Payments page
      * @return string
      */
-    public function billings()
+    public function billings() : string
     {
         $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
 
@@ -173,7 +177,7 @@ HTML;
      * Total page
      * @return string
      */
-    public function board()
+    public function board() : string
     {
         $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
 
@@ -257,7 +261,7 @@ HTML;
      * Статистика по плагинам
      * @return string
      */
-    public function plugins()
+    public function plugins() : string
     {
         $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
 
@@ -309,14 +313,13 @@ HTML;
      * @param $GET
      * @return string|void
      */
-    public function users( $GET )
+    public function users( $GET ) : string
     {
-        $Result = [];
-
         if( isset( $_POST['search_btn'] ) )
         {
             header( 'Location: /' . $this->Dashboard->dle['admin_path'] . '?mod=billing&c=statistics&m=users&p=user/' . $this->Dashboard->LQuery->parsVar( $_POST['search_user'] ) );
-            return;
+
+            return '';
         }
         else if( $GET['user'] )
         {
@@ -425,7 +428,7 @@ HTML;
      * Clear page
      * @return string
      */
-    function clean()
+    public function clean() : string
     {
         $GetPluginsArray = $this->Dashboard->Plugins();
         $GetPluginsArray['pay']['title'] = $this->Dashboard->lang['statistics_pay'];
@@ -569,7 +572,7 @@ HTML;
      * @param $sqlNull
      * @return mixed|string
      */
-    private function DrawPaymentsStatUp( $sql, $sqlNull )
+    private function DrawPaymentsStatUp( string $sql, string $sqlNull ) : string
     {
         $this->draw ++;
 
@@ -683,7 +686,7 @@ HTML;
      * @param $sql
      * @return mixed|string
      */
-    private function DrawPaymentsExp( $sql )
+    private function DrawPaymentsExp( string $sql ) : string
     {
         $this->draw ++;
 
@@ -766,7 +769,7 @@ HTML;
      * @param $query_main
      * @return string
      */
-    private function DrawChartMain( $query_main )
+    private function DrawChartMain( string $query_main ) : string
     {
         $this->draw ++;
 
@@ -851,7 +854,7 @@ HTML;
      * Leftbar total panel
      * @return string
      */
-    private function stats()
+    private function stats() : string
     {
         # Сводка
         #
@@ -898,13 +901,13 @@ HTML;
 
     /**
      * Диаграмма расходов и доходов
-     * @param $sql
-     * @param $onePercent
-     * @param $title
-     * @param $subtitle
+     * @param string $sql
+     * @param float $onePercent
+     * @param string $title
+     * @param string $subtitle
      * @return string
      */
-    private function DrawPluginsPopulars( $sql, $onePercent, $title, $subtitle )
+    private function DrawPluginsPopulars( string $sql, float $onePercent, string $title, string $subtitle ) : string
     {
         $this->draw ++;
 
@@ -976,7 +979,7 @@ HTML;
      * @param $sql
      * @return string
      */
-    private function DrawPluginsCosts( $sql )
+    private function DrawPluginsCosts( string $sql ) : string
     {
         $this->draw ++;
 
@@ -1051,7 +1054,7 @@ HTML;
      * @param $userInfo
      * @return string
      */
-    private function UserGroup( $userInfo )
+    private function UserGroup( array $userInfo ) : string
     {
         global $user_group;
 

@@ -7,37 +7,40 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class USER
 {
-	private array $plugin_config = [];
-	private array $local_lang = [];
+	const PLUGIN = 'payhide';
+
+	public DevTools $DevTools;
+
+	private array $pluginСonfig;
+	private array $pluginLang ;
 
 	function __construct()
 	{
-		if( file_exists( MODULE_DATA . "/plugin.payhide.php" ) )
-		{
-			$this->plugin_config = include MODULE_DATA . "/plugin.payhide.php";
-		}
-
-		require_once MODULE_PATH . "/plugins/payhide/lang.php";
-
-		$this->local_lang = $plugin_lang;
+		$this->pluginСonfig = DevTools::getConfig(static::PLUGIN);
+		$this->pluginLang = DevTools::getLang(static::PLUGIN);
 	}
 
-	public function main( array $GET = [] )
+	/**
+	 * @throws \Exception
+	 */
+	public function main(array $GET = [] )
 	{
 		# Проверка авторизации
 		#
 		if( ! $this->DevTools->member_id['name'] )
 		{
-			throw new Exception($this->DevTools->lang['pay_need_login']);
+			throw new \Exception($this->DevTools->lang['pay_need_login']);
 		}
 
 		# Плагин отключен
 		#
-		if( ! $this->plugin_config['status'] )
+		if( ! $this->pluginСonfig['status'] )
 		{
-			throw new Exception($this->DevTools->lang['cabinet_off']);
+			throw new \Exception($this->DevTools->lang['cabinet_off']);
 		}
 
 		$Content = $this->DevTools->ThemeLoad( "plugins/payhide/panel" );
@@ -66,16 +69,16 @@ Class USER
 			{
 				if( $Value['payhide_time'] >= $this->DevTools->_TIME )
 				{
-					$params['{time}'] = '<font color="green">' . $this->local_lang['timeTo'] . langdate( "j F Y  G:i", $Value['payhide_time']) . '</font>';
+					$params['{time}'] = '<font color="green">' . $this->pluginLang['timeTo'] . langdate( "j F Y  G:i", $Value['payhide_time']) . '</font>';
 				}
 				else
 				{
-					$params['{time}'] = '<font color="red">' . $this->local_lang['timeTo'] . langdate( "j F Y  G:i", $Value['payhide_time']) . '</font>';
+					$params['{time}'] = '<font color="red">' . $this->pluginLang['timeTo'] . langdate( "j F Y  G:i", $Value['payhide_time']) . '</font>';
 				}
 			}
 			else
 			{
-				$params['{time}'] = $this->local_lang['timeFull'];
+				$params['{time}'] = $this->pluginLang['timeFull'];
 			}
 
 			$pay_desc = '';
@@ -106,11 +109,11 @@ Class USER
 
 			if( $Value['payhide_post_id'] )
 			{
-				$params['{page}'] = sprintf( $this->local_lang['access_post'], $Value['payhide_pagelink'], $Value['title'] );
+				$params['{page}'] = sprintf( $this->pluginLang['access_post'], $Value['payhide_pagelink'], $Value['title'] );
 			}
 			else
 			{
-				$params['{page}'] = sprintf( $this->local_lang['access_page'], $Value['payhide_pagelink'] );
+				$params['{page}'] = sprintf( $this->pluginLang['access_page'], $Value['payhide_pagelink'] );
 			}
 
 			$TimeLine = str_replace(array_keys($params), array_values($params), $TimeLine);
@@ -183,7 +186,7 @@ Class USER
 		if( $Access['payhide_id'] )
 		{
 			echo $this->DevTools->Show(
-				$this->local_lang['replay'], sprintf( $this->local_lang['already'], $Access['payhide_pagelink'] )
+				$this->pluginLang['replay'], sprintf( $this->pluginLang['already'], $Access['payhide_pagelink'] )
 			);
 
 			exit;
@@ -214,7 +217,7 @@ Class USER
 
 		header("Location: /{$this->DevTools->config['page']}.html/pay/waiting/id/{$invoice_id}/&modal=1");
 
-		echo $this->DevTools->Show( sprintf( $this->local_lang['pay_message'], "/{$this->DevTools->config['page']}.html/pay/waiting/id/{$invoice_id}/&modal=1" ) );;
+		echo $this->DevTools->Show( sprintf( $this->pluginLang['pay_message'], "/{$this->DevTools->config['page']}.html/pay/waiting/id/{$invoice_id}/&modal=1" ) );;
 
 		exit;
 	}
@@ -228,9 +231,9 @@ Class USER
 		if( $this->DevTools->BalanceUser < $Data['price'] )
 		{
 			exit( $this->model(
-				$this->local_lang['error'],
+				$this->pluginLang['error'],
 				sprintf(
-					 $this->local_lang['need_money'],
+					 $this->pluginLang['need_money'],
 					 $this->DevTools->API->Convert( $Data['price'] - $this->DevTools->BalanceUser ),
 					 $this->DevTools->API->Convert( $Data['price'] - $this->DevTools->BalanceUser ),
 					 $this->DevTools->API->Declension( $Data['price'] )
@@ -240,14 +243,14 @@ Class USER
 
 		# Процент автору статьи
 		#
-		if( $Data['post_autor'] and $this->plugin_config['percent'])
+		if( $Data['post_autor'] and $this->pluginСonfig['percent'])
 		{
-			$Partner = $this->DevTools->API->Convert( ( $Data['price'] / 100 ) * $this->plugin_config['percent'] );
+			$Partner = $this->DevTools->API->Convert( ( $Data['price'] / 100 ) * $this->pluginСonfig['percent'] );
 
 			$this->DevTools->API->PlusMoney(
 				$Data['post_autor'],
 				$Partner,
-				sprintf( $this->local_lang['balance_log'], $Data['pagelink'], urlencode( $this->DevTools->member_id['name'] ), $this->DevTools->member_id['name'] ),
+				sprintf( $this->pluginLang['balance_log'], $Data['pagelink'], urlencode( $this->DevTools->member_id['name'] ), $this->DevTools->member_id['name'] ),
 				'payhide',
 				$Data['post_id']
 			);
@@ -258,7 +261,7 @@ Class USER
 		$this->DevTools->API->MinusMoney(
 			$this->DevTools->member_id['name'],
 			$Data['price'],
-			sprintf( $this->local_lang['balance_desc'], $Data['pagelink'] ),
+			sprintf( $this->pluginLang['balance_desc'], $Data['pagelink'] ),
 			'payhide',
 			$Data['post_id']
 		);
@@ -273,8 +276,8 @@ Class USER
 														'" . $Data['post_id'] . "',
 														'" . $Data['endtime'] . "')" );
 		exit( $this->model(
-			$this->local_lang['replay'],
-			sprintf( $this->local_lang['balance_ok'], $Data['pagelink'] )
+			$this->pluginLang['replay'],
+			sprintf( $this->pluginLang['balance_ok'], $Data['pagelink'] )
 		));
 	}
 

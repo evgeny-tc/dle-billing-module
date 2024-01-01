@@ -13,8 +13,7 @@ return new class
     {
         global $db, $_TIME;
 
-        include MODULE_PATH . "/plugins/payhide/lang.php";
-
+        $plugin_lang = include MODULE_PATH . "/plugins/payhide/lang.php";
         $plugin_config = include MODULE_DATA . "/plugin.payhide.php";
 
         $InfoPay = unserialize($Invoice['invoice_payer_info']);
@@ -51,7 +50,7 @@ return new class
 
     public function desc(array $infopay = [])
     {
-        include MODULE_PATH . "/plugins/payhide/lang.php";
+        $plugin_lang = include MODULE_PATH . "/plugins/payhide/lang.php";
 
         $infopay['params']['pagelink'] = base64_decode($infopay['params']['pagelink']);
 
@@ -65,7 +64,7 @@ return new class
     {
         global $_TIME;
 
-        include MODULE_PATH . "/plugins/payhide/lang.php";
+        $plugin_lang = include MODULE_PATH . "/plugins/payhide/lang.php";
 
         if( ! $infopay['params']['tag'] )
         {
@@ -77,7 +76,7 @@ return new class
     {
         global $user_group;
 
-        include MODULE_PATH . "/plugins/payhide/lang.php";
+        $plugin_lang = include MODULE_PATH . "/plugins/payhide/lang.php";
 
         $more_data[""] = sprintf(
             $infopay['params']['title'] ?: $plugin_lang['handler']['title'],

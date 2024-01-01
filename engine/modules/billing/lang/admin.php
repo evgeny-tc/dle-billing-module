@@ -121,7 +121,7 @@ return array
 
 	'date_from' => "от ",
 	'date_to' => " до ",
-	'help' => "Инструкция",
+	'help' => "Открыть документацию",
 
 	'menu_1' => "Настройки",
 	'menu_1_d' => "Настройка параметров модуля, используемая валюта, секретный ключ, уведомления пользователей",
@@ -259,8 +259,8 @@ return array
 	'settings_status' => "Включить:",
 	'settings_status_desc' => "Включить личный кабинет для всех пользователей",
 	'settings_page' => "Страница личного кабинета:",
-	'settings_page_desc' => "Укажите название <a href=\"" . $PHP_SELF . "?mod=static\">существующей статической страницы</a> с личным кабинетом",
-	'settings_currency' => "Наименование у.е.:",
+	'settings_page_desc' => "Укажите название <a href=\"?mod=static\">существующей статической страницы</a> с личным кабинетом",
+	'settings_currency' => "Наименование валюты:",
 	'settings_currency_desc' => "Отображается рядом с суммой. Формат настройки: рубль,рубля,рублей",
 	'settings_summ' => "Сумма оплаты по умолчанию",
 	'settings_summ_desc' => "Используется на странице пополнения баланса",
@@ -273,13 +273,13 @@ return array
 	'settings_key' => "Ключ доступа платежной системы:",
 	'settings_key_desc' => "Введите произвольный нобор букв и цифр, ключ используется для формировании result url.<br />Никому не сообщайте этот ключ",
 	'settings_test' => "Режим тестирования:",
-	'settings_test_desc' => "Включить <a href=\"" . $PHP_SELF."?mod=billing&m=log\">логирование входящих запросов</a>",
+	'settings_test_desc' => "Включить <a href='?mod=billing&m=log'>логирование входящих запросов</a>",
 	'settings_field' => "Поле в БД с балансом пользователя:",
 	'settings_field_desc' => "Название столбца в таблице " . PREFIX . "_users,  в которой хранится баланс пользователя",
 	'settings_start' => "Главная страница ЛК:",
 	'settings_start_desc' => "Главная страница личного кабинета: плагин/метод/параметр/значение<br />Например: log/main/page/1",
-	'settings_format' => "Формат у.е.:",
-	'settings_format_desc' => "В каком формате использователь средства при совершении транзакций",
+	'settings_format' => "Формат цен:",
+	'settings_format_desc' => "В каком формате представлять цены и суммы на сайте",
 
 	'settings_catalog' => "Каталог плагинов:",
 	'settings_catalog_desc' => "URL сервера каталога плагинов",
@@ -436,6 +436,7 @@ return array
 	'history_search' => "Поиск",
 	'history_search_btn' => "Найти",
 	'history_search_btn_null' => "Сбросить",
+	'export_btn' => "Экспорт",
 
 	# refund plugin
 	#
@@ -455,7 +456,7 @@ return array
 	'refund_commision' => "Комиссия сайта:",
 	'refund_commision_desc' => "Данный процент от суммы вывода будет удерживаться сайтом в качестве комиссии",
 	'refund_field' => "Поле с реквизитами:",
-	'refund_field_desc' => "Дополнительное <a href=\"{$PHP_SELF}?mod=userfields&xfieldsaction=configure\">поле профиля</a> пользователя с реквизитами для вывода",
+	'refund_field_desc' => "Дополнительное <a href=\"?mod=userfields&xfieldsaction=configure\">поле профиля</a> пользователя с реквизитами для вывода",
 	'refund_email' => "Email для уведомления:",
 	'refund_email_desc' => "Укажите email на который будет отправлено уведомление о новом запросе на вывод средств",
 	'refund_email_title' => "Новый запрос вывода средств на сайте",
@@ -610,15 +611,12 @@ return array
 	'statistics_clean_1_ok' => "Очистка данных выполнена",
 	'statistics_clean_info' => "<p><b>Внимание!</b></p>
 									<p>Данные из <b>истории баланса</b> используются при составлении статистики.</p>
-									<p>Перед очисткой данных настоятельно рекомендуем <a href=\"{$PHP_SELF}?mod=dboption\" style=\"border-bottom: 1px solid\">сделать резервную копию</a> базы данных.</p>",
+									<p>Перед очисткой данных настоятельно рекомендуем <a href=\"?mod=dboption\" style=\"border-bottom: 1px solid\">сделать резервную копию</a> базы данных.</p>",
 	'statistics_clean_2' => "Отметить все",
 	'statistics_clean_3' => "Очистить историю баланса:",
 	'statistics_clean_3d' => "Очистить историю баланса для следующий плагинов",
 	'statistics_clean_4' => "Удалить квитанции на оплату:",
 	'statistics_clean_4d' => "Удалить квитанции на оплату со следующими статусами",
-	#'statistics_clean_4_s1' => "Все",
-	#'statistics_clean_4_s2' => "Оплачено",
-	#'statistics_clean_4_s3' => "Не оплачено",
 
 	'statistics_clean_invoice' => array(
 		'' => "",
@@ -699,7 +697,7 @@ return array
 	'install_ok' => "Модуль установлен",
 	'install_ok_text' => "<div style='text-align: left'>
 							<font color='green'><b>Модуль DLE-Billing установлен</b></font>.
-							<br /><br />Теперь Вам доступна <a href='?mod=billing'><u>панель управления</u></a>, а так же персональный <a href='/billing.html'><u>личный кабинет</u></a>.
+							<br /><br />Теперь вам доступна <a href='?mod=billing'><u>панель управления</u></a>, а так же персональный <a href='/billing.html'><u>личный кабинет</u></a>.
 						</div>",
 	'install_plugin' => "Плагин установлен",
 	'install_plugin_desc' => "Первичные настройки плагина установлены. Вы можете вернуться к панеле управления плагином.",
@@ -712,6 +710,21 @@ return array
     'install_error_templates_error2' => "<p>Не удалось установить шаблоны модуля. <br>Скопируйте содержимое каталога /www/engine/modules/billing/install/_template_/ в %s</p>",
     'install' => "Установка модуля",
 	'install_button' => "Я согласен",
+	'install_button2' => "Установить модуль",
+    'install_need' => [
+        'title' => 'Системные требования',
+        'php' => 'Версия PHP:',
+        'php_desc' => 'для работы модуля необходим php версии 8 и выше',
+        'file' => 'Файл .htaccess доступен для записи:',
+        'file_desc' => 'Для установки чпу модуля потребуется внести правки в файл .htaccess в корне сайта',
+        'file_close' => '<span style="color: orange">Файл недоступен для записи</span>',
+        'catalog' => 'Каталог engine/data доступен для записи:',
+        'catalog_desc' => 'В этом каталоге будут созданы файлы конфигурации модуля и плагинов',
+        'catalog_close' => '<span style="color: red">Каталог недоступен для записи</span>',
+        'yes' => '<span style="color: green">Да</span>',
+        'update' => "Обновить",
+    ],
+    'install_okbtn' => "Перейти к панели управления",
 	'license' => "<b>Пользовательское соглашение</b></p>
 					<p><a href=\"https://opensource.org/license/mit/\">The MIT License (MIT)</a></p>
 					<p>Copyright (c) 2023 evgeny.tc@gmail.com (https://dle-billing.ru/)</p>

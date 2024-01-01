@@ -7,8 +7,12 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class USER
 {
+    public DevTools $DevTools;
+
     private array $PaymentsArray = [];
 
     /**
@@ -23,7 +27,7 @@ Class USER
         #
         if( ! $this->DevTools->member_id['name'] )
         {
-            throw new Exception($this->DevTools->lang['pay_need_login']);
+            throw new \Exception($this->DevTools->lang['pay_need_login']);
         }
 
         $this->PaymentsArray = $this->DevTools->Payments();
@@ -46,7 +50,7 @@ Class USER
 
             if( ! $_ConvertSum = $this->DevTools->API->Convert( $_POST['billingPaySum'] ) )
             {
-                throw new Exception($this->DevTools->lang['pay_summa_error']);
+                throw new \Exception($this->DevTools->lang['pay_summa_error']);
             }
 
             $_InvoiceID = $this->DevTools->LQuery->DbCreatInvoice(
@@ -112,8 +116,10 @@ Class USER
      * @return mixed|string
      * @throws Exception
      */
-    public function waiting( array $GET = [] )
+    public function waiting( array $GET )
     {
+        $GET['id'] = intval($GET['id']);
+
         $Content = '';
 
         $InfoPay = [];
@@ -124,7 +130,7 @@ Class USER
 
         if( ! $Invoice or $this->DevTools->checkUser( $Invoice['invoice_user_name'] ) === false )
         {
-            throw new Exception($this->DevTools->lang['pay_invoice_error']);
+            throw new \Exception($this->DevTools->lang['pay_invoice_error']);
         }
 
         # Оплата с баланса
@@ -151,12 +157,16 @@ Class USER
         }
 
         $this->DevTools->ThemeSetElement( "{invoice.id}", $Invoice['invoice_id'] );
+
         $this->DevTools->ThemeSetElement( "{invoice.date.create}", langdate( "j.m.Y H:i", $Invoice['invoice_date_creat']) );
         $this->DevTools->ThemeSetElement( "{invoice.date.pay}", langdate( "j.m.Y H:i", $Invoice['invoice_date_pay']) );
+
         $this->DevTools->ThemeSetElement( "{invoice.payment.tag}", $Invoice['invoice_paysys'] );
         $this->DevTools->ThemeSetElement( "{invoice.payment.title}", $this->PaymentsArray[$Invoice['invoice_paysys']]['config']['title'] );
+
         $this->DevTools->ThemeSetElement( "{invoice.pay}", $Invoice['invoice_pay'] );
         $this->DevTools->ThemeSetElement( "{invoice.pay.currency}",  $this->PaymentsArray[$Invoice['invoice_paysys']]['config']['currency']  );
+
         $this->DevTools->ThemeSetElement( "{invoice.get}", $Invoice['invoice_get'] );
         $this->DevTools->ThemeSetElement( "{invoice.get.currency}", $this->DevTools->API->Declension( $Invoice['invoice_pay'] ) );
 
@@ -179,6 +189,7 @@ Class USER
         {
             header("Cache-Control: no-cache");
 
+            $this->DevTools->ThemeSetElement( "{id}", $GET['id'] );
             $this->DevTools->ThemeSetElement( "{title}", str_replace("{id}", $GET['id'], $this->DevTools->lang['pay_invoice']) );
 
             $from_balance = false;
@@ -296,7 +307,7 @@ Class USER
 
                         if( $_coupon and ! $this->DevTools->LQuery->useCoupon($couponData, $Invoice) )
                         {
-                            throw new Exception($this->DevTools->lang['coupon_use_error']);
+                            throw new \Exception($this->DevTools->lang['coupon_use_error']);
                         }
 
                         $resultPay = $this->DevTools->API->MinusMoney(
@@ -315,15 +326,15 @@ Class USER
                         return $this->DevTools->Show( $this->DevTools->ThemeLoad( 'pay/fail' ) );
                     }
 
-                    throw new Exception( $this->DevTools->lang['pay_sum_error'] );
+                    throw new \Exception( $this->DevTools->lang['pay_sum_error'] );
                 }
                 else if( ! $_Payment['status'] )
                 {
-                    throw new Exception( $this->DevTools->lang['pay_paysys_error'] );
+                    throw new \Exception( $this->DevTools->lang['pay_paysys_error'] );
                 }
                 else if( $Invoice['invoice_get'] < $_Payment['minimum'] )
                 {
-                    throw new Exception(
+                    throw new \Exception(
                         sprintf(
                             $this->DevTools->lang['pay_minimum_error'],
                             $_Payment['title'],
@@ -334,7 +345,7 @@ Class USER
                 }
                 else if( $Invoice['invoice_get'] > $_Payment['max'] )
                 {
-                    throw new Exception(
+                    throw new \Exception(
                         sprintf(
                             $this->DevTools->lang['pay_max_error'],
                             $_Payment['title'],
@@ -372,7 +383,7 @@ Class USER
 
                     if( $_GET['modal'] )
                     {
-                        echo $this->DevTools->Show( $payForm );;
+                        echo $this->DevTools->Show( str_replace('<form', '<form target="_blank"', $payForm) );;
                         exit;
                     }
 
@@ -380,7 +391,7 @@ Class USER
                 }
                 else
                 {
-                    throw new Exception($this->DevTools->lang['pay_file_error']);
+                    throw new \Exception($this->DevTools->lang['pay_file_error']);
                 }
             }
         }
@@ -437,9 +448,9 @@ Class USER
 
         # Подключение класса системы оплаты
         #
-        if( file_exists( DLEPlugins::Check( MODULE_PATH . '/payments/' . $GetPaysys . "/adm.settings.php" ) ) )
+        if( file_exists( MODULE_PATH . '/payments/' . $GetPaysys . "/adm.settings.php" ) )
         {
-            require_once DLEPlugins::Check( MODULE_PATH . '/payments/' . $GetPaysys . '/adm.settings.php' );
+            require_once MODULE_PATH . '/payments/' . $GetPaysys . "/adm.settings.php";
 
             $this->logging( 6 );
 
@@ -554,9 +565,9 @@ Class USER
      * @param $info
      * @return bool
      */
-    private function logging( $step = 0, $info = '' )
+    private function logging( int $step = 0, string $info = '' )
     {
-        if( ! $this->DevTools->config['test'] ) return false;
+        if( ! $this->DevTools->config['test'] ) return;
 
         if( filesize('pay.logger.php') > 1024 and ! $step )
         {
@@ -581,8 +592,6 @@ Class USER
         );
 
         fclose( $handler );
-
-        return true;
     }
 
     /**

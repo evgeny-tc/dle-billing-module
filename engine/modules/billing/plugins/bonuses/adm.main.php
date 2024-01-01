@@ -7,20 +7,26 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class ADMIN extends PluginActions
 {
-	public array $_Lang = [];
+    const PLUGIN = 'bonuses';
+
+    public Dashboard $Dashboard;
+
+    public array $_Lang = [];
 
 	function __construct()
 	{
-		$this->_Lang = include MODULE_PATH . '/plugins/bonuses/lang.php';
+		$this->_Lang = Dashboard::getLang(static::PLUGIN);
 	}
 
-	public function main( array $Get = [] )
+	public function main( array $Get ) : string
 	{
 		$this->checkInstall();
 
-		$_Config = $this->Dashboard->LoadConfig( 'bonuses' );
+		$_Config = $this->Dashboard->LoadConfig( static::PLUGIN );
 
 		# Сохранить настройки
 		#

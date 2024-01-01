@@ -7,15 +7,19 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class USER
 {
+    public DevTools $DevTools;
+
     public function main( array $GET = [] )
     {
         # Проверка авторизации
         #
         if( ! $this->DevTools->member_id['name'] )
         {
-            throw new Exception($this->DevTools->lang['pay_need_login']);
+            throw new \Exception($this->DevTools->lang['pay_need_login']);
         }
 
         $Content = $this->DevTools->ThemeLoad( "history" );

@@ -7,10 +7,10 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-define( 'BILLING_MODULE', TRUE );
+const BILLING_MODULE = TRUE;
 
-define( 'MODULE_PATH', ENGINE_DIR . "/modules/billing" );
-define( 'MODULE_DATA', ENGINE_DIR . "/data/billing" );
+const MODULE_PATH = ENGINE_DIR . "/modules/billing";
+const MODULE_DATA = ENGINE_DIR . "/data/billing";
 
 $_ConfigBilling     = include MODULE_DATA . '/config.php';
 $_Config            = include MODULE_DATA . '/plugin.donate.php';

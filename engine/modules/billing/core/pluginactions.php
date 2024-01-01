@@ -7,9 +7,11 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class PluginActions
 {
-    public function install()
+    public function install() : void
     {
         $this->Dashboard->CheckHash();
 
@@ -23,7 +25,7 @@ Class PluginActions
         $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_install'], '?mod=billing&c=' . $this->Dashboard->controller );
     }
 
-    public function uninstall()
+    public function uninstall() : void
     {
         $this->Dashboard->CheckHash();
 
@@ -32,7 +34,7 @@ Class PluginActions
         $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_uninstall'], '?mod=billing' );
     }
 
-    public function update()
+    public function update() : void
     {
         $config =  $this->Dashboard->LoadConfig( $this->Dashboard->controller );
 
@@ -43,7 +45,7 @@ Class PluginActions
         $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_update'], '?mod=billing&c=' . $this->Dashboard->controller );
     }
 
-    protected function checkInstall()
+    protected function checkInstall() : void
     {
         if( ! file_exists(ROOT_DIR . '/engine/data/billing/plugin.' . $this->Dashboard->controller . '.php') )
         {
@@ -68,8 +70,6 @@ Class PluginActions
                 'javascript:history.back()',
                 'info'
             );
-
-            return;
         }
     }
 }

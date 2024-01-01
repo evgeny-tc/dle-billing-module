@@ -7,15 +7,25 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class ADMIN extends PluginActions
 {
-	function main( array $Get = [] )
+    const PLUGIN = 'paygroups';
+
+    public Dashboard $Dashboard;
+
+    /**
+     * @param array $params
+     * @return string
+     */
+    public function main( array $params ) : string
 	{
         $this->checkInstall();
 
         global $user_group;
 
-		require_once MODULE_PATH . "/plugins/paygroups/lang.php";
+        $pluginLang = DevTools::getLang(static::PLUGIN);
 
 		# Сохранить настройки плагина
 		#
@@ -50,24 +60,26 @@ Class ADMIN extends PluginActions
 			$SaveCon = $_POST['save_con'];
 
 			if( is_array($SaveCon) )
-				foreach( $SaveCon as $group_tag => $group_info )
-				{
-					$SetStart[] = [];
+            {
+                foreach( $SaveCon as $group_tag => $group_info )
+                {
+                    $SetStart[] = [];
 
-					if( isset($SaveCon[$group_tag]['start']) and is_array($SaveCon[$group_tag]['start']) )
-					{
-						foreach( $SaveCon[$group_tag]['start'] as $group_tag_info )
-						{
-							$SetStart[] = $group_tag_info;
-						}
+                    if( isset($group_info['start']) and is_array($group_info['start']) )
+                    {
+                        foreach($group_info['start'] as $group_tag_info )
+                        {
+                            $SetStart[] = $group_tag_info;
+                        }
 
-						$SaveCon[$group_tag]['start'] = implode(',', $SetStart);
-					}
-				}
+                        $SaveCon[$group_tag]['start'] = implode(',', $SetStart);
+                    }
+                }
+            }
 
 			$this->SaveFileArray( $SaveCon );
 
-			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $plugin_lang['a_update'] );
+			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $pluginLang['a_update'] );
 		}
 
         $_Config = $this->Dashboard->LoadConfig( 'paygroups' );
@@ -82,7 +94,7 @@ Class ADMIN extends PluginActions
 			$dle_groups[$group_id] = $group['group_name'];
 		}
 
-		$this->Dashboard->ThemeEchoHeader( $plugin_lang['title'] );
+		$this->Dashboard->ThemeEchoHeader( $pluginLang['title'] );
 
 		# Форма настроек
 		#
@@ -93,8 +105,8 @@ Class ADMIN extends PluginActions
 		);
 
 		$this->Dashboard->ThemeAddStr(
-			$plugin_lang['a_stop'],
-			$plugin_lang['a_stop_desc'],
+			$pluginLang['a_stop'],
+			$pluginLang['a_stop_desc'],
 			$this->Dashboard->GetSelect($dle_groups, "save_stop[]", explode(",", $_Config['stop']), true )
 		);
 
@@ -103,7 +115,7 @@ Class ADMIN extends PluginActions
 
 		$tabs[] = array(
 				'id' => 'settings',
-				'title' => $plugin_lang['settings_title'],
+				'title' => $pluginLang['settings_title'],
 				'content' => $SettingForm
 		);
 
@@ -112,43 +124,43 @@ Class ADMIN extends PluginActions
 			if( in_array( $group_id, explode(",", $_Config['stop']) ) or $group_id == '5' ) continue;
 
 			$type = $group_info['time_limit']
-						? array( '0' => $plugin_lang['a_time_all'], '1' => $plugin_lang['a_time'] )
-						: array( '0' => $plugin_lang['a_time_all'] );
+						? array( '0' => $pluginLang['a_time_all'], '1' => $pluginLang['a_time'] )
+						: array( '0' => $pluginLang['a_time_all'] );
 
 			$this->Dashboard->ThemeAddStr(
-				$plugin_lang['a_status'],
-				$plugin_lang['a_status_desc'],
+				$pluginLang['a_status'],
+				$pluginLang['a_status_desc'],
 				$this->Dashboard->MakeICheck("save_con[group_{$group_id}][status]", $_GroupConfig['group_'.$group_id]['status'])
 			);
 
 			$this->Dashboard->ThemeAddStr(
-				$plugin_lang['a_start'],
-				$plugin_lang['a_start_desc'],
+				$pluginLang['a_start'],
+				$pluginLang['a_start_desc'],
 				$this->Dashboard->GetSelect($dle_groups, "save_con[group_{$group_id}][start][]", explode(",", $_GroupConfig['group_'.$group_id]['start']), true )
 			);
 
 			$this->Dashboard->ThemeAddStr(
-				$plugin_lang['a_type'],
-				$plugin_lang['a_type_desc'],
-				$this->Dashboard->GetSelect( $type, "save_con[group_{$group_id}][type]", $_GroupConfig['group_'.$group_id]['type']  ) . ( !$group_info['time_limit'] ? sprintf($plugin_lang['a_type_info'], $group_id) : "" )
+				$pluginLang['a_type'],
+				$pluginLang['a_type_desc'],
+				$this->Dashboard->GetSelect( $type, "save_con[group_{$group_id}][type]", $_GroupConfig['group_'.$group_id]['type']  ) . ( !$group_info['time_limit'] ? sprintf($pluginLang['a_type_info'], $group_id) : "" )
 			);
 
 			$this->Dashboard->ThemeAddStr(
-				$plugin_lang['a_price'],
-				$plugin_lang['a_price_desc'],
+				$pluginLang['a_price'],
+				$pluginLang['a_price_desc'],
 				"<textarea style=\"width:100%;height:100px;\" name=\"save_con[group_{$group_id}][price]\">".$_GroupConfig['group_'.$group_id]['price']."</textarea>"
 			);
 
 			$this->Dashboard->ThemeAddStr(
-				$plugin_lang['a_link'],
-				$plugin_lang['a_link_desc'],
-				"<textarea style=\"width:100%;height:50px;\" onClick=\"this.focus(); this.select()\">&lt;a href='#' onClick='BillingGroup.Form({$group_id}); return false'>{$plugin_lang['a_go']}&laquo;{$group_info['group_name']}&raquo;&lt;/a></textarea>"
+				$pluginLang['a_link'],
+				$pluginLang['a_link_desc'],
+				"<textarea style=\"width:100%;height:50px;\" onClick=\"this.focus(); this.select()\">&lt;a href='#' onClick='BillingGroup.Form({$group_id}); return false'>{$pluginLang['a_go']}&laquo;{$group_info['group_name']}&raquo;&lt;/a></textarea>"
 			);
 
 			$tabs[] = array(
 					'id' => 'group_' . $group_id,
 					'title' => $group_info['group_name'],
-					'content' => $this->Dashboard->ThemeParserStr() . $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton( "update", $plugin_lang['a_btn_update'], "green" ) )
+					'content' => $this->Dashboard->ThemeParserStr() . $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton( "update", $pluginLang['a_btn_update'], "green" ) )
 			);
 		}
 
@@ -159,7 +171,7 @@ Class ADMIN extends PluginActions
 		return $Content;
 	}
 
-	private function SaveFileArray( array $save_con = [] )
+	private function SaveFileArray( array $save_con = [] ) : void
 	{
 		$handler = fopen( MODULE_DATA . '/plugin.paygroups_list.php', "w" );
 
@@ -187,20 +199,20 @@ Class ADMIN extends PluginActions
 
 		fwrite( $handler, ");\n\n?>" );
 		fclose( $handler );
-
-		return;
 	}
 
-	private function array_parse( &$data )
+	private function array_parse( string &$data ) : void
 	{
 		$data = str_replace( "$", "&#036;", $data );
 		$data = str_replace( "{", "&#123;", $data );
 		$data = str_replace( "}", "&#125;", $data );
 	}
 
-    public function install()
+    public function install() : void
     {
         $this->Dashboard->CheckHash();
+
+        $pluginLang = include MODULE_PATH . '/plugins/paygroups/lang.php';
 
         @unlink(ROOT_DIR . '/engine/data/billing/plugin.paygroups.php');
         @unlink(ROOT_DIR . '/engine/data/billing/plugin.paygroups_list.php');
@@ -214,10 +226,10 @@ Class ADMIN extends PluginActions
         $this->Dashboard->SaveConfig( 'plugin.paygroups', $default );
         $this->Dashboard->SaveConfig( 'plugin.paygroups_list', [] );
 
-        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_install'], '?mod=billing&c=paygroups' );
+        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $pluginLang['plugin_install'], '?mod=billing&c=paygroups' );
     }
 
-    public function unistall()
+    public function unistall() : void
     {
         $this->Dashboard->CheckHash();
 

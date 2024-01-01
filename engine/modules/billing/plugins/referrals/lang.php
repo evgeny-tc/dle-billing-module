@@ -13,7 +13,7 @@ return array
 	'bonus_save' => "Вознаграждение сохранено",
 	'users' => "Приглашения",
 	'table_header' => "<th width='5%'></th>
-						<th>Действие <i class='help-button visible-lg-inline-block text-primary-600 fa fa-question-circle position-right position-left' data-rel='popover' data-trigger='hover' data-placement='auto right' data-content='Код плагина' data-original-title='' title=''></i></th>
+						<th>Действие <i class='help-button visible-lg-inline-block text-primary-600 fa fa-question-circle position-right position-left' data-rel='popover' data-trigger='hover' data-placement='auto right' data-content='Символьный код плагина' data-original-title='' title=''></i></th>
 						<th>Описание</th>
 						<th>Операция</th>
 						<th>Сумма операции</th>

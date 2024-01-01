@@ -7,6 +7,8 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 trait Utheme
 {
     /**
@@ -19,10 +21,10 @@ trait Utheme
     /**
      * TPL: Added tag
      * @param string $field
-     * @param string $value
+     * @param string|null $value
      * @return void
      */
-    public function ThemeSetElement( string $field, $value = '' )
+    public function ThemeSetElement(string $field, string|null $value = '' )
     {
         $this->elements[$field] = $value;
 
@@ -32,10 +34,10 @@ trait Utheme
     /**
      * TPL: Added split tag
      * @param string $fields
-     * @param string $value
+     * @param string|null $value
      * @return void
      */
-    public function ThemeSetElementBlock(string $fields, $value = '' ) : void
+    public function ThemeSetElementBlock(string $fields, string|null $value = '' ) : void
     {
         $this->element_block[$fields] = $value;
     }
@@ -61,6 +63,7 @@ trait Utheme
      * @param $errors
      * @param $show_panel
      * @return array|false|string|string[]|null
+     * @throws Exception
      */
     public function ThemeMsg( string $title, string $errors, $show_panel = true )
     {

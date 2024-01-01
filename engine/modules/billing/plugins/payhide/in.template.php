@@ -41,9 +41,13 @@ if( ! function_exists('BillingPayhideParser') )
         return $str;
     }
 
-    # Доступ открыт
-    #
-    function BillingPayhideOpen( $Data, $AccessTime = false )
+    /**
+     * Показать контент
+     * @param array $Data
+     * @param bool $AccessTime
+     * @return array|false|string|string[]
+     */
+    function BillingPayhideOpen( array $Data, bool $AccessTime = false )
     {
         global $config, $_TIME;
 
@@ -73,14 +77,16 @@ if( ! function_exists('BillingPayhideParser') )
         }
 
         $_Content = str_replace('{content}', $Data['content'], $_Content);
-        $_Content = str_replace('{key}', 'pay-' . $Data['key'], $_Content);
 
-        return $_Content;
+        return str_replace('{key}', 'pay-' . $Data['key'], $_Content);
     }
 
-    # Обработка тега
-    #
-    function BillingPayhideParser( $Params )
+    /**
+     * Обработка тега
+     * @param array $Params
+     * @return array|false|mixed|string|string[]|null
+     */
+    function BillingPayhideParser( array $Params ): mixed
     {
         global $db, $config, $member_id, $is_logged, $row, $_TIME;
 
@@ -92,6 +98,7 @@ if( ! function_exists('BillingPayhideParser') )
         $Data = [];
 
         $Title = '';
+        $_Content = '';
 
         $Data['content'] = $Params[2];
 
@@ -102,8 +109,12 @@ if( ! function_exists('BillingPayhideParser') )
             $Data['content'] = preg_replace("#\\[payclose\\](.*?)\\[/payclose\\]#is", '', $Data['content']);
         }
 
+        # Плагин отключен
+        #
         if( ! $_Config['status'] or ! $_ConfigPlugin['status'] )
+        {
             return $Data['content'];
+        }
 
         if( preg_match( "#title=['\"](.+?)['\"]#is", $Params[1], $match ) )
         {
@@ -149,8 +160,7 @@ if( ! function_exists('BillingPayhideParser') )
             $Data['post_autor'] = $row['autor'];
         }
 
-        # Открыть для указанных групп
-        # Открыть для автора
+        # Открыть для указанных групп и автора
         #
         if( in_array( $member_id['user_group'], explode(",", $Data['open'] ) )
             or ( $Data['autor'] == "1" and $row['autor'] and $row['autor'] == $member_id['name'] ) )

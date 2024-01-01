@@ -7,9 +7,13 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class ADMIN extends PluginActions
 {
-	public function main( array $Get = [] )
+    public Dashboard $Dashboard;
+
+    public function main( array $Get ) : string
 	{
         $this->checkInstall();
 
