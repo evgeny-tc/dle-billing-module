@@ -1,6 +1,6 @@
 # DLE Billing
 
-![Version](https://img.shields.io/badge/Version-0.9.4-blue.svg?style=flat-square "Version")
+![Version](https://img.shields.io/badge/Version-0.9.5-blue.svg?style=flat-square "Version")
 ![DLE](https://img.shields.io/badge/DLE-13.0+-green.svg?style=flat-square "DLE")
 ![PHP](https://img.shields.io/badge/PHP-8+-blue.svg?style=flat-square "PHP")
 ![Charset](https://img.shields.io/badge/Charset-utf--8-red.svg?style=flat-square "Charset")
@@ -36,20 +36,19 @@
 - Перевод средств между пользователями
 - Запросы вывода средств с баланса
 - Платный переход в группу
-- Пожертвования
-- Фиксация новостей
 - Оплата контента
+- Реферальная программа
+- Фиксация новостей
 - Бонусы
 - Промокоды
-- Реферальная программа
 - Формы
+- Пожертвования
 
 ## Платежные агрегаторы
 - Payok.io
 - ЮMoney
 - PayAnyWay
 - Робокасса
-- LiqPay
 - Free-Kassa
 - Tegro.money
 - Интеркасса
@@ -60,11 +59,13 @@
 Для разработчиков - [документация](https://dle-billing.ru/doc/api "документация").
 
 ## Журнал изменений
+### v.0.9.5
+- Обновлен личный кабинет пользователя
+- Новый интерфейс процесса оплаты услуг
 ### v.0.9.4 (15.10.2023)
 - Исправлена ошибка в интеграции с ЮMoney
 - Исправлена ошибка в ссылках на профили пользователей
 - Другие исправления и улучшения
-
 ### v.0.9.3 (23.09.2023)
 - Исправлены ошибки в отображении админпанели в темной версии
 - Обновлена страница статистики
