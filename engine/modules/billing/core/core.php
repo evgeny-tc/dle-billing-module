@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
 namespace Billing;
@@ -30,6 +30,24 @@ trait Core
 
             exit;
         }
+    }
+
+    public static function getHandler(string $plugin, string $handler) : ?object
+    {
+        $plugin = preg_replace("/[^a-z\s]/", "", trim( $plugin ) );
+        $handler = preg_replace("/[^a-z\s]/", "", trim( $handler ) );
+
+        if( file_exists( MODULE_PATH . '/plugins/' . $plugin . '/handler.' . $handler . '.php' ) )
+        {
+            $Handler = include MODULE_PATH . '/plugins/' . $plugin . '/handler.' . $handler . '.php';
+
+            if( $Handler instanceof Handler )
+            {
+                return $Handler;
+            }
+        }
+
+        return null;
     }
 
     /**

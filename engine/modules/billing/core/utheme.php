@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
 namespace Billing;
@@ -15,8 +15,8 @@ trait Utheme
      * Template build
      * @var array
      */
-    public $elements = [];
-    public $element_block = [];
+    public array $elements = [];
+    public array $element_block = [];
 
     /**
      * TPL: Added tag
@@ -24,11 +24,9 @@ trait Utheme
      * @param string|null $value
      * @return void
      */
-    public function ThemeSetElement(string $field, string|null $value = '' )
+    public function ThemeSetElement(string $field, string|null $value = '' ) : void
     {
         $this->elements[$field] = $value;
-
-        return;
     }
 
     /**
@@ -45,9 +43,10 @@ trait Utheme
     /**
      * TPL: Loader
      * @param string $file
-     * @return string|void
+     * @return string
+     * @throws \Exception
      */
-    public function ThemeLoad( string $file )
+    public function ThemeLoad( string $file ) : string
     {
         if( ! file_exists( ROOT_DIR . "/templates/" . $this->dle['skin'] . "/billing/" . $file . ".tpl" ) )
         {
@@ -59,13 +58,13 @@ trait Utheme
 
     /**
      * Show page with errors
-     * @param $title
-     * @param $errors
-     * @param $show_panel
-     * @return array|false|string|string[]|null
-     * @throws Exception
+     * @param string $title
+     * @param string $errors
+     * @param bool $show_panel
+     * @return string
+     * @throws \Exception
      */
-    public function ThemeMsg( string $title, string $errors, $show_panel = true )
+    public function ThemeMsg( string $title, string $errors, bool $show_panel = true ) : string
     {
         $this->ThemeSetElement( "{msg}", $errors );
         $this->ThemeSetElement( "{title}", $title );
@@ -80,20 +79,18 @@ trait Utheme
      * @param string|null $update
      * @return void
      */
-    public function ThemePregReplace(string $tag, string &$data, string|null $update = '' )
+    public function ThemePregReplace(string $tag, string &$data, string|null $update = '' ) : void
     {
         $data = preg_replace("'\\[$tag\\].*?\\[/$tag\\]'si", $update, $data);
-
-        return;
     }
 
     /**
      * Get content tag
      * @param string $theme
      * @param string $tag
-     * @return mixed
+     * @return string
      */
-    public function ThemePregMatch( string $theme, string $tag )
+    public function ThemePregMatch( string $theme, string $tag ) : string
     {
         $answer = [];
 
@@ -102,10 +99,15 @@ trait Utheme
         return $answer[1];
     }
 
-    public static function TPL()
+    /**
+     * Return dle_template
+     * @return \dle_template
+     * @throws \Exception
+     */
+    public static function TPL() : \dle_template
     {
         global $tpl;
 
-        return $tpl ?: throw new Exception("tpl class error load");
+        return $tpl ?: throw new \Exception("tpl class error load");
     }
 }

@@ -4,13 +4,15 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
 namespace Billing;
 
 Class PluginActions
 {
+    public Dashboard $Dashboard;
+
     public function install() : void
     {
         $this->Dashboard->CheckHash();
@@ -22,7 +24,11 @@ Class PluginActions
             ]
         );
 
-        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_install'], '?mod=billing&c=' . $this->Dashboard->controller );
+        $this->Dashboard->ThemeMsg(
+            $this->Dashboard->lang['plugin_install'],
+            $this->Dashboard->PanelPlugin(path: 'plugins/' . $this->Dashboard->controller, styles: '' ),
+            '?mod=billing&c=' . $this->Dashboard->controller
+        );
     }
 
     public function uninstall() : void
@@ -31,7 +37,11 @@ Class PluginActions
 
         @unlink(ROOT_DIR . '/engine/data/billing/plugin.' . $this->Dashboard->controller . '.php');
 
-        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_uninstall'], '?mod=billing' );
+        $this->Dashboard->ThemeMsg(
+            $this->Dashboard->lang['plugin_uninstall'],
+            $this->Dashboard->PanelPlugin(path: 'plugins/' . $this->Dashboard->controller, styles: '' ),
+            '?mod=billing'
+        );
     }
 
     public function update() : void
@@ -51,15 +61,16 @@ Class PluginActions
         {
             $this->Dashboard->ThemeMsg(
                 $this->Dashboard->lang['need_install'],
-                '<a href="?mod=billing&c=' . $this->Dashboard->controller . '&m=install&user_hash=' . $this->Dashboard->hash . '" class="btn bg-teal btn-sm btn-raised position-left legitRipple">' . $this->Dashboard->lang['plugins_table_status']['install'] . '</a>',
+                $this->Dashboard->PanelPlugin(path: 'plugins/' . $this->Dashboard->controller, styles: '' ) . '<a href="?mod=billing&c=' . $this->Dashboard->controller . '&m=install&user_hash=' . $this->Dashboard->hash . '" class="btn bg-teal btn-sm btn-raised position-left legitRipple">' . $this->Dashboard->lang['plugins_table_status']['install'] . '</a>',
                 'javascript:history.back()',
-                'info'
+                'warning'
             );
 
             return;
         }
         
         $config =  $this->Dashboard->LoadConfig( $this->Dashboard->controller );
+
         $info = parse_ini_file( MODULE_PATH . '/plugins/' . $this->Dashboard->controller . '/info.ini' );
 
         if( $config['version'] and version_compare($info['version'], $config['version']) > 0 )

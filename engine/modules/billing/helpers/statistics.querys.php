@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/mr-Evgen/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2017, mr_Evgen
+ * @copyright     Copyright (c) 2012-2024
  */
 
 return array

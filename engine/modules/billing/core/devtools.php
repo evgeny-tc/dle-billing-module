@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
 namespace Billing;
@@ -72,15 +72,15 @@ Class DevTools
 
     /**
      * Connect api module
-     * @var bool
+     * @var object
      */
     public object $API;
 
     /**
      * Helper sql
-     * @var [type]
+     * @var object
      */
-    public $LQuery = false;
+    public object $LQuery;
 
     /**
      * User balance
@@ -90,7 +90,7 @@ Class DevTools
 
     /**
      * Hash string to form
-     * @var [type]
+     * @var string
      */
     public string $hash;
 
@@ -103,13 +103,14 @@ Class DevTools
 
     /**
      * Main loader
+     * @throws \Exception
      */
     private function Loader(): void
     {
         global $config, $member_id, $_TIME, $db, $dle_login_hash;
 
         $this->lang 	= include MODULE_PATH . '/lang/cabinet.php';
-        $this->config 	= include MODULE_DATA . '/config.php';
+        $this->config 	= static::getConfig('');
 
         # ..модуль отключен
         #
@@ -181,7 +182,7 @@ Class DevTools
         }
         else
         {
-            throw new Exception(sprintf($this->lang['cabinet_controller_error'], $this->get_plugin));
+            throw new \Exception(sprintf($this->lang['cabinet_controller_error'], $this->get_plugin));
         }
 
         $Cabinet = new USER;
@@ -197,7 +198,7 @@ Class DevTools
         }
         else
         {
-            throw new Exception(sprintf($this->lang['cabinet_metod_error'], $this->get_plugin, $this->get_method));
+            throw new \Exception(sprintf($this->lang['cabinet_metod_error'], $this->get_plugin, $this->get_method));
         }
     }
 
@@ -323,13 +324,13 @@ Class DevTools
 
             if( $sum > $this->BalanceUser )
             {
-                throw new Exception( $this->lang['pay_sum_error'] );
+                throw new \Exception( $this->lang['pay_sum_error'] );
             }
         }
 
         if( ! $_Payment['status'] )
         {
-            throw new Exception( $this->lang['pay_paysys_error'] );
+            throw new \Exception( $this->lang['pay_paysys_error'] );
         }
         else if( $sum < $_Payment['minimum'] )
         {

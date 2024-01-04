@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
 global $config, $member_id;
@@ -34,7 +34,7 @@ $blank['currency'] = $_Lang['currency'];
 $blank['admin'] = $member_id['name'];
 $blank['secret'] = genCode();
 
-$htaccess_set = "# billing\nRewriteRule ^([^/]+).html/(.*)(/?)+$ index.php?do=static&page=$1&seourl=$1&route=$2 [QSA]";
+$htaccess_set = "\n\t# billing\n\tRewriteRule ^([^/]+).html/(.*)(/?)+$ index.php?do=static&page=$1&seourl=$1&route=$2 [QSA]\n";
 
 # Процесс установки
 #
@@ -46,9 +46,17 @@ if( isset( $_POST['install'] ) or isset($_GET['install']) )
 	{
 		if ( ! strpos( file_get_contents(".htaccess"), "# billing" ) )
 		{
-			$new_htaccess = fopen(".htaccess", "a");
-			fwrite($new_htaccess, "\n" . $htaccess_set);
-			fclose($new_htaccess);
+            $htaccess_array = file( ".htaccess" );
+
+            foreach ($htaccess_array as $num => $htrow)
+            {
+                if( str_contains($htrow, 'index.php?do=static&page=$1&seourl=$1'))
+                {
+                    $htaccess_array[$num] = "{$htrow}{$htaccess_set}";
+                }
+            }
+
+            file_put_contents( ".htaccess", $htaccess_array );
 		}
 	}
 	elseif ( ! strpos( file_get_contents(".htaccess"), "# billing" ) )

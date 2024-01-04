@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
 namespace Billing;
@@ -75,15 +75,15 @@ Class Dashboard
 
 	/**
 	 * Connect api module
-	 * @var bool
+	 * @var object
 	 */
-	public $API = false;
+	public object $API;
 
 	/**
 	 * Helper sql
-	 * @var [type]
+	 * @var object
 	 */
-	public $LQuery = false;
+	public object $LQuery;
 
 	/**
 	 * Collection plugins for module
@@ -100,7 +100,7 @@ Class Dashboard
 	/**
 	 * For Build menu
 	 */
-	protected int $section_num = 0;
+	//protected int $section_num = 0;
 	protected array $section = [];
 
 	/**
@@ -128,8 +128,9 @@ Class Dashboard
 
 		$this->lang 	= file_exists(MODULE_PATH . '/lang/' . $selected_language . '/admin.php') ? include MODULE_PATH . '/lang/' . $selected_language . '/admin.php' : include MODULE_PATH . '/lang/admin.php';
 
-		$this->config 	= include MODULE_DATA . '/config.php';
+		$this->config 	= static::getConfig('');
 
+        //TODO: models
 		$this->LQuery 	= new Database(
 			$db,
 			$this->config['fname'],
@@ -299,26 +300,31 @@ Class Dashboard
 		return $answer . '</div>';
 	}
 
-	/**
-	 * Panel plugin info
-	 * @param $path
-	 * @param $icon
-	 * @param $status
-	 * @param $link
-	 * @return string
-	 */
-	public function PanelPlugin( string $path, ?string $link = '' ) : string
+    /**
+     * Panel plugin info
+     * @param string $path
+     * @param string|null $link
+     * @param string|null $styles
+     * @return string
+     */
+	public function PanelPlugin( string $path, ?string $link = '', ?string $styles = 'float: right' ) : string
 	{
 		$ini = parse_ini_file( MODULE_PATH . '/' . $path . '/info.ini' );
 
-		return $this->MakeMsgInfo(
-			"<span style=\"float: right\">
-				" . ( $link ? "<a href=\"{$link}\" target=\"_blank\" class=\"tip help_url\" data-placement=\"left\" title=\"{$this->lang['help']}\">" : '' ) . "
-					<img src=\"/engine/skins/billing/{$path}.png\" onError=\"this.src='engine/skins/billing/icons/plugin.png'\" class=\"bt_icon\" />
-				" . ( $link ? "</a>" : '' ) . "
-			</span>
-			<span style=\"font-size: 18px\">{$ini['title']}</span>
-			<br />{$ini['desc']}" );
+        if( $link )
+        {
+            $icon = "<a href='{$link}' target='_blank' class='tip help_url'>
+                        {$this->lang['help']} <img src='/engine/skins/billing/{$path}.png' onError=\"this.src='engine/skins/billing/icons/plugin.png'\" class='bt_icon' />
+                     </a>";
+        }
+        else
+        {
+            $icon = "<img src='/engine/skins/billing/{$path}.png' onError=\"this.src='engine/skins/billing/icons/plugin.png'\" class='bt_icon' />";
+        }
+
+		return '<span style="text-align: left">' . $this->MakeMsgInfo(
+                "<span style='float: right; text-align: left'>{$icon}</span><span style=\"font-size: 18px\">{$ini['title']}</span><br />{$ini['desc']}"
+            ) . '</span>';
 	}
 
 	/**
@@ -756,7 +762,7 @@ HTML;
 	{
 		global $is_loged_in, $skin_footer, $skin_not_logged_footer;
 
-		$skin_footer = preg_replace('~<div class=\"footer text-muted text-size-small\">\s+(.*?)\s+<\/div>~s', "<div class=\"footer text-muted text-size-small\">&copy 2012 - 2023 <a href=\"https://dle-billing.ru/\" target=\"_blank\">DLE-Billing</a></div>", $skin_footer);
+		$skin_footer = preg_replace('~<div class=\"footer text-muted text-size-small\">\s+(.*?)\s+<\/div>~s', "<div class=\"footer text-muted text-size-small\">&copy 2012 - 2024 <a href=\"https://dle-billing.ru/\" target=\"_blank\">DLE-Billing</a></div>", $skin_footer);
 
 		if( $is_loged_in )
         {

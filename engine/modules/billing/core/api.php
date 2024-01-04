@@ -302,7 +302,7 @@ Class API
             return $number_format_f ? number_format(intval($money), 0, '', ' ') : $money;
         }
 
-        return $number_format_f ? number_format($money, 3, '.', ' ') : $money;
+        return $number_format_f ? number_format($money, 2, '.', ' ') : $money;
     }
 
     /**
@@ -350,9 +350,14 @@ Class API
             if( file_exists( MODULE_PATH . '/plugins/' . $name . '/hook.class.php' )
                 and file_exists( MODULE_DATA . '/plugin.' . $name . '.php' ))
             {
+                if(  ! class_exists('Hooks') )
+                {
+                    require_once MODULE_PATH . '/core/hooks.php';
+                }
+
                 $Hook = include( MODULE_PATH . '/plugins/' . $name . '/hook.class.php' );
 
-                if( (new \ReflectionClass($Hook))->isAnonymous() )
+                if( $Hook instanceof Hooks)
                 {
                     if( in_array('init', get_class_methods($Hook) ) )
                     {
@@ -362,10 +367,15 @@ Class API
                         );
                     }
 
-                    if( in_array('pay', get_class_methods($Hook) ) )
-                    {
-                        $Hook->pay( $user, $plus, $minus, $balance, $desc, $plugin, $plugin_id );
-                    }
+                    $Hook->pay(
+                        (string)$user,
+                        floatval($plus),
+                        floatval($minus),
+                        floatval($balance),
+                        (string)$desc,
+                        (string)$plugin,
+                        intval($plugin_id)
+                    );
                 }
             }
         }
