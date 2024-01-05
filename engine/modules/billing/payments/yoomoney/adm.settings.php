@@ -84,7 +84,7 @@ Class YooMoney implements IPayment
 
 	public function check_payer_requisites( array $data ) : string
 	{
-		return $data['sender'];
+		return (string)$data['sender'];
 	}
 
 	public function check_id( array $data ) : int
