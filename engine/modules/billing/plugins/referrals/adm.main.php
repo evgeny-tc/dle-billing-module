@@ -13,8 +13,6 @@ Class ADMIN extends PluginActions
 {
     const PLUGIN = 'referrals';
 
-    public Dashboard $Dashboard;
-
     public function main( array $GET ) : string
 	{
         $this->checkInstall();
@@ -272,6 +270,8 @@ HTML;
     {
         $this->Dashboard->CheckHash();
 
+        $_Lang = Dashboard::getLang(static::PLUGIN);
+
         @unlink(ROOT_DIR . '/engine/data/billing/plugin.referrals.php');
 
         $tableSchema = [];
@@ -295,7 +295,40 @@ HTML;
 
         $this->Dashboard->SaveConfig('plugin.referrals', $default);
 
-        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_install'], '?mod=billing&c=' . $this->Dashboard->controller );
+        $moreInstall = '';
+        $statusInstall = 'success';
+
+        # htaccess
+        #
+        if( is_writable( ".htaccess" ) )
+        {
+            if ( ! strpos( file_get_contents(".htaccess"), "# referrals" ) )
+            {
+                $htaccess_array = file( ".htaccess" );
+
+                foreach ($htaccess_array as $num => $htrow)
+                {
+                    if( str_contains($htrow, 'RewriteEngine On'))
+                    {
+                        $htaccess_array[$num] = "{$htrow}\t# referrals\n\tRewriteRule ^partner/(.*)(/?)+$ index.php?do=static&page=billing&seourl=billing&route=referrals/redirect&p=$1 [L]";
+                    }
+                }
+
+                file_put_contents( ".htaccess", $htaccess_array );
+            }
+        }
+        else
+        {
+            $statusInstall = 'warning';
+            $moreInstall = $_Lang['install'];
+        }
+
+        $this->Dashboard->ThemeMsg(
+            $this->Dashboard->lang['plugin_install'],
+            $this->Dashboard->PanelPlugin(path: 'plugins/' . $this->Dashboard->controller, link: 'https://dle-billing.ru/doc/plugins/referrals/', styles: '' ) . $moreInstall,
+            '?mod=billing&c=' . $this->Dashboard->controller,
+            $statusInstall
+        );
     }
 
     public function uninstall() : void

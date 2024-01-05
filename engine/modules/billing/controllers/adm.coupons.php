@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
 namespace Billing;
@@ -83,7 +83,9 @@ Class ADMIN
 
             $this->Dashboard->ThemeMsg(
                 $this->Dashboard->lang['coupons']['create']['ok'],
-                '<table class="table table-normal table-hover">' . $_Answer . '</table>', '?mod=billing&c=coupons' );
+                '<table class="table table-normal table-hover">' . $_Answer . '</table>',
+                '?mod=billing&c=coupons'
+            );
         }
 
         # Список
@@ -95,7 +97,7 @@ Class ADMIN
                 '<td>' . $this->Dashboard->lang['coupons']['list']['value'] . '</td>',
                 '<td>' . $this->Dashboard->lang['coupons']['list']['time'] . '</td>',
                 '<td>' . $this->Dashboard->lang['coupons']['list']['use'] . '</td>',
-                '<td width="2%"><center><input type="checkbox" value="" name="massact_list[]" onclick="checkAll(this)" /></center></td>'
+                '<td width="2%"><center><input type="checkbox" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></center></td>'
             ]
         );
 

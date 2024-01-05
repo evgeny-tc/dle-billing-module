@@ -51,5 +51,5 @@ return [
       ]
     ],
 
-    'html_pay_wait' => '<div id="#modal_id#" title="Оплата" style="display:none">Процесс оплаты...<a href="%s" target="_blank">перейти к оплате</a>.</div>'
+    'html_pay_wait' => '<div id="#modal_id#" title="Оплата" style="display:none">Процесс оплаты...<a href="%s" target="_blank">перейти к оплате</a>.</div>',
 ];

@@ -358,4 +358,3 @@ Class USER
 		return $Answer;
 	}
 }
-?>

@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
 namespace Billing;
@@ -69,16 +69,23 @@ Class ADMIN
 					{
 						$this->Dashboard->LQuery->DbInvoiceUpdate( $id );
 
+                        # есть обработчик
+                        #
 						if( $Invoice['invoice_handler'] )
 						{
-							$this->handler($Invoice);
+                            list($pluginHandler, $fileHandler) = Dashboard::exInvoiceHandler($Invoice['invoice_handler']);
+
+                            if( $Handler = Dashboard::getHandler($pluginHandler, $fileHandler) )
+                            {
+                                $Handler->pay($Invoice, $this->DevTools->API);
+                            }
 						}
 						else
 						{
 							$this->Dashboard->API->PlusMoney(
 								$Invoice['invoice_user_name'],
 								$Invoice['invoice_get'],
-								sprintf( $this->Dashboard->lang['pay_msgOk'], $listPayments[$Invoice['invoice_paysys']]['title'], $Invoice['invoice_pay'], $listPayments[$Invoice['invoice_paysys']]['config']['currency'] ),
+								sprintf( $this->Dashboard->lang['pay_msgOk'], $listPayments[$Invoice['invoice_paysys']]['title'] ?? $this->Dashboard->lang['pay_from_admin'], $Invoice['invoice_pay'], $listPayments[$Invoice['invoice_paysys']]['config']['currency'] ?? $this->Dashboard->API->Declension( $Invoice['invoice_get'] ) ),
 								'pay',
 								$id
 							);
@@ -189,7 +196,7 @@ Class ADMIN
                 '<th>'.$this->Dashboard->lang['invoice_str_ps'].'</th>',
                 '<th>'.$this->Dashboard->lang['history_user'].'</th>',
                 '<th>'.$this->Dashboard->lang['invoice_str_status'].'</th>',
-                '<th width="5%"><center><input type="checkbox" value="" name="massact_list[]" onclick="checkAll(this)" /></center></th>'
+                '<th class="th_checkbox"><input type="checkbox" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></th>'
             ]
         );
 
@@ -205,10 +212,10 @@ Class ADMIN
                     $Value['invoice_user_name'] ? $this->Dashboard->ThemeInfoUser( $Value['invoice_user_name'] ) : $this->Dashboard->lang['history_user_null'],
                     '<span style="text-align: center">' .
                     ( $Value['invoice_date_pay']
-                        ? '<span class="label bt_lable_green" onClick="logShowDialogByID( \'#invoice_' . $Value['invoice_id'] . '\' ); return false">' . $this->Dashboard->ThemeChangeTime( $Value['invoice_date_pay'] ) . '</span>'
-                        : '<span class="label bt_lable_blue" onClick="logShowDialogByID( \'#invoice_' . $Value['invoice_id'] . '\' ); return false">' . $this->Dashboard->lang['refund_wait'] . '</span>' ) .
+                        ? '<span class="label bt_lable_green" onClick="BillingJS.openDialog( \'#invoice_' . $Value['invoice_id'] . '\' ); return false">' . $this->Dashboard->ThemeChangeTime( $Value['invoice_date_pay'] ) . '</span>'
+                        : '<span class="label bt_lable_blue" onClick="BillingJS.openDialog( \'#invoice_' . $Value['invoice_id'] . '\' ); return false">' . $this->Dashboard->lang['refund_wait'] . '</span>' ) .
                     '</span>',
-                    '<span style="text-align: center">' .
+                    '<span class="settingsb">' .
                         $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['invoice_id'], false) .
                     '</span>
                         <div id="invoice_' . $Value['invoice_id'] . '" title="' . $this->Dashboard->lang['history_search_oper'] . $Value['invoice_id'] . '" style="display:none">
@@ -244,7 +251,7 @@ Class ADMIN
                                     $PerPage
                                 ) . '
 						</ul>
-					<div style="float: right">
+					    <div style="float: right">
 						 <select name="act" class="uniform" style="padding-right: 10px">
                                 <option value="ok">' . $this->Dashboard->lang['invoice_edit_1'] . '</option>
                                 <option value="no">' . $this->Dashboard->lang['invoice_edit_2'] . '</option>
@@ -266,12 +273,13 @@ Class ADMIN
 
 		# Форма поиска
 		#
-		$SelectPaysys = array();
-		$SelectPaysys[] = $this->Dashboard->lang['invoice_all_payments'];
+		$searchPayments = [
+            $this->Dashboard->lang['invoice_all_payments']
+        ];
 
-		foreach( $listPayments as $name=>$info )
+		foreach( $listPayments as $name => $info )
 		{
-			$SelectPaysys[$name] = $info['title'];
+            $searchPayments[$name] = $info['title'];
 		}
 
 		$this->Dashboard->ThemeAddStr(
@@ -301,7 +309,7 @@ Class ADMIN
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['invoice_ps'],
 			$this->Dashboard->lang['invoice_ps_desc'],
-			$this->Dashboard->GetSelect( $SelectPaysys, "search_paysys", $_POST['search_paysys'] )
+			$this->Dashboard->GetSelect( $searchPayments, "search_paysys", $_POST['search_paysys'] )
 		);
 
 		$this->Dashboard->ThemeAddStr(
@@ -313,8 +321,8 @@ Class ADMIN
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['invoice_search_date_create'],
 			$this->Dashboard->lang['search_pcode_desc'],
-			'от ' . $this->Dashboard->MakeCalendar("search_date", $_POST['search_date'], 'width: 40%', 'calendar') .
-			' до ' . $this->Dashboard->MakeCalendar("search_date_to", $_POST['search_date_to'], 'width: 40%', 'calendar')
+            $this->Dashboard->lang['date_from'] . $this->Dashboard->MakeCalendar("search_date", $_POST['search_date'], 'width: 40%', 'calendar') .
+            $this->Dashboard->lang['date_to'] . $this->Dashboard->MakeCalendar("search_date_to", $_POST['search_date_to'], 'width: 40%', 'calendar')
 		);
 
 		$this->Dashboard->ThemeAddStr(
@@ -324,17 +332,18 @@ Class ADMIN
 			' до ' . $this->Dashboard->MakeCalendar("search_date_pay_to", $_POST['search_date_pay_to'], 'width: 40%', 'calendar')
 		);
 
-		$ContentSearch = $this->Dashboard->ThemeParserStr();
-		$ContentSearch .= $this->Dashboard->ThemePadded(
+		$boxSearch = $this->Dashboard->ThemeParserStr();
+
+        $boxSearch .= $this->Dashboard->ThemePadded(
             $this->Dashboard->MakeButton("search_btn", $this->Dashboard->lang['history_search_btn'], "green") .
             "<a href=\"\" class=\"btn btn-sm btn-default\" style=\"margin-left:7px;\">{$this->Dashboard->lang['history_search_btn_null']}</a>"
         );
 
-		$tabs[] = array(
-				'id' => 'search',
-				'title' => $this->Dashboard->lang['history_search'],
-				'content' => $ContentSearch
-		);
+		$tabs[] = [
+            'id' => 'search',
+            'title' => $this->Dashboard->lang['history_search'],
+            'content' => $boxSearch
+        ];
 
 		if( isset( $_POST['search_btn'] ) )
 		{
@@ -349,25 +358,5 @@ Class ADMIN
 		$Content .= $this->Dashboard->ThemeEchoFoother();
 
 		return $Content;
-	}
-
-    # есть обработчик
-    #
-	private function handler(array $Invoice) : void
-	{
-        $parsHandler = explode(':', $Invoice['invoice_handler']);
-
-        $pluginHandler = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[0] ) );
-        $fileHandler = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[1] ) );
-        
-        if( file_exists( MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php' ) )
-        {
-            $Handler = include MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php';
-
-            if( in_array('pay', get_class_methods($Handler) ) )
-            {
-                $Handler->pay($Invoice, $this->Dashboard->API);
-            }
-        }
 	}
 }

@@ -4,16 +4,25 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
-return new class
+namespace Billing;
+
+return new class extends Handler
 {
-    public function pay(array $Invoice, BillingAPI $API)
+    private array $_Lang;
+    private array $_Config;
+
+    public function __construct()
     {
-        global $db, $_TIME;
-        
-        $_Lang              = include MODULE_PATH . "/plugins/fixednews/lang.php";
+        $this->_Lang = DevTools::getLang('fixednews');
+        $this->_Config = DevTools::getConfig('fixednews');
+    }
+
+    public function pay(array $Invoice, Api $API) : bool
+    {
+        global $db;
 
         $InfoPay = unserialize($Invoice['invoice_payer_info']);
 
@@ -49,18 +58,16 @@ return new class
         return true;
     }
 
-    public function desc(array $infopay = [])
+    public function desc(array $info = []) : array
     {
-        $_Lang              = include MODULE_PATH . "/plugins/fixednews/lang.php";
-
-        return [sprintf($_Lang['handler']['fixed']['story'], $infopay['params']['post_title'], $infopay['params']['days']), $infopay['params']['post_id']];
+        return [sprintf($this->_Lang['handler']['fixed']['story'], $info['params']['post_title'], $info['params']['days']), $info['params']['post_id']];
     }
 
-    public function prepay( array $invoice, array|bool $infopay, array &$more_data )
+    public function prepay( array $invoice, array|bool $info, array &$more_data ) : void
     {
-        $_Lang              = include MODULE_PATH . "/plugins/fixednews/lang.php";
-
-        $more_data[$_Lang['handler']['post']] = $infopay['params']['post_title'];
-        $more_data[$_Lang['handler']['fixed_days']] = $infopay['params']['days'];
+        $more_data[$this->_Lang['handler']['post']] = $info['params']['post_title'];
+        $more_data[$this->_Lang['handler']['fixed_days']] = $info['params']['days'];
     }
+
+    public function prepay_check( array $invoice, array|bool &$info ) : void {}
 };

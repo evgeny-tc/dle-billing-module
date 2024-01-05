@@ -1,4 +1,7 @@
    <div class="billingFormModal" data-width="400" data-height="580" title='{form_title}' style='display:none'>
+
+       <link media="screen" href="/templates/{module.skin}/billing/css/styles.css" type="text/css" rel="stylesheet" />
+
        <form class="billingForm">
 
            {hidden_input}
@@ -33,14 +36,15 @@
                </li>
                <li class="form-group">
                    <div class="checkbox">
-                       <input type="checkbox" name="agree" value="yes" required>&nbsp;<label for="agree">С правилами согласен *</label>
+                       <label> <input type="checkbox" name="agree" value="yes" required> С правилами согласен *</label>
                    </div>
                </li>
            </ul>
 
-           <div style="text-align: center; padding-top: 10px">
+           <div class="billing_modal_footer">
+               [price]<h2>{price} {dec}</h2>[/price]
                <button type="submit" class="btn billingFormSend-{uniqid}" onClick='return false;'>
-                   [price]<span>Оплатить {price} {dec}</span>[/price]
+                   [price]<span>Оплатить</span>[/price]
                    [price_not]<span>Продолжить</span>[/price_not]
                </button>
            </div>

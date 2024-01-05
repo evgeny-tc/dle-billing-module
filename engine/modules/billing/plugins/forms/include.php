@@ -4,8 +4,10 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
+
+global $dle_login_hash;
 
 $_Config = [];
 $_Theme = [];
@@ -139,6 +141,7 @@ HTML;
                 $tpl->set( '{dec}', $BillingAPI->Declension( $params['price'] ) );
                 $tpl->set( '{pay_desc}', $params['pay_desc'] );
                 $tpl->set( '{theme}', $_Theme['name'] );
+                $tpl->set( '{module.skin}', $config['skin'] );
 
                 if( $member_id['name'] )
                 {
@@ -169,7 +172,7 @@ HTML;
                 $arHash['name'] = $_Theme['name'];
                 $arHash['theme'] = $_Theme['name'];
                 $arHash['key'] = $_Theme['key'];
-                $arHash['dle_login_hash'] = sha1( SECURE_AUTH_KEY . ( $member_id['name'] ? $member_id['user_id'] . sha1($member_id['password']) : $_SERVER['REMOTE_ADDR'] ) . $member_id['hash'] );
+                $arHash['dle_login_hash'] = $dle_login_hash;
 
                 if( isset($param) and is_array($param) )
                 {

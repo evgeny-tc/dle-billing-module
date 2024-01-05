@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
 namespace Billing;
@@ -12,8 +12,6 @@ namespace Billing;
 Class ADMIN extends PluginActions
 {
     const PLUGIN = 'donate';
-
-    public Dashboard $Dashboard;
 
     public function main( array $Get ) : string
 	{
@@ -120,7 +118,7 @@ Class ADMIN extends PluginActions
 		$this->Dashboard->ThemeAddStr(
 			$_Lang['create_theme_panel'],
 			$_Lang['create_theme_panel_desc'],
-			'/templates/' . $this->Dashboard->dle['skin'] . '/billing/plugins/donate/<input id="create_theme_panel" onkeyup="donateCreate()" class="form-control" style="width: 30%" type="text">.tpl'
+			'/templates/' . $this->Dashboard->dle['skin'] . '/billing/plugins/donate/<input id="create_theme_panel" onkeyup="donateCreate()" class="form-control" style="width: 30%" type="text" value="panel">.tpl'
 		);
 
 		$ContentCreate = $this->Dashboard->ThemeParserStr() . $this->Dashboard->ThemePadded(
@@ -150,4 +148,22 @@ Class ADMIN extends PluginActions
 
 		return $Content;
 	}
+
+    public function install() : void
+    {
+        $this->Dashboard->CheckHash();
+
+        $this->Dashboard->SaveConfig( "plugin." . $this->Dashboard->controller,
+            [
+                'status' => 0,
+                'version' => parse_ini_file( MODULE_PATH . '/plugins/' . $this->Dashboard->controller . '/info.ini' )['version']
+            ]
+        );
+
+        $this->Dashboard->ThemeMsg(
+            $this->Dashboard->lang['plugin_install'],
+            $this->Dashboard->PanelPlugin(path: 'plugins/' . $this->Dashboard->controller, link: 'https://dle-billing.ru/doc/plugins/donate/', styles: '' ) . sprintf($this->Dashboard->lang['plugin_install_js'], 'https://dle-billing.ru/doc/plugins/donate/'),
+            '?mod=billing&c=' . $this->Dashboard->controller
+        );
+    }
 }

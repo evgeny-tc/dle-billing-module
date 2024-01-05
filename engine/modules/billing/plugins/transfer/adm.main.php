@@ -11,8 +11,6 @@ namespace Billing;
 
 Class ADMIN extends PluginActions
 {
-    public Dashboard $Dashboard;
-
     public function main( array $Get ) : string
 	{
         $this->checkInstall();

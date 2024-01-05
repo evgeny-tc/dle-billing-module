@@ -7,29 +7,45 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-return new class
+namespace Billing;
+
+return new class extends Hooks
 {
-	public array $plugin = [];
+    protected array $configPlugin = [];
+    protected Api $API;
 
-	public BillingAPI $api;
+    public function init(array $pluginConfig, Api $API) : void
+    {
+        $this->configPlugin = $pluginConfig;
+        $this->API = $API;
+    }
 
-	function pay( string $user, $plus, $minus, $balance, $desc, $plugin = '', $plugin_id = 0 )
+	public function pay( string $user, ?float $plus, ?float $minus, float $balance, ?string $desc, ?string $plugin = '', ?int $plugin_id = 0 ) : void
 	{
 		# Плагин отключен
 		#
-		if( ! isset($this->plugin['status']) or ! intval($this->plugin['status']) ) return;
+		if( ! isset($this->configPlugin['status']) or ! intval($this->configPlugin['status']) )
+        {
+            return;
+        }
 
-        $_List = file_exists(MODULE_DATA . '/plugin.referrals.list.dat') ? file(MODULE_DATA . '/plugin.referrals.list.dat') : '';
+        $_List = file_exists(MODULE_DATA . '/plugin.referrals.list.dat') ? file(MODULE_DATA . '/plugin.referrals.list.dat') : false;
 
         $arList = is_string($_List[0]) ? unserialize($_List[0]) : [];
 
-        if( ! is_array($arList) or ! count($arList) ) return;
+        if( ! is_array($arList) or ! count($arList) )
+        {
+            return;
+        }
 
         # Поиск партнера
 		#
-        $_Partner = $this->api->db->super_query( "SELECT * FROM " . USERPREFIX . "_billing_referrals WHERE ref_login = '" . $user . "'" );
+        $_Partner = $this->api->db->super_query( "SELECT * FROM " . USERPREFIX . "_billing_referrals WHERE ref_login = '{$user}'" );
 		
-		if( ! $_Partner ) return;
+		if( ! $_Partner )
+        {
+            return;
+        }
 			
 			# Вознаграждения
 			#

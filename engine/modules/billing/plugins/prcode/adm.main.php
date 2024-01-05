@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
 namespace Billing;
@@ -12,21 +12,21 @@ namespace Billing;
 Class ADMIN extends PluginActions
 {
     const PLUGIN = 'prcode';
+    const HELP_URL = 'https://dle-billing.ru/doc/plugins/prcode/';
 
-    public Dashboard $Dashboard;
-
-    private array $_Config = [];
 	private array $_Lang = [];
 
 	function __construct()
 	{
-		$this->_Lang = Dashboard::getLang(static::PLUGIN);
+        $this->_Lang = Dashboard::getLang(static::PLUGIN);
 	}
 
 	public function main( array $GET ) : string
 	{
         $this->checkInstall();
 
+        $_Config = $this->Dashboard->LoadConfig( "prcode" );
+        
 		# Сохранить настройки
 		#
 		if( isset( $_POST['save'] ) )
@@ -39,8 +39,6 @@ Class ADMIN extends PluginActions
 
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
 		}
-
-		$_Config = $this->Dashboard->LoadConfig( "prcode" );
 
 		# Удалить отмеченные
 		#
@@ -111,7 +109,7 @@ Class ADMIN extends PluginActions
 			'<td>' . $this->_Lang['ap_sum'] . '</td>',
 			'<td>' . $this->_Lang['ap_active'] . '</td>',
 			'<td>' . $this->_Lang['ap_time_active'] . '</td>',
-			'<td width="2%"><center><input type="checkbox" value="" name="massact_list[]" onclick="checkAll(this)" /></center></td>'
+			'<td width="2%"><center><input type="checkbox" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></center></td>'
 		));
 
 		$PerPage = $this->Dashboard->config['paging'];
@@ -224,7 +222,7 @@ Class ADMIN extends PluginActions
 
 		$this->Dashboard->ThemeEchoHeader( $this->_Lang['title'] );
 
-		$Content = $this->Dashboard->PanelPlugin('plugins/prcode', 'https://dle-billing.ru/doc/plugins/prcode/' );
+		$Content = $this->Dashboard->PanelPlugin('plugins/prcode', static::HELP_URL );
 		$Content .= $this->Dashboard->PanelTabs( $tabs );
 		$Content .= $this->Dashboard->ThemeEchoFoother();
 
@@ -272,7 +270,11 @@ Class ADMIN extends PluginActions
 
         $this->Dashboard->SaveConfig('plugin.prcode', $default);
 
-        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_install'], '?mod=billing&c=' . $this->Dashboard->controller );
+        $this->Dashboard->ThemeMsg(
+            $this->Dashboard->lang['plugin_install'],
+            $this->Dashboard->PanelPlugin(path: 'plugins/' . $this->Dashboard->controller, link: static::HELP_URL, styles: '' ) ,
+            '?mod=billing&c=' . $this->Dashboard->controller
+        );
     }
 
     public function uninstall() : void

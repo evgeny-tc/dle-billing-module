@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
 namespace Billing;
@@ -110,7 +110,7 @@ Class ADMIN
                 '<th>'.$this->Dashboard->lang['history_user'].'</th>',
                 '<th>'.$this->Dashboard->lang['history_balance'].'</th>',
                 '<th>'.$this->Dashboard->lang['history_comment'].'</th>',
-                '<th class="th_checkbox"><input type="checkbox" value="" name="massact_list[]" onclick="checkAll(this)" /></th>',
+                '<th class="th_checkbox"><input type="checkbox" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></th>',
             ]
         );
 
@@ -127,7 +127,7 @@ Class ADMIN
                     $this->Dashboard->ThemeInfoUser( $Value['history_user_name'] ),
                     $this->Dashboard->API->Convert( $Value['history_balance'] ) . "&nbsp;	" . $this->Dashboard->API->Declension( $Value['history_balance'] ),
                     '<div class="th_description">
-                        <a href="#" onClick="logShowDialogByID( \'#log_' . $Value['history_id'] . '\' ); return false">' . $Value['history_text'] . '</a>
+                        <a href="#" onClick="BillingJS.openDialog( \'#log_' . $Value['history_id'] . '\' ); return false">' . (strip_tags($Value['history_text']) ?: '---') . '</a>
                     </div>',
                     "<span class='settingsb'>" . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['history_id'], false) . '</span>
 					<div id="log_' . $Value['history_id'] . '" title="' . $this->Dashboard->lang['history_transaction'] . $Value['history_id'] . '" style="display:none">

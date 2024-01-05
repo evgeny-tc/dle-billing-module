@@ -13,8 +13,6 @@ Class ADMIN extends PluginActions
 {
     const PLUGIN = 'forms';
 
-    public Dashboard $Dashboard;
-
 	private array $_Lang = [];
 
     private string $selKey = '';
@@ -78,7 +76,9 @@ Class ADMIN extends PluginActions
 
     /**
      * Вкладка "Формы"
-     * @return void
+     * @param string $key
+     * @param int $page
+     * @return string
      */
     private function Forms(string $key = '', int $page) : string
     {
@@ -162,7 +162,7 @@ Class ADMIN extends PluginActions
         }
 
         $moreColumns[] = '<td>' . $this->_Lang['table']['data'] . '</td>';
-        $moreColumns[] = '<td><center><input class="icheck" type="checkbox" value="" name="massact_list[]" onclick="checkAll(this);$.uniform.update();" /></center></td>';
+        $moreColumns[] = '<td><center><input class="icheck" type="checkbox" value="" name="massact_list[]" onclick="BillingJS.checkAll(this);$.uniform.update();" /></center></td>';
 
         $this->Dashboard->ThemeAddTR($moreColumns);
 
@@ -222,7 +222,7 @@ Class ADMIN extends PluginActions
 <script>
 function billingShowForm(form_create_id, form_key = '')
 {
-    logShowDialogByID('#dataForm-' + form_create_id, 700);
+    BillingJS.openDialog('#dataForm-' + form_create_id, 700);
     
     if( ! $('.showForm[data-id="'+form_create_id+'"]').hasClass('badge-success') )
     {
@@ -481,7 +481,11 @@ HTML;
 
         $this->Dashboard->SaveConfig("plugin.forms", ['status'=>"0", 'version' => parse_ini_file( MODULE_PATH . '/plugins/forms/info.ini' )['version'] ]);
 
-        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_install'], '?mod=billing&c=' . $this->Dashboard->controller );
+        $this->Dashboard->ThemeMsg(
+            $this->Dashboard->lang['plugin_install'],
+            $this->Dashboard->PanelPlugin(path: 'plugins/' . $this->Dashboard->controller, link: 'https://dle-billing.ru/doc/plugins/forms/', styles: '' ),
+            '?mod=billing&c=' . $this->Dashboard->controller
+        );
     }
 
     public function uninstall() : void
@@ -492,7 +496,11 @@ HTML;
 
         $this->Dashboard->LQuery->db->query( "DROP TABLE IF EXISTS " . PREFIX . "_billing_forms" );
 
-        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_uninstall'], '?mod=billing' );
+        $this->Dashboard->ThemeMsg(
+            $this->Dashboard->lang['plugin_uninstall'],
+            $this->Dashboard->PanelPlugin(path: 'plugins/' . $this->Dashboard->controller, styles: '' ),
+            '?mod=billing'
+        );
     }
 
     /**

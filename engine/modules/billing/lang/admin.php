@@ -4,6 +4,8 @@ return array
 (
 	'hash_error' => "Время ожидания модуля закончилось. Повторите попытку",
 
+    'plus_add' => "+ добавить",
+
     'coupons_title' => "Купоны",
     'coupons' => [
         'menu' => [
@@ -57,9 +59,10 @@ return array
 
     'settings_invoice_delete_time' => "Время жизни квитанции:",
     'settings_invoice_delete_time_desc' => "Удалять неоплаченные квитанции через указанное количество минут:",
-    'plugin_install' => "Плагин установлен!",
-    'plugin_uninstall' => "Плагин удален!",
-    'plugin_update' => "Плагин обновлен!",
+    'plugin_install' => "Плагин установлен",
+    'plugin_uninstall' => "Плагин удален",
+    'plugin_install_js' => '<div style="text-align: left"><a href="%s" target="_blank">Подключите JS скрипты в ваш шаблон</a></div>',
+    'plugin_update' => "Плагин обновлен",
 
     'plugins_table_head' => [
         '<th style="width: 40px"></th>',
@@ -90,7 +93,7 @@ return array
     # 0.7.4
 	#
 	'settings_invoice_max_num' => "Количество неоплаченных квитанций:",
-	'settings_invoice_max_num_desc' => "Укажите максимальное количество неоплаченных квитанций, которые могут быть созданы:",
+	'settings_invoice_max_num_desc' => "Укажите максимальное количество неоплаченных квитанций, которые могут быть созданы",
 
 	# 0.7.2
 	#
@@ -114,14 +117,15 @@ return array
 	'invoice_search_date_create' => "Дата и время создания квитанции:",
 	'invoice_search_date_pay' => "Дата и время поступления оплаты:",
 	'invoice_was_pay' => "Оплачен ",
-	'pay_msgOk' => "Пополнен счёт через %s на %s %s",
+	'pay_msgOk' => "пополнение баланса: %s на %s %s",
+	'pay_from_admin' => "вручную",
 
 	'nullpadding' => "<div style='padding: 10px'>Пусто</div>",
 	'null' => "Пусто",
 
 	'date_from' => "от ",
 	'date_to' => " до ",
-	'help' => "Открыть документацию",
+	'help' => "Документация",
 
 	'menu_1' => "Настройки",
 	'menu_1_d' => "Настройка параметров модуля, используемая валюта, секретный ключ, уведомления пользователей",
@@ -319,13 +323,13 @@ return array
 
 	# payments
 	#
-	'paysys_on' => "Включить приём платежей:",
+	'paysys_on' => "Включить:",
+    'paysys_status_desc' => "Включить оплату через платежную систему",
 	'paysys_save_ok' => "Настройки платежной системы успешно сохранены!",
 	'paysys_fail_error' => "Файл платежной системы не найден!",
 	'paysys_url' => "URL обработчика платежей:",
 	'paysys_url_desc' => "На этот url приходят запросы с сайта платежной системы, при изменении статуса оплаты",
-	'paysys_status_desc' => "Разрешить пользователям пополнять свой баланс с помощью данной платежной системы.",
-	'paysys_name' => "Название в списке:",
+	'paysys_name' => "Название:",
 	'paysys_name_desc' => "Название платежной системы",
 	'paysys_convert' => "Цена 1 ед. данной валюты:",
 	'paysys_convert_desc' => "Относительно валюты на сайте",
@@ -446,6 +450,8 @@ return array
 	'refund_summa' => "Сумма к выводу",
 	'refund_commision_list' => "+ Комиссия учтена",
 	'refund_requisites' => "Реквизиты",
+	'refund_change' => "Изменить статус и вернуть средства",
+	'refund_change_status' => "Изменить статус",
 	'refund_wait' => "Ожидается",
 	'refund_act_ok' => "Выполнено",
 	'refund_act_no' => "Отменить",

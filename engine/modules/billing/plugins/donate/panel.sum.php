@@ -1,10 +1,10 @@
-<?php	if( ! defined( 'DATALIFEENGINE' ) ) die( "Hacking attempt!" );
+<?php
 /**
  * DLE Billing
  *
- * @link          https://www.weblancer.net/users/mr_Evgen/
+ * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2020, mr_Evgen
+ * @copyright     Copyright (c) 2012-2024
  */
 
 if( $login )

@@ -762,7 +762,7 @@ HTML;
 	{
 		global $is_loged_in, $skin_footer, $skin_not_logged_footer;
 
-		$skin_footer = preg_replace('~<div class=\"footer text-muted text-size-small\">\s+(.*?)\s+<\/div>~s', "<div class=\"footer text-muted text-size-small\">&copy 2012 - 2024 <a href=\"https://dle-billing.ru/\" target=\"_blank\">DLE-Billing</a></div>", $skin_footer);
+		$skin_footer = preg_replace('~<div class=\"footer text-muted text-size-small\">\s+(.*?)\s+<\/div>~s', "<div class=\"footer text-muted text-size-small\">&copy 2024 <a href=\"https://dle-billing.ru/\" target=\"_blank\">dle-billing.ru</a></div>", $skin_footer);
 
 		if( $is_loged_in )
         {

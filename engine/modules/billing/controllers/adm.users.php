@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module/
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023, mr_Evgen
+ * @copyright     Copyright (c) 2012-2024
  */
 
 namespace Billing;
@@ -178,7 +178,7 @@ Class ADMIN
 		{
 			$this->Dashboard->ThemeAddTR(
                 [
-                    "<span onClick=\"usersAdd( '" . $Value['name'] . "' )\" id=\"user_".$Value['name']."\" style=\"cursor: pointer\"><i class=\"fa fa-plus\" style=\"margin-left: 10px; vertical-align: middle\"></i></span>" .
+                    "<span onClick=\"BillingJS.usersAdd( '" . $Value['name'] . "' )\" id=\"user_".$Value['name']."\" style=\"cursor: pointer\"><i class=\"fa fa-plus\" style=\"margin-left: 10px; vertical-align: middle\"></i></span>" .
                     $this->Dashboard->ThemeInfoUser( $Value['name'] ),
                     $Value['email'],
                     $user_group[$Value['user_group']]['group_name'],

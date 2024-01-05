@@ -172,7 +172,7 @@ Class API
             $Text = str_replace( $key, $this->db->safesql( $value ), $Text);
         }
 
-        # .. отправить pm на сайте
+        # отправить pm на сайте
         #
         if( $user_id )
         {
@@ -189,9 +189,9 @@ Class API
         #
         if( $user_email )
         {
-            include_once DLEPlugins::Check( ENGINE_DIR . '/classes/mail.class.php' );
+            include_once \DLEPlugins::Check( ENGINE_DIR . '/classes/mail.class.php' );
 
-            $mail = new dle_mail( $config, true );
+            $mail = new \dle_mail( $config, true );
 
             $mail->send( $user_email, $Title[1], $Text );
 
@@ -398,15 +398,25 @@ Class API
     {
         $desc = $this->db->safesql( $desc );
 
-        $currency = $plus ? $this->Declension( $plus ) : $this->Declension( $minus );
-        $balance = $this->Convert( $balance );
+        if( $plus )
+        {
+            $sum = $this->Convert(money: $plus, number_format_f: true);
+            $currency = $this->Declension( $plus );
+        }
+        else
+        {
+            $sum = $this->Convert(money: $minus, number_format_f: true);
+            $currency = $this->Declension( $minus );
+        }
+
+        $balanceFormat = $this->Convert( money: $balance, number_format_f: true );
 
         $dataMail = array(
             '{date}' => langdate( "j F Y  G:i", $this->_TIME ),
             '{login}' => $user,
-            '{sum}'=> ( $plus ? "+$plus " . $this->Declension( $plus ) : "-$minus " . $this->Declension( $plus ) ),
+            '{sum}'=> ( $plus ? "+{$sum} {$currency}" : "-{$sum} {$currency}" ),
             '{comment}' => $desc,
-            '{balance}' => $balance . ' ' . $this->Declension( $balance ),
+            '{balance}' => $balanceFormat . ' ' . $this->Declension( $balance ),
         );
 
         # Уведомление об изменении баланса на сайте

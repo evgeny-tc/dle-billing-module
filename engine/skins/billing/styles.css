@@ -128,6 +128,7 @@ p.bt_catalog_desc
 .bt_lable_green
 {
 	background: #5cb85c;
+    cursor: pointer;
 }
 
 .bt_lable_green a
@@ -138,6 +139,7 @@ p.bt_catalog_desc
 .bt_lable_blue
 {
 	background: #377ca8;
+    cursor: pointer;
 }
 
 .pagination {

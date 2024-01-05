@@ -13,9 +13,7 @@ Class ADMIN extends PluginActions
 {
     const PLUGIN = 'fixednews';
 
-    public Dashboard $Dashboard;
-
-    public function main( array $Get = [] )
+    public function main( array $Get = [] ) : string
 	{
         $this->checkInstall();
 
@@ -236,4 +234,22 @@ Class ADMIN extends PluginActions
 
 		return $Content;
 	}
+
+    public function install() : void
+    {
+        $this->Dashboard->CheckHash();
+
+        $this->Dashboard->SaveConfig( "plugin." . $this->Dashboard->controller,
+            [
+                'status' => 0,
+                'version' => parse_ini_file( MODULE_PATH . '/plugins/' . $this->Dashboard->controller . '/info.ini' )['version']
+            ]
+        );
+
+        $this->Dashboard->ThemeMsg(
+            $this->Dashboard->lang['plugin_install'],
+            $this->Dashboard->PanelPlugin(path: 'plugins/' . $this->Dashboard->controller, link: 'https://dle-billing.ru/doc/plugins/fixednews/', styles: '' ) . sprintf($this->Dashboard->lang['plugin_install_js'], 'https://dle-billing.ru/doc/plugins/fixednews/'),
+            '?mod=billing&c=' . $this->Dashboard->controller
+        );
+    }
 }

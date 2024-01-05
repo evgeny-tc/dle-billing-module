@@ -1,6 +1,6 @@
-<h4>{title}</h4>
+<h5 class="blue">{title}</h5>
 <p>
-{msg}
+	{msg}
 </p>
 <p>
 	<a href="javascript:history.go(-1)">Продолжить</a>

@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
 namespace Billing;
@@ -12,11 +12,9 @@ namespace Billing;
 Class ADMIN extends PluginActions
 {
     const PLUGIN = 'payhide';
+    const HELP_URL = 'https://dle-billing.ru/doc/plugins/payhide/';
 
-    public Dashboard $Dashboard;
-
-    private array $pluginConfig;
-	private array $pluginLang;
+    private array $pluginLang;
 
 	function __construct()
 	{
@@ -27,7 +25,7 @@ Class ADMIN extends PluginActions
 	{
         $this->checkInstall();
 
-		$this->pluginConfig = $this->Dashboard->LoadConfig( static::PLUGIN );
+		$pluginConfig = $this->Dashboard->LoadConfig( static::PLUGIN );
 
 		# Сохранить настройки
 		#
@@ -76,7 +74,7 @@ Class ADMIN extends PluginActions
 				'<td>'.$this->pluginLang['autor'].'</td>',
 				'<td>'.$this->pluginLang['summa'].'</td>',
 				'<td>'.$this->pluginLang['time'].'</td>',
-				'<td width="2%"><center><input class="icheck" type="checkbox" value="" name="massact_list[]" onclick="checkAll(this);$.uniform.update();" /></center></td>'
+				'<td width="2%"><center><input class="icheck" type="checkbox" value="" name="massact_list[]" onclick="BillingJS.checkAll(this);$.uniform.update();" /></center></td>'
 			]
 		);
 
@@ -160,7 +158,7 @@ Class ADMIN extends PluginActions
 		$tabs[] = array(
 			'id' => 'settings',
 			'title' => $this->pluginLang['settigns'],
-			'content' => $this->settings( $this->pluginConfig )
+			'content' => $this->settings($pluginConfig)
 		);
 
 		$this->Dashboard->ThemeEchoHeader( $this->pluginLang['title'] );
@@ -364,7 +362,7 @@ HTML;
      * Процесс установки
      * @return void
      */
-    public function install()
+    public function install() : void
     {
         $this->Dashboard->CheckHash();
 
@@ -392,10 +390,13 @@ HTML;
 
         $this->Dashboard->SaveConfig("plugin.payhide", ['status'=>"0", 'version' => parse_ini_file( MODULE_PATH . '/plugins/payhide/info.ini' )['version'] ]);
 
-        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_install'], '?mod=billing&c=' . $this->Dashboard->controller );
-    }
+        $this->Dashboard->ThemeMsg(
+            $this->Dashboard->lang['plugin_install'],
+            $this->Dashboard->PanelPlugin(path: 'plugins/' . $this->Dashboard->controller, link: static::HELP_URL, styles: '' ),
+            '?mod=billing&c=' . $this->Dashboard->controller
+        );    }
 
-    public function uninstall()
+    public function uninstall() : void
     {
         $this->Dashboard->CheckHash();
 

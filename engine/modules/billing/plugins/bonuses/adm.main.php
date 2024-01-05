@@ -13,8 +13,6 @@ Class ADMIN extends PluginActions
 {
     const PLUGIN = 'bonuses';
 
-    public Dashboard $Dashboard;
-
     public array $_Lang = [];
 
 	function __construct()
@@ -176,8 +174,7 @@ Class ADMIN extends PluginActions
 		$this->Dashboard->ThemeAddStr(
 			$this->_Lang['active_bills'],
 			$this->_Lang['active_bills_desc'],
-			"<input name=\"save_con[active_count]\" class=\"form-control\" style=\"width: 30%\" type=\"text\" value=\"" . $_Config['active_count'] ."\">" 
-				. $this->Dashboard->API->Declension( $_Config['active_count'] )
+			"<input name=\"save_con[active_count]\" class=\"form-control\" type=\"text\" value=\"" . $_Config['active_count'] ."\">"
 		);
 
 		$this->Dashboard->ThemeAddStr(

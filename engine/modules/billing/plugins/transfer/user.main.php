@@ -23,9 +23,10 @@ Class USER
 	}
 
     /**
+     * Перевод выполнен
      * @throws \Exception
      */
-    public function ok(array $GET = [] )
+    public function ok(array $GET = [] ) : string
 	{
 		# Проверка авторизации
 		#
@@ -48,7 +49,10 @@ Class USER
 			return $this->DevTools->lang['pay_hash_error'];
 		}
 
-		return $this->DevTools->ThemeMsg( $this->DevTools->lang['transfer_msgOk'], sprintf( $this->DevTools->lang['transfer_log_text'], urlencode( $Get[0] ), $Get[0], $Get[1], $Get[2] ) );
+		return $this->DevTools->ThemeMsg(
+            $this->DevTools->lang['transfer_msgOk'],
+            sprintf( $this->DevTools->lang['transfer_log_text'], urlencode( $Get[0] ), $Get[0], $this->DevTools->API->Convert(money: $Get[1], number_format_f: true), $Get[2] )
+        );
 	}
 
     /**
@@ -161,13 +165,13 @@ Class USER
 		{
 			$TimeLine = $TplLine;
 
-			$params = array(
-				'{date=' . $TplLineDate . '}' => $this->DevTools->ThemeChangeTime( $Value['history_date'], $TplLineDate ),
-				'{transfer.desc}' => $Value['history_text'],
-				'{transfer.sum}' => $Value['history_plus'] > 0
-										? '<font color="green">+' . $Value['history_plus'] . ' ' . $Value['history_currency'] . '</font>'
-										: '<font color="red">-' . $Value['history_minus'] . ' ' . $Value['history_currency'] . '</font>'
-			);
+			$params = [
+                '{date=' . $TplLineDate . '}' => $this->DevTools->ThemeChangeTime( $Value['history_date'], $TplLineDate ),
+                '{transfer.desc}' => $Value['history_text'],
+                '{transfer.sum}' => $Value['history_plus'] > 0
+                    ? '<font color="green">+' . $Value['history_plus'] . ' ' . $Value['history_currency'] . '</font>'
+                    : '<font color="red">-' . $Value['history_minus'] . ' ' . $Value['history_currency'] . '</font>'
+            ];
 
 			$TimeLine = str_replace(array_keys($params), array_values($params), $TimeLine);
 

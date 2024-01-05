@@ -22,7 +22,7 @@ if( ! $_Price = $_Config["main_{$member_id['user_group']}_{$_PostCategory}"] )
 
 $arGroupPrice = explode("\n", $groupPrices);
 
-$tpl = new dle_template();
+$tpl = new \dle_template();
 $tpl->dir = TEMPLATE_DIR;
 
 # Оплата
@@ -57,17 +57,7 @@ if( $_POST['params']['pay'] )
 
 $tpl->load_template( '/billing/plugins/fixednews/main.tpl' );
 
-if( ! empty( $error ) )
-{
-    $tpl->set( '[error]', '' );
-    $tpl->set( '[/error]', '' );
-    $tpl->set( '{error.text}', $error );
-
-}
-else
-{
-    $tpl->set_block( "'\\[error\\](.*?)\\[/error\\]'si", '' );
-}
+$tpl->set_block( "'\\[error\\](.*?)\\[/error\\]'si", '' );
 
 $tpl->set( '{module.skin}', $config['skin'] );
 $tpl->set( '{module.currency}', $_ConfigBilling['currency'] );

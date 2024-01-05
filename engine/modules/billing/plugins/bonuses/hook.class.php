@@ -7,19 +7,20 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-return new class
+namespace Billing;
+
+return new class extends Hooks
 {
-    protected array $plugin = [];
+    protected array $configPlugin = [];
+    protected Api $API;
 
-	public Billing\API $api;
-
-    public function init(array $plugin_config, Billing\API $api): void
+    public function init(array $pluginConfig, Api $API) : void
     {
-        $this->plugin = $plugin_config;
-        $this->api = $api;
+        $this->configPlugin = $pluginConfig;
+        $this->API = $API;
     }
 
-	public function pay( string $user, float $plus = 0, float $minus = 0, float $balance = 0, string $desc = '', string $plugin = '', string|int $plugin_id = '' ) : void
+    public function pay( string $user, ?float $plus, ?float $minus, float $balance, ?string $desc, ?string $plugin = '', ?int $plugin_id = 0 ) : void
 	{
 		if( $plugin != 'pay' )
         {
@@ -28,19 +29,19 @@ return new class
 
         $_Lang = Core::getLang('bonuses');
 
-		$countPay = $this->api->db->super_query( "SELECT COUNT(*) as `count`
+		$countPay = $this->API->db->super_query( "SELECT COUNT(*) as `count`
 														FROM " . USERPREFIX . "_billing_history
-														WHERE history_user_name = '" . $this->api->db->safesql($user) . "' and history_plugin = 'pay'" );
+														WHERE history_user_name = '{$user}' and history_plugin = 'pay'" );
 
 		# Первый платеж
 		#
-		if( $this->plugin['status']
+		if( $this->configPlugin['status']
             and $countPay['count'] == 1
-            and $plus >= floatval($this->plugin['f_sum']) )
+            and $plus >= floatval($this->configPlugin['f_sum']) )
 		{
-			$bonus_sum = floatval($this->plugin['f_bonus_sum']) ?: ( $plus / 100 * floatval($this->plugin['f_bonus_percent']));
+			$bonus_sum = floatval($this->configPlugin['f_bonus_sum']) ?: ( $plus / 100 * floatval($this->configPlugin['f_bonus_percent']));
 
-			$this->api->PlusMoney(
+			$this->API->PlusMoney(
 				$user,
 				$bonus_sum,
 				$_Lang['bonus_first_comment'],
@@ -51,13 +52,13 @@ return new class
 
 		# Последующие платежи
 		#
-		if( $this->plugin['s_status']
+		if( $this->configPlugin['s_status']
             and $countPay['count'] > 1
-            and floatval($plus >= $this->plugin['s_sum']) )
+            and floatval($plus >= $this->configPlugin['s_sum']) )
 		{
-			$bonus_sum = floatval($this->plugin['s_bonus_sum']) ?: ( $plus / 100 * floatval($this->plugin['s_bonus_percent']));
+			$bonus_sum = floatval($this->configPlugin['s_bonus_sum']) ?: ( $plus / 100 * floatval($this->configPlugin['s_bonus_percent']));
 
-			$this->api->PlusMoney(
+			$this->API->PlusMoney(
 				$user,
 				$bonus_sum,
 				$_Lang['bonus_comment'],
@@ -68,16 +69,16 @@ return new class
 
 		# Активация профиля
 		#
-		if( $this->plugin['active_status']
-			and intval($this->plugin['active_count']) >= intval($countPay['count'])
-			and $plus >= floatval($this->plugin['active_min']) )
+		if( $this->configPlugin['active_status']
+			and intval($this->configPlugin['active_count']) >= intval($countPay['count'])
+			and $plus >= floatval($this->configPlugin['active_min']) )
 		{
-			$_uGroup = $this->api->db->super_query( "SELECT user_group FROM " . USERPREFIX . "_users WHERE name = '" . $this->api->db->safesql($user) . "'" );
+			$_uGroup = $this->API->db->super_query( "SELECT user_group FROM " . USERPREFIX . "_users WHERE name = '{$user}'" );
 
-			if( in_array( $_uGroup['user_group'], explode(',', $this->plugin['active_from']) ) )
+			if( in_array( $_uGroup['user_group'], explode(',', $this->configPlugin['active_from']) ) )
 			{
-				$this->api->db->query( "UPDATE " . PREFIX . "_users
-									SET user_group='" . intval($this->plugin['active_to']) . "'
+				$this->API->db->query( "UPDATE " . PREFIX . "_users
+									SET user_group='" . intval($this->configPlugin['active_to']) . "'
 									WHERE name='" . $user. "'" );
 			}
 		}

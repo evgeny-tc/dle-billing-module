@@ -23,10 +23,10 @@ return array
 	'minus' => "Расход средств",
 	'partner_bonus' => "Партнерские отчисления",
 
-	'setting_1' => "Название ссылки меню:",
+	'setting_1' => "Название пункта меню:",
 	'setting_1_d' => "Название ссылки в меню личного кабинета пользователя",
 	'setting_2' => "Редирект приглашенных пользователей:",
-	'setting_2_d' => "Ссылка на которую будут перенаправляться приглашенный пользователи",
+	'setting_2_d' => "Ссылка на которую будут перенаправляться приглашенные пользователи",
 	'setting_3' => "Бонус за регистрацию пригласившему:",
 	'setting_3_d' => "Размер вознаграждения за регистрацию по партнерской ссылке (необязательно)",
 	'setting_4' => "Бонус за регистрацию новому пользователю:",
@@ -34,9 +34,5 @@ return array
 	'edit' => "Редактировать",
 	'remove' => "Удалить",
 	'null' => "<tr><td colspan='7'><div style='margin: 10px'>Сохраненных вознаграждений нет</div></td></tr>",
-    'install' => '<div style="text-align: left">
-                    Остался последний шаг: в корне сайт в файле .htaccess, <b>после</b>: 
-                        <pre>RewriteEngine On</pre> <b>добавить</b>: 
-                        <pre>RewriteRule ^partner/(.*)(/?)+$ index.php?do=static&page=%1$s&seourl=%1$s&route=referrals/redirect&p=$1 [L]</pre>
-                     </div>'
+    'install' => '<div style="text-align: left">Требуется внести правки в файл .htaccess в корне сайта, после:<pre>RewriteEngine On</pre>добавьте:<pre>RewriteRule ^partner/(.*)(/?)+$ index.php?do=static&page=billing&seourl=billing&route=referrals/redirect&p=$1 [L]</pre></div>'
 );

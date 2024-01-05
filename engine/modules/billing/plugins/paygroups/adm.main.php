@@ -12,8 +12,8 @@ namespace Billing;
 Class ADMIN extends PluginActions
 {
     const PLUGIN = 'paygroups';
-
-    public Dashboard $Dashboard;
+    const HELP_URL = 'https://dle-billing.ru/doc/plugins/paygroups/';
+    const INSTALL_URL = 'https://dle-billing.ru/doc/plugins/paygroups/';
 
     /**
      * @param array $params
@@ -164,7 +164,7 @@ Class ADMIN extends PluginActions
 			);
 		}
 
-		$Content = $this->Dashboard->PanelPlugin('plugins/paygroups', 'https://dle-billing.ru/doc/plugins/paygroups/' );
+		$Content = $this->Dashboard->PanelPlugin('plugins/paygroups', static::HELP_URL );
 		$Content .= $this->Dashboard->PanelTabs( $tabs );
 		$Content .= $this->Dashboard->ThemeEchoFoother();
 
@@ -212,8 +212,6 @@ Class ADMIN extends PluginActions
     {
         $this->Dashboard->CheckHash();
 
-        $pluginLang = include MODULE_PATH . '/plugins/paygroups/lang.php';
-
         @unlink(ROOT_DIR . '/engine/data/billing/plugin.paygroups.php');
         @unlink(ROOT_DIR . '/engine/data/billing/plugin.paygroups_list.php');
 
@@ -226,7 +224,11 @@ Class ADMIN extends PluginActions
         $this->Dashboard->SaveConfig( 'plugin.paygroups', $default );
         $this->Dashboard->SaveConfig( 'plugin.paygroups_list', [] );
 
-        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $pluginLang['plugin_install'], '?mod=billing&c=paygroups' );
+        $this->Dashboard->ThemeMsg(
+            $this->Dashboard->lang['plugin_install'],
+            $this->Dashboard->PanelPlugin(path: 'plugins/' . $this->Dashboard->controller, link: static::HELP_URL, styles: '' ) . sprintf($this->Dashboard->lang['plugin_install_js'], static::INSTALL_URL),
+            '?mod=billing&c=' . $this->Dashboard->controller
+        );
     }
 
     public function unistall() : void

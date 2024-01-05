@@ -44,10 +44,10 @@ if( ! function_exists('BillingPayhideParser') )
     /**
      * Показать контент
      * @param array $Data
-     * @param bool $AccessTime
-     * @return array|false|string|string[]
+     * @param int|null $AccessTime
+     * @return string
      */
-    function BillingPayhideOpen( array $Data, bool $AccessTime = false )
+    function BillingPayhideOpen( array $Data, ?int $AccessTime = 0 ): string
     {
         global $config, $_TIME;
 

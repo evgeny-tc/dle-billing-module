@@ -48,10 +48,12 @@ Class USER
 		$TplLineNull = $this->DevTools->ThemePregMatch( $Content, '~\[not_history\](.*?)\[/not_history\]~is' );
 		$TplLineDate = $this->DevTools->ThemePregMatch( $TplLine, '~\{date=(.*?)\}~is' );
 
-		$this->DevTools->LQuery->DbWhere( array(
-			"history_plugin = '{s} ' "=>'referrals',
-			"history_user_name = '{s}' " => $this->DevTools->member_id['name']
-		));
+		$this->DevTools->LQuery->DbWhere(
+            [
+                "history_plugin = '{s} ' " => 'referrals',
+                "history_user_name = '{s}' " => $this->DevTools->member_id['name']
+            ]
+        );
 
 		$NumData = $this->DevTools->LQuery->db->super_query( "SELECT COUNT(*) as `count`
 												FROM " . USERPREFIX . "_billing_history " . $this->DevTools->LQuery->where );

@@ -27,7 +27,7 @@ Class USER
     /**
      * @throws \Exception
      */
-    public function main(array $GET = [] )
+    public function main() : string
 	{
 		# Проверка авторизации
 		#

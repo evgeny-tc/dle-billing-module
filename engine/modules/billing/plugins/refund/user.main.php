@@ -76,6 +76,23 @@ Class USER
 
 			$_Money = $this->DevTools->API->Convert( $_POST['bs_summa'] );
 
+            # .. email уведомление
+            #
+            if( $this->pluginСonfig['email'] )
+            {
+                include_once \DLEPlugins::Check( ENGINE_DIR . '/classes/mail.class.php' );
+
+                $mail = new \dle_mail( $this->DevTools->dle, true );
+
+                $mail->send(
+                    $this->pluginСonfig['email'],
+                    $this->DevTools->lang['refund_email_title'],
+                    sprintf( $this->DevTools->lang['refund_email_msg'], $this->DevTools->member_id['name'], $_Money, $this->DevTools->API->Declension($_Money), $_Requisites, $this->DevTools->dle['http_home_url'] . $this->DevTools->dle['admin_path'] . "?mod=billing&c=refund" )
+                );
+
+                unset( $mail );
+            }
+
 			$RefundId = $this->DevTools->LQuery->DbCreatRefund(
 				$this->DevTools->member_id['name'],
 				$_Money,
@@ -91,24 +108,9 @@ Class USER
 				$RefundId
 			);
 
-			# .. email уведомление
-			#
-			if( $this->pluginСonfig['email'] )
-			{
-				include_once DLEPlugins::Check( ENGINE_DIR . '/classes/mail.class.php' );
-
-				$mail = new dle_mail( $this->DevTools->dle, true );
-
-				$mail->send(
-					$this->pluginСonfig['email'],
-					$this->DevTools->lang['refund_email_title'],
-					sprintf( $this->DevTools->lang['refund_email_msg'], $this->DevTools->member_id['name'], $_Money, $this->DevTools->API->Declension($_Money), $_Requisites, $this->DevTools->dle['http_home_url'] . $this->DevTools->dle['admin_path'] . "?mod=billing&c=refund" )
-				);
-
-				unset( $mail );
-			}
-
 			header( 'Location: /' . $this->DevTools->config['page'] . '.html/' . $this->DevTools->get_plugin . '/ok/' );
+
+            return '';
 		}
 
 		$this->DevTools->ThemeSetElement( "{requisites}", $this->xfield( $this->pluginСonfig['requisites'] ) );

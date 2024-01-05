@@ -31,7 +31,7 @@ function BillingNews()
 
 		this.post_id = post_id;
 
-		let height = 280;
+		let height = 240;
 
 		BillingJsCore.ajax('fixednews', {
 			type: this.type[tag],

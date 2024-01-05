@@ -32,6 +32,12 @@ trait Core
         }
     }
 
+    /**
+     * Loader handler class
+     * @param string $plugin
+     * @param string $handler
+     * @return object|null
+     */
     public static function getHandler(string $plugin, string $handler) : ?object
     {
         $plugin = preg_replace("/[^a-z\s]/", "", trim( $plugin ) );
@@ -48,6 +54,26 @@ trait Core
         }
 
         return null;
+    }
+
+
+    /**
+     * Invoice handler string to array
+     * @param string $invoice_handler
+     * @return array
+     *
+     */
+    public static function exInvoiceHandler(string $invoice_handler) : array
+    {
+        $parsHandler = explode(':', $invoice_handler);
+
+        if( count($parsHandler) !== 2 )
+            return [];
+
+        $parsHandler[0] = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[0] ) );
+        $parsHandler[1] = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $parsHandler[1] ) );
+
+        return $parsHandler;
     }
 
     /**

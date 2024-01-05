@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module/
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023, mr_Evgen
+ * @copyright     Copyright (c) 2012-2024
  */
 
 namespace Billing;
@@ -136,7 +136,7 @@ Class ADMIN
                     '<img class="billing-plugin-item-image" src="engine/skins/billing/plugins/' . $name . '.png" onError="this.src=\'/engine/skins/billing/icons/plugin.png\'">',
                     $name,
                     "<a href='?mod=billing&c={$name}'>{$info['title']}</a><br><span style='color: grey; font-size: 12px'>{$info['desc']}</span>",
-                    $info['author'],
+                    "<a href='{$info['link']}' target='_blank'>{$info['author']}</a>",
                     $info['config']['version'] ? (
                         version_compare($info['version'], $info['config']['version']) > 0 ? '<font color="red" class="tip" title="' . $this->Dashboard->lang['plugins_table_status']['need_update'] . ' ' . $info['version'] . '">' . $info['config']['version'] . '</font>' : '<font color="green">' . $info['config']['version'] . '</font>'
                     ) : $info['version'],
@@ -347,16 +347,16 @@ Class ADMIN
 			$_NumURL ++;
 
 			$_ListURL .= '<div class="url-item" id="url-item-' . $_NumURL . '" class="url-item" >
-				<span onClick="urlRemove(' . $_NumURL . ')"><i class="fa fa-trash"></i></span>
-					<input name="save_url[' . $_NumURL . '][start]" class="form-control" style="width: 90%; text-align: center" type="text" placeholder="start..." value="' . $url[0] . '">
-				<i class="fa fa-refresh"></i>
-					<input name="save_url[' . $_NumURL . '][end]" class="form-control" style="width: 90%; text-align: center" type="text" placeholder="end..." value="' . $url[1] . '">
-			</div>';
+				            <span onClick="BillingJS.urlRemove(' . $_NumURL . ')"><i class="fa fa-trash"></i></span>
+					        <input name="save_url[' . $_NumURL . '][start]" class="form-control" style="width: 90%; text-align: center" type="text" placeholder="start..." value="' . $url[0] . '">
+				            <i class="fa fa-refresh"></i>
+					        <input name="save_url[' . $_NumURL . '][end]" class="form-control" style="width: 90%; text-align: center" type="text" placeholder="end..." value="' . $url[1] . '">
+			            </div>';
 		}
 
 		$ChangeURL = '<div class="url-list">
 						<div class="url-item" style="line-height: 80px">
-							<buttom class="btn bg-teal btn-raised position-center legitRipple" style="width: 40px" onClick="urlAdded()">+ </buttom>
+							<buttom class="btn bg-teal btn-raised position-center legitRipple" onClick="BillingJS.urlAdd()">' . $this->Dashboard->lang['plus_add'] . '</buttom>
 						</div>
 						' . $_ListURL . '
 					  </div>

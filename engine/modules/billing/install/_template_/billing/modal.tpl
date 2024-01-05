@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Биллинг</title>
 
-    <link media="screen" href="/templates/{module.skin}/billing/css/styles.css" type="text/css" rel="stylesheet" />
+    <link media="screen" href="/templates/{module.skin}/billing/css/styles.css?v=2" type="text/css" rel="stylesheet" />
     <style type="text/css">
         body
         {
@@ -42,7 +42,7 @@
 
 <body>
 <article class="box story">
-    <div class="box_in">
+    <div class="box_in" style="overflow: hidden;">
 
         <div class="text">
             {content}

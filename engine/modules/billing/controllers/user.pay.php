@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
 namespace Billing;
@@ -18,10 +18,10 @@ Class USER
     /**
      * Страница пополнения баланса
      * @param array $GET
-     * @return void
-     * @throws Exception
+     * @return string
+     * @throws \Exception
      */
-    public function main( array $GET = [] )
+    public function main( array $GET = [] ) : string
     {
         # Проверка авторизации
         #
@@ -78,7 +78,7 @@ Class USER
 
             header( 'Location: /' . $this->DevTools->config['page'].'.html/pay/waiting/id/' . $_InvoiceID );
 
-            return;
+            return '';
         }
 
         # Форма создания платежа
@@ -97,15 +97,16 @@ Class USER
 
     /**
      * Страницы результата оплаты
-     * @param array $GET
+     * @param array $get
      * @return mixed
+     * @throws \Exception
      */
-    public function ok(array $GET = [])
+    public function ok(array $get = []) : string
     {
         return $this->DevTools->Show( $this->DevTools->ThemeLoad( "pay/success" ) );
     }
 
-    public function bad(array $GET = [])
+    public function bad(array $get = []) : string
     {
         return $this->DevTools->Show( $this->DevTools->ThemeLoad( "pay/fail" ) );
     }
@@ -114,9 +115,9 @@ Class USER
      * Квитанция, переход к оплате
      * @param array $GET
      * @return mixed|string
-     * @throws Exception
+     * @throws \Exception
      */
-    public function waiting( array $GET )
+    public function waiting( array $GET = [] ) : string
     {
         $GET['id'] = intval($GET['id']);
 
@@ -211,14 +212,9 @@ Class USER
 
                 list($pluginHandler, $fileHandler) = DevTools::exInvoiceHandler($Invoice['invoice_handler']);
 
-                if( file_exists( MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php' ) )
+                if( $Handler = DevTools::getHandler($pluginHandler, $fileHandler) )
                 {
-                    $Handler = include MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php';
-
-                    if( in_array('prepay', get_class_methods($Handler) ) )
-                    {
-                        $Handler->prepay($Invoice, $InfoPay, $more_data);
-                    }
+                    $Handler->prepay($Invoice, $InfoPay, $more_data);
                 }
             }
 
@@ -227,6 +223,9 @@ Class USER
             if( $couponKey = trim( $_POST['coupon'] ) )
             {
                 $this->DevTools->CheckHash( $_POST['billingHash'] );
+
+                $this->DevTools->ThemeSetElement( "[coupon_result]", "" );
+                $this->DevTools->ThemeSetElement( "[/coupon_result]", "" );
 
                 if( $couponData = $this->DevTools->LQuery->getCoupon($couponKey) )
                 {
@@ -241,6 +240,7 @@ Class USER
             }
             else
             {
+                $this->DevTools->ThemeSetElementBlock( "coupon_result", '' );
                 $this->DevTools->ThemeSetElement( "{coupon_result}", "" );
             }
 
@@ -266,7 +266,7 @@ Class USER
                 if( $Invoice['invoice_get'] <= 0 )
                     $Invoice['invoice_get'] = 1;
 
-                $this->DevTools->ThemeSetElement( "{invoice.get}", $Invoice['invoice_get'] );
+                $this->DevTools->ThemeSetElement( "{invoice.get}", $this->DevTools->API->Convert(money:$Invoice['invoice_get'], number_format_f: true) );
                 $this->DevTools->ThemeSetElement( "{invoice.get.currency}", $this->DevTools->API->Declension( $Invoice['invoice_get'] ) );
             }
             else
@@ -290,20 +290,24 @@ Class USER
                 $Invoice['invoice_paysys'] = $_POST['billingPayment'];
 
                 if($_Payment['convert'])
+                {
                     $Invoice['invoice_pay'] = $this->DevTools->API->Convert($Invoice['invoice_get'] * $_Payment['convert'], $_Payment['format']);
+                }
 
                 # есть обработчик
                 #
-                if( isset($Handler) and in_array('prepay_check', get_class_methods($Handler) ) )
+                if( isset($Handler) )
                 {
                     $Handler->prepay_check($Invoice, $InfoPay);
                 }
 
+                # оплата с баланса
+                #
                 if( $from_balance and $_POST['billingPayment'] == 'balance' )
                 {
                     if( floatval($Invoice['invoice_get']) <= floatval($this->DevTools->BalanceUser) )
                     {
-                        $logData = (isset($Handler) and in_array('desc', get_class_methods($Handler))) ? $Handler->desc($InfoPay) : ['null', 0];
+                        $logData = (isset($Handler) ) ? $Handler->desc($InfoPay) : ['null', 0];
 
                         if( $_coupon and ! $this->DevTools->LQuery->useCoupon($couponData, $Invoice) )
                         {
@@ -404,7 +408,7 @@ Class USER
      * @param array $GET
      * @return void
      */
-    public function handler( array $GET = [] )
+    public function handler( array $GET = [] ) : void
     {
         header($_SERVER['SERVER_PROTOCOL'].' HTTP 200 OK', true, 200);
         header( "Content-type: text/html; charset=" . $this->DevTools->dle['charset'] );
@@ -544,11 +548,11 @@ Class USER
 
     /**
      * Вывод сообщения для ПС
-     * @param $payment
-     * @param $text
+     * @param object $payment
+     * @param string $text
      * @return mixed
      */
-    private function billingMessage( $payment, $text )
+    private function billingMessage( object $payment, string $text ) : string
     {
         if( in_array('null_info', get_class_methods($payment) ) )
         {
@@ -565,7 +569,7 @@ Class USER
      * @param $info
      * @return bool
      */
-    private function logging( int $step = 0, string $info = '' )
+    private function logging( int $step = 0, string $info = '' ) : void
     {
         if( ! $this->DevTools->config['test'] ) return;
 
@@ -599,23 +603,23 @@ Class USER
      * @param $DATA
      * @return mixed
      */
-    private function ClearData( $DATA )
+    private function ClearData( array $data ) : array
     {
-        foreach( $DATA as $key=>$val )
+        foreach( $data as $key => $val )
         {
-            if( in_array( $key, array( 'do', 'page', 'seourl', 'route', 'key' ) ) ) unset( $DATA[$key] );
+            if( in_array( $key, array( 'do', 'page', 'seourl', 'route', 'key' ) ) ) unset( $data[$key] );
         }
 
-        return $DATA;
+        return $data;
     }
 
     /**
-     * Изменить статус квитанции, зачислить платеж
+     * Изменить статус квитанции, зачислить средства
      * @param array $Invoice
-     * @param $CheckPayerRequisites
-     * @return bool|void
+     * @param string|null $CheckPayerRequisites
+     * @return bool
      */
-    private function RegisterPay( array $Invoice, string|null $CheckPayerRequisites = '' )
+    private function RegisterPay( array $Invoice, ?string $CheckPayerRequisites = '' ) : bool
     {
         $this->PaymentsArray = $this->DevTools->Payments();
 
@@ -640,14 +644,9 @@ Class USER
 
             $this->logging( 1, $Invoice['invoice_handler'] );
 
-            if( file_exists( MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php' ) )
+            if( $Handler = DevTools::getHandler($pluginHandler, $fileHandler) )
             {
-                $Handler = include MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php';
-
-                if( in_array('pay', get_class_methods($Handler) ) )
-                {
-                    $Handler->pay($Invoice, $this->DevTools->API);
-                }
+                $Handler->pay($Invoice, $this->DevTools->API);
             }
 
             return true;

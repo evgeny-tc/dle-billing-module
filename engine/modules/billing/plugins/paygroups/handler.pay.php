@@ -4,16 +4,25 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
-return new class
+namespace Billing;
+
+return new class extends Handler
 {
-    public function pay(array $Invoice, BillingAPI $API)
+    private array $_Lang;
+    private array $_Config;
+
+    public function __construct()
+    {
+        $this->_Lang = DevTools::getLang('paygroups');
+        $this->_Config = DevTools::getConfig('paygroups');
+    }
+    
+    public function pay(array $Invoice, Api $API) : bool
     {
         global $db, $_TIME;
-
-        $plugin_lang = include MODULE_PATH . "/plugins/paygroups/lang.php";
 
         $InfoPay = unserialize($Invoice['invoice_payer_info']);
 
@@ -42,43 +51,45 @@ return new class
         return true;
     }
 
-    public function desc(array $infopay = [])
+    public function desc(array $info = []) : array
     {
         global $user_group;
 
-        $plugin_lang = include MODULE_PATH . "/plugins/paygroups/lang.php";
-        
         return [
             sprintf(
-                $plugin_lang['log'],
-                $user_group[$infopay['params']['group_id']]['group_name'] ) . ( $infopay['params']['type'] ? sprintf( $plugin_lang['time'], $infopay['params']['days'], langdate('d.m.Y G:i', $infopay['params']['time_limit']) ) : $plugin_lang['fulltime'] ),
-            $infopay['params']['post_id']
+                $this->_Lang['log'],
+                $user_group[$info['params']['group_id']]['group_name'] ) . ( $info['params']['type'] ? sprintf( $this->_Lang['time'], $info['params']['days'], langdate('d.m.Y G:i', $info['params']['time_limit']) ) : $this->_Lang['fulltime'] ),
+            $info['params']['post_id']
         ];
     }
 
-    public function prepay_check( array $invoice, array|bool &$infopay )
+    public function prepay_check( array $invoice, array|bool &$info ) : void
     {
         global $_TIME;
 
-        $plugin_lang = include MODULE_PATH . "/plugins/paygroups/lang.php";
+        $this->_Lang = include MODULE_PATH . "/plugins/paygroups/lang.php";
 
-        if( ! intval($infopay['params']['group_id']) )
-            throw new Exception($plugin_lang['handler']['error']['group_id']);
+        if( ! intval($info['params']['group_id']) )
+        {
+            throw new Exception($this->_Lang['handler']['error']['group_id']);
+        }
 
-        if( $infopay['params']['type'] and ! intval($infopay['params']['days']) )
-            $infopay['params']['days'] = 1;
+        if( $info['params']['type'] and ! intval($info['params']['days']) )
+        {
+            $info['params']['days'] = 1;
+        }
 
-        if( $infopay['params']['type'] and ! intval($infopay['params']['time_limit']) )
-            $infopay['params']['time_limit'] = $_TIME;
+        if( $info['params']['type'] and ! intval($info['params']['time_limit']) )
+        {
+            $info['params']['time_limit'] = $_TIME;
+        }
     }
 
-    public function prepay( array $invoice, array|bool $infopay, array &$more_data )
+    public function prepay( array $invoice, array|bool $infopay, array &$more_data ) : void
     {
         global $user_group;
 
-        $plugin_lang = include MODULE_PATH . "/plugins/paygroups/lang.php";
-
-        $more_data[$plugin_lang['handler']['group']] = $user_group[$infopay['params']['group_id']]['group_name'];
-        $more_data[$plugin_lang['handler']['days']] = $infopay['params']['type'] ? $infopay['params']['days'] : $plugin_lang['handler']['time_null'];
+        $more_data[$this->_Lang['handler']['group']] = $user_group[$infopay['params']['group_id']]['group_name'];
+        $more_data[$this->_Lang['handler']['days']] = $infopay['params']['type'] ? $infopay['params']['days'] : $this->_Lang['handler']['time_null'];
     }
 };

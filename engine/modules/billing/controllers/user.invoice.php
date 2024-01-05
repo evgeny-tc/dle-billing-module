@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
 namespace Billing;
@@ -13,7 +13,10 @@ Class USER
 {
     public DevTools $DevTools;
 
-    public function main( array $GET = [] )
+    /**
+     * @throws \Exception
+     */
+    public function main(array $GET = [] )
     {
         # Проверка авторизации
         #
@@ -64,9 +67,11 @@ Class USER
         $TplLineNull = $this->DevTools->ThemePregMatch( $Content, '~\[not_invoice\](.*?)\[/not_invoice\]~is' );
         $TplLineDate = $this->DevTools->ThemePregMatch( $TplLine, '~\{creat-date=(.*?)\}~is' );
 
-        $this->DevTools->LQuery->DbWhere( array(
-            "invoice_user_name = '{s}' " => $this->DevTools->member_id['name']
-        ));
+        $this->DevTools->LQuery->DbWhere(
+            [
+                "invoice_user_name = '{s}' " => $this->DevTools->member_id['name']
+            ]
+        );
 
         # SQL
         #
