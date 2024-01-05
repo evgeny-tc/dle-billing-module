@@ -37,18 +37,9 @@ Class ADMIN
             );
         }
 
-        # Загрузить файл пс
+        # Загрузить класс платежной системы
         #
-        if( file_exists(  MODULE_PATH . '/payments/' . $Name . '/adm.settings.php' ) )
-        {
-            require_once MODULE_PATH . '/payments/' . $Name . '/adm.settings.php';
-
-            if( ! isset($Paysys) )
-            {
-                $this->Dashboard->ThemeMsg( $this->Dashboard->lang['error'], $this->Dashboard->lang['paysys_fail_error'] );
-            }
-        }
-        else
+        if( ! $classPayment = Dashboard::getPayment($Name) )
         {
             $this->Dashboard->ThemeMsg( $this->Dashboard->lang['error'], $this->Dashboard->lang['paysys_fail_error'] );
         }
@@ -58,7 +49,7 @@ Class ADMIN
         $Payments = $this->Dashboard->Payments();
         $Payment = $Payments[$Name]['config'];
 
-        $Content = $this->Dashboard->PanelPlugin('payments/' . $Name, $Paysys->doc );
+        $Content = $this->Dashboard->PanelPlugin('payments/' . $Name, $classPayment->doc );
 
         # Форма
         #
@@ -115,10 +106,10 @@ Class ADMIN
         $this->Dashboard->ThemeAddStr(
             $this->Dashboard->lang['paysys_url_v2'],
             $this->Dashboard->lang['paysys_url_desc_v2'],
-            '<input type="text" class="form-control" value="' . $this->Dashboard->dle['http_home_url'] . '/index.php?do=static&page=' . $this->Dashboard->config['page'] . '&seourl=' . $this->Dashboard->config['page'] . '&route=pay/handler/payment/' . $Name . '/key/' . $this->Dashboard->config['secret'] . '/' . '" disable>'
+            '<input type="text" class="form-control" value="' . $this->Dashboard->dle['http_home_url'] . 'index.php?do=static&page=' . $this->Dashboard->config['page'] . '&seourl=' . $this->Dashboard->config['page'] . '&route=pay/handler/payment/' . $Name . '/key/' . $this->Dashboard->config['secret'] . '/' . '" disable>'
         );
 
-        foreach( $Paysys->Settings( $Payment ) as $Form )
+        foreach( $classPayment->Settings( $Payment ) as $Form )
         {
             $this->Dashboard->ThemeAddStr( $Form[0], $Form[1], $Form[2] );
         }

@@ -9,69 +9,69 @@
 
 namespace Billing;
 
-Class Payment
+Class Tegro implements IPayment
 {
-	public $doc = 'https://dle-billing.ru/doc/payments/tegro';
+	public string $doc = 'https://dle-billing.ru/doc/payments/tegro';
 
-	function Settings( $config )
+	public function Settings( array $config ) : array
 	{
-		$Form = array();
+		$Form = [];
 
-		$Form[] = array(
-			"Публичный ключ проекта:",
-			"Из <a href='https://tegro.money/my/login/' target='_blank'>личного кабинета</a>",
-			"<input name=\"save_con[shop_id]\" class=\"form-control\" type=\"text\" value=\"" . $config['shop_id'] ."\" style=\"width: 100%\">"
-		);
+		$Form[] = [
+            "Публичный ключ проекта:",
+            "Из <a href='https://tegro.money/my/login/' target='_blank'>личного кабинета</a>",
+            "<input name=\"save_con[shop_id]\" class=\"form-control\" type=\"text\" value=\"" . $config['shop_id'] ."\" style=\"width: 100%\">"
+        ];
 
-		$Form[] = array(
-			"Секретный ключ:",
-			"Из <a href='https://tegro.money/my/login/' target='_blank'>личного кабинета</a>",
-			"<input name=\"save_con[secret]\" class=\"form-control\" type=\"text\" value=\"" . $config['secret'] ."\" style=\"width: 100%\">"
-		);
+		$Form[] = [
+            "Секретный ключ:",
+            "Из <a href='https://tegro.money/my/login/' target='_blank'>личного кабинета</a>",
+            "<input name=\"save_con[secret]\" class=\"form-control\" type=\"text\" value=\"" . $config['secret'] ."\" style=\"width: 100%\">"
+        ];
 
-        $Form[] = array(
-			"Валюта платежа:",
-			"Валюта платежа (RUB, USD, EUR)",
-			"<select name=\"save_con[currency]\" class=\"uniform\">
+        $Form[] = [
+            "Валюта платежа:",
+            "Валюта платежа (RUB, USD, EUR)",
+            "<select name=\"save_con[currency]\" class=\"uniform\">
 				<option value=\"RUB\" " . ( $config['currency'] == 'RUB' ? "selected" : "" ) . ">RUB</option>
 				<option value=\"USD\" " . ( $config['currency'] == 'USD' ? "selected" : "" ) . ">USD</option>
 				<option value=\"EUR\" " . ( $config['currency'] == 'EUR' ? "selected" : "" ) . ">EUR</option>
 			</select>"
-		);
+        ];
 
-        $Form[] = array(
-			"Режим работы:",
-			"Режим работы интеграции",
-			"<select name=\"save_con[test]\" class=\"uniform\">
+        $Form[] = [
+            "Режим работы:",
+            "Режим работы интеграции",
+            "<select name=\"save_con[test]\" class=\"uniform\">
 				<option value=\"\" " . ( $config['test'] == '' ? "selected" : "" ) . ">Рабочий</option>
 				<option value=\"1\" " . ( $config['test'] == '1' ? "selected" : "" ) . ">Тестовый</option>
 			</select>"
-		);
+        ];
 
 		return $Form;
 	}
 
-	function Form( $id, $payment_config, $invoice, $currency, $desc )
+	public function Form( int $id, array $payment_config, array $invoice, string $currency, string $desc ) : string
 	{
-		global $config;
+        $data = [
+            'shop_id' => $payment_config['shop_id'],
+            'amount' => $invoice['invoice_pay'],
+            'currency' => $payment_config['currency'],
+            'order_id' => $id
+        ];
 
-            $data = array(
-                'shop_id'=>$payment_config['shop_id'],
-                'amount'=>$invoice['invoice_pay'],
-                'currency'=>$payment_config['currency'],
-                'order_id'=>$id
-            );
-            ksort($data);
-            $str = http_build_query($data);
-            $sign = md5($str . $payment_config['secret']);
+        ksort($data);
+
+        $str = http_build_query($data);
+        $sign = md5($str . $payment_config['secret']);
+
+        $test = '';
 
         if( $payment_config['test'] )
         {
             $test = '<input type="hidden" name="test" value="1">';
             $data['test'] = 1;
         }
-        else
-            $test = '';
 
         return '<form action="https://tegro.money/pay/form/" id="paysys_form" method="post">
                 <input type="hidden" name="shop_id" value="' . $payment_config['shop_id'] . '">
@@ -86,36 +86,37 @@ Class Payment
             </form>';
 	}
 
-	function check_payer_requisites( $data )
+	public function check_payer_requisites( array $data ) : string
 	{
 		return '';
 	}
 
-	function check_id( $data )
+	public function check_id( array $data ) : int
 	{
-		return $data['order_id'];
+		return intval($data['order_id']);
 	}
 
-	function check_ok( $data )
+	public function check_ok( array $result ) : string
 	{
 		return "HTTP 202 OK";
 	}
 
-	function check_out( $data, $config, $invoice )
+	public function check_out( array $result, array $config_payment, array $invoice ) : string|bool
 	{
-        unset($data['sign']);
-        ksort($data);
+        unset($result['sign']);
 
-        $str = http_build_query($data);
-        $sign = md5($str . $config['secret']);
+        ksort($result);
 
-		if( $sign != $data['sign'] )
+        $str = http_build_query($result);
+        $sign = md5($str . $config_payment['secret']);
+
+		if( $sign != $result['sign'] )
 		{
 			return "Error hash";
 		}
 
-		return 200;
+		return true;
 	}
 }
 
-$Paysys = new Payment;
+$Paysys = new Tegro;

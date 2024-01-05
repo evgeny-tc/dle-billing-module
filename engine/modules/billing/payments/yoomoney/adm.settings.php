@@ -9,30 +9,30 @@
 
 namespace Billing;
 
-Class Payment
+Class YooMoney implements IPayment
 {
 	public string $doc = 'https://dle-billing.ru/doc/payments/yoomoney';
 
-	function Settings( $config )
+	public function Settings( array$config ) : array
 	{
-		$Form = array();
+		$Form = [];
 
-		$Form[] = array(
+		$Form[] = [
 			"Номер кошелька:",
 			"Номер кошелька в системе ЮMoney",
 			"<input name=\"save_con[yanumber]\" class=\"form-control\" type=\"text\" value=\"" . $config['yanumber'] ."\" style=\"width: 100%\">"
-		);
+		];
 
-		$Form[] = array(
+		$Form[] = [
 			"Секретное слово:",
 			"<a href='https://yoomoney.ru/transfer/myservices/http-notification' target='_blank'>Секретное слово</a> позволит вам проверять подлинность уведомлений.",
 			"<input name=\"save_con[key]\" class=\"form-control\" type=\"password\" value=\"" . $config['key'] ."\" style=\"width: 100%\">"
-		);
+		];
 
 		return $Form;
 	}
 
-	function Form( $id, $payment_config, $invoice, $currency, $desc )
+	public function Form( int $id, array $payment_config, array $invoice, string $currency, string $desc ) : string
 	{
 		global $config;
 
@@ -82,22 +82,22 @@ Class Payment
 				</form>';
 	}
 
-	function check_payer_requisites( $data )
+	public function check_payer_requisites( array $data ) : string
 	{
 		return $data['sender'];
 	}
 
-	function check_id( $data )
+	public function check_id( array $data ) : int
 	{
-		return $data['label'];
+		return intval($data['label']);
 	}
 
-	function check_ok( $data )
+	public function check_ok( array $data ) : string
 	{
 		return "HTTP 202 OK";
 	}
 
-	function check_out( $data, $config, $invoice )
+	public function check_out( array $data, array $config, array $invoice ) : string|bool
 	{
 		$hash = sha1($data['notification_type'].'&'.$data['operation_id'].'&'.$data['amount'].'&'.$data['currency'].'&'.$data['datetime'].'&'.$data['sender'].'&'.$data['codepro'].'&'.$config['key'].'&'.$data['label']);
 
@@ -111,9 +111,8 @@ Class Payment
 			return "Error hash";
 		}
 
-		return 200;
+		return true;
 	}
 }
 
-$Paysys = new Payment;
-?>
+$Paysys = new YooMoney;

@@ -358,14 +358,15 @@ Class DevTools
      * @param bool $from_balance
      * @param array $more_info
      * @return string
+     * @throws \Exception
      */
     public function FormSelectPay( float $sum, bool $from_balance = false, array $more_info = [] ): string
     {
         $PaymentsArray = $this->Payments();
 
-        $Tpl = $this->ThemeLoad( "pay/waiting" );
+        $Tpl = $this->ThemeLoad( 'pay/waiting' );
 
-        $PaysysList = '';
+        $paymentList = '';
 
         $TplSelect = $this->ThemePregMatch( $Tpl, '~\[payment\](.*?)\[/payment\]~is' );
 
@@ -385,28 +386,30 @@ Class DevTools
         {
             foreach( $PaymentsArray as $Name => $Info )
             {
-                if( ! $Info['config']['status'] or $sum < $Info['config']['minimum'] or $sum > $Info['config']['max'] )
+                if( ! $Info['config']['status'] or $sum < floatval($Info['config']['minimum']) or $sum > floatval($Info['config']['max']) )
                 {
                     continue;
                 }
+
+                $sumPay = $sum * floatval($Info['config']['convert']);
 
                 $TimeLine = $TplSelect;
 
                 $TimeLine = str_replace("{module.skin}", $this->dle['skin'], $TimeLine);
                 $TimeLine = str_replace("{payment.name}", $Name, $TimeLine);
                 $TimeLine = str_replace("{payment.title}", $Info['config']['title'], $TimeLine);
-                $TimeLine = str_replace("{payment.topay}", $this->API->Convert($sum * floatval($Info['config']['convert']), $Info['config']['format']), $TimeLine);
+                $TimeLine = str_replace("{payment.topay}", $this->API->Convert(money: $sumPay, number_format_f: true), $TimeLine);
                 $TimeLine = str_replace("{payment.currency}", $Info['config']['currency'], $TimeLine);
 
-                $PaysysList .= $TimeLine;
+                $paymentList .= $TimeLine;
             }
         }
         else
         {
-            $PaysysList = $this->lang['pay_main_error'];
+            $paymentList = $this->lang['pay_main_error'];
         }
 
-        $this->ThemeSetElementBlock( "payment", $PaysysList );
+        $this->ThemeSetElementBlock( "payment", $paymentList );
 
         if( count($more_info) )
         {

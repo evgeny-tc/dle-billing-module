@@ -359,25 +359,25 @@ Class USER
                     );
                 }
 
-                if( file_exists( MODULE_PATH . '/payments/' . $Invoice['invoice_paysys'] . "/adm.settings.php" )  )
+                if( $Payment = DevTools::getPayment($Invoice['invoice_paysys']) )
                 {
-                    require_once MODULE_PATH . '/payments/' . $Invoice['invoice_paysys'] . "/adm.settings.php";
+                    $payForm = '';
 
-                    $RedirectForm = $this->DevTools->config['redirect']  ? '<script type="text/javascript">
-								window.onload = function() { document.getElementById("paysys_form").submit(); }
-						</script>' : '';
+                    if( $this->DevTools->config['redirect'] )
+                    {
+                        $payForm = '<script type="text/javascript">window.onload = function() { document.getElementById("paysys_form").submit(); }</script>';
+                    }
 
                     if( $_coupon and $this->DevTools->LQuery->useCoupon($couponData, $Invoice) )
                     {
                         $this->DevTools->LQuery->DbInvoiceUpdate(
-                            $GET['id'],
-                            true,
-                            '',
-                            $Invoice['invoice_pay']
+                            invoice_id: $GET['id'],
+                            wait: true,
+                            invoice_pay: $Invoice['invoice_pay']
                         );
                     }
 
-                    $payForm = $RedirectForm . $Paysys->Form(
+                    $payForm .= $Payment->Form(
                             $GET['id'],
                             $this->PaymentsArray[$Invoice['invoice_paysys']]['config'],
                             $Invoice,
@@ -393,10 +393,8 @@ Class USER
 
                     return $payForm;
                 }
-                else
-                {
-                    throw new \Exception($this->DevTools->lang['pay_file_error']);
-                }
+
+                throw new \Exception($this->DevTools->lang['pay_file_error']);
             }
         }
 
@@ -415,14 +413,14 @@ Class USER
 
         @http_response_code(200);
 
-        $SecretKey = $this->DevTools->LQuery->parsVar( $GET['key'], '~[^a-z|0-9|\-|.]*~is' );
-        $GetPaysys = $this->DevTools->LQuery->parsVar( $GET['payment'], '~[^a-z|0-9|\-|.]*~is' );
+        $secretKey = $this->DevTools->LQuery->parsVar( $GET['key'], '~[^a-z|0-9|\-|.]*~is' );
+        $getPayment = $this->DevTools->LQuery->parsVar( $GET['payment'], '~[^a-z|0-9|\-|.]*~is' );
 
         $this->PaymentsArray = $this->DevTools->Payments();
 
         # .. логирование
         #
-        $this->logging( 0, $GetPaysys );
+        $this->logging( 0, $getPayment );
 
         # .. полученные данные
         #
@@ -432,7 +430,7 @@ Class USER
 
         # Проверка ключа
         #
-        if( ! isset( $SecretKey ) or $SecretKey != $this->DevTools->config['secret'] )
+        if( ! isset( $secretKey ) or $secretKey != $this->DevTools->config['secret'] )
         {
             $this->logging( 3 );
 
@@ -441,7 +439,7 @@ Class USER
 
         # Проверка системы оплаты
         #
-        if( ! isset( $GetPaysys ) or ! $this->PaymentsArray[$GetPaysys]['config']['status'] )
+        if( ! isset( $getPayment ) or ! $this->PaymentsArray[$getPayment]['config']['status'] )
         {
             $this->logging( 4 );
 
@@ -452,51 +450,49 @@ Class USER
 
         # Подключение класса системы оплаты
         #
-        if( file_exists( MODULE_PATH . '/payments/' . $GetPaysys . "/adm.settings.php" ) )
+        if( $Payment = DevTools::getPayment($getPayment) )
         {
-            require_once MODULE_PATH . '/payments/' . $GetPaysys . "/adm.settings.php";
-
             $this->logging( 6 );
 
             # ..номер квитанции
             #
-            $CheckID = $Paysys->check_id( $DATA );
+            $getInvoiceID = $Payment->check_id( $DATA );
 
-            $CheckPayerRequisites = '';
+            $payerRequisites = '';
 
-            if( in_array('check_payer_requisites', get_class_methods($Paysys) ) )
+            if( in_array('check_payer_requisites', get_class_methods($Payment) ) )
             {
-                $CheckPayerRequisites = $Paysys->check_payer_requisites( $DATA );
+                $payerRequisites = $Payment->check_payer_requisites( $DATA );
             }
 
-            if( ! intval( $CheckID ) )
+            if( ! intval( $getInvoiceID ) )
             {
                 $this->logging( 7 );
 
-                die( $this->billingMessage($Paysys, $this->DevTools->lang['handler_error_id']) );
+                die( $this->billingMessage($Payment, $this->DevTools->lang['handler_error_id']) );
             }
 
-            $this->logging( 8, $CheckID );
+            $this->logging( 8, $getInvoiceID );
 
             # .. данные квитанции
             #
-            $Invoice = $this->DevTools->LQuery->DbGetInvoiceByID( $CheckID );
+            $Invoice = $this->DevTools->LQuery->DbGetInvoiceByID( $getInvoiceID );
 
             if( ! $Invoice )
             {
                 $this->logging( 15 );
 
-                die( $this->billingMessage($Paysys, $this->DevTools->lang['pay_invoice_error']) );
+                die( $this->billingMessage($Payment, $this->DevTools->lang['pay_invoice_error']) );
             }
 
             if( $Invoice['invoice_date_pay'] )
             {
                 $this->logging( 16 );
 
-                die( $this->billingMessage($Paysys, $this->DevTools->lang['pay_invoice_pay']) );
+                die( $this->billingMessage($Payment, $this->DevTools->lang['pay_invoice_pay']) );
             }
 
-            $Invoice['invoice_paysys'] = $GetPaysys;
+            $Invoice['invoice_paysys'] = $getPayment;
 
             # если цена не по купону -> конвертируем
             #
@@ -504,23 +500,23 @@ Class USER
 
             if( ! $InfoPay['coupon']['coupon_id'] )
             {
-                $Invoice['invoice_pay'] = $this->DevTools->API->Convert($Invoice['invoice_pay'] * $this->PaymentsArray[$GetPaysys]['config']['convert'], $this->PaymentsArray[$GetPaysys]['config']['format']);
+                $Invoice['invoice_pay'] = $this->DevTools->API->Convert($Invoice['invoice_pay'] * $this->PaymentsArray[$getPayment]['config']['convert'], $this->PaymentsArray[$getPayment]['config']['format']);
             }
 
             # .. проверка параметров запроса пс
             #
-            $CheckInvoice = $Paysys->check_out( $DATA, $this->PaymentsArray[$GetPaysys]['config'], $Invoice );
+            $paymentVerification = $Payment->check_out( $DATA, $this->PaymentsArray[$getPayment]['config'], $Invoice );
 
-            if( $CheckInvoice === 200 )
+            if( $paymentVerification === true )
             {
-                $this->logging( 9, $CheckInvoice );
+                $this->logging( 9, '200' );
 
-                if( $this->RegisterPay( $Invoice, $CheckPayerRequisites ) )
+                if( $this->RegisterPay( $Invoice, $payerRequisites ) )
                 {
                     $this->logging( 10, $Invoice['invoice_get'] . ' ' . $this->DevTools->API->Declension( $Invoice['invoice_get'] ) );
                     $this->logging( 14 );
 
-                    echo $Paysys->check_ok( $DATA );
+                    echo $Payment->check_ok( $DATA );
                 }
                 else
                 {
@@ -531,9 +527,9 @@ Class USER
             }
             else
             {
-                $this->logging( "9.1", $CheckInvoice );
+                $this->logging( "9.1", $paymentVerification );
 
-                echo $CheckInvoice;
+                echo $paymentVerification;
             }
         }
         else
@@ -548,15 +544,15 @@ Class USER
 
     /**
      * Вывод сообщения для ПС
-     * @param object $payment
-     * @param string $text
+     * @param IPayment $payment
+     * @param string|null $text
      * @return mixed
      */
-    private function billingMessage( object $payment, string $text ) : string
+    private function billingMessage( IPayment $Payment, ?string $text = '' ) : string
     {
-        if( in_array('null_info', get_class_methods($payment) ) )
+        if( in_array('null_info', get_class_methods($Payment) ) )
         {
-            return $payment->null_info( $text );
+            return $Payment->null_info( $text );
         }
 
         return $text;
@@ -565,9 +561,9 @@ Class USER
     /**
      * Логирование
      * TODO: replace new method
-     * @param $step
-     * @param $info
-     * @return bool
+     * @param int $step
+     * @param string $info
+     * @return void
      */
     private function logging( int $step = 0, string $info = '' ) : void
     {
@@ -616,10 +612,10 @@ Class USER
     /**
      * Изменить статус квитанции, зачислить средства
      * @param array $Invoice
-     * @param string|null $CheckPayerRequisites
+     * @param string|null $payerRequisites
      * @return bool
      */
-    private function RegisterPay( array $Invoice, ?string $CheckPayerRequisites = '' ) : bool
+    private function RegisterPay( array $Invoice, ?string $payerRequisites = '' ) : bool
     {
         $this->PaymentsArray = $this->DevTools->Payments();
 
@@ -629,11 +625,10 @@ Class USER
         }
 
         $this->DevTools->LQuery->DbInvoiceUpdate(
-            $Invoice['invoice_id'],
-            false,
-            $Invoice['invoice_paysys'],
-            $Invoice['invoice_pay'],
-            $CheckPayerRequisites
+            invoice_id: $Invoice['invoice_id'],
+            invoice_payment: $Invoice['invoice_paysys'],
+            invoice_pay: $Invoice['invoice_pay'],
+            check_payer_requisites: $payerRequisites
         );
 
         # есть обработчик

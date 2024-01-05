@@ -4,16 +4,16 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module/
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023, mr_Evgen
+ * @copyright     Copyright (c) 2012-2024
  */
 
 namespace Billing;
 
-Class Payment
+Class Betatransfer implements IPayment
 {
     public string $doc = 'https://betatransfer.io/';
 
-    function Settings( $config )
+    public function Settings( array $config ) : array
     {
         return [
             [
@@ -53,26 +53,30 @@ Class Payment
         ];
     }
 
-    function Form( $id, $config_payment, $invoice, $currency, $desc )
+    public function Form( int $id, array $config_payment, array $invoice, string $currency, string $desc ) : string
     {
         $url = 'https://merchant.betatransfer.io/api/payment?token=' . $config_payment['public_api_key'];
 
-        $params = array_filter([
-            'amount' => $invoice['invoice_pay'],
-            'currency' => $config_payment['currency'],
-            'orderId' => $id,
-            'paymentSystem' => $config_payment['payment_system'], // Можно не указывать
-            'urlResult' => null, // Для получения callback-а необходимо передать
-            'urlSuccess' => null, // Для возврата плательщика после успешной оплаты
-            'urlFail' => null, // Для возврата плательщика после не успешной оплаты
-            'locale' => $config_payment['language'],
-            'redirect' => true,
-        ]);
+        $params = array_filter(
+            [
+                'amount' => $invoice['invoice_pay'],
+                'currency' => $config_payment['currency'],
+                'orderId' => $id,
+                'paymentSystem' => $config_payment['payment_system'],
+                'urlResult' => null,
+                'urlSuccess' => null,
+                'urlFail' => null,
+                'locale' => $config_payment['language'],
+                'redirect' => true,
+            ]
+        );
 
         $params['sign'] = $this->sign_data($params, $config_payment['secret_api_key']);
 
         $form = '';
-        foreach ($params as $key => $value) {
+
+        foreach ($params as $key => $value)
+        {
             $form .= '<input type="hidden" name="' . $key . '" value="' . $value . '" />';
         }
 
@@ -82,17 +86,17 @@ Class Payment
             </form> ';
     }
 
-    function check_id( $result )
+    public function check_id( array $result ) : int
     {
-        return $result['orderId'];
+        return intval($result['orderId']);
     }
 
-    function check_ok( $result )
+    public function check_ok( array $result ) : string
     {
         return 'OK' . $result['orderId'];
     }
 
-    function check_out( $result, $config_payment, $invoice )
+    public function check_out( array $result, array $config_payment, array $invoice ) : string|bool
     {
         $sign = $result['sign'] ?? null;
         $amount = $result['amount'] ?? null;
@@ -103,22 +107,24 @@ Class Payment
             $orderId
         ], $config_payment['secret_api_key']);
 
-        if ($sign == $knownSign) {
-            return 'OK';
+        if ($sign == $knownSign)
+        {
+            return true;
         }
 
         return 'Check hash error!';
     }
 
-    function sign_data( $params, $secret_key )
+    function sign_data( array $params, string $secret_key ) : string
     {
         if (!empty($params['sign'])) {
             unset($params['sign']);
         }
 
         array_push($params, $secret_key);
+
         return md5(implode('', $params));
     }
 }
 
-$Paysys = new Payment;
+$Paysys = new Betatransfer;

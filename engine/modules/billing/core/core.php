@@ -56,7 +56,6 @@ trait Core
         return null;
     }
 
-
     /**
      * Invoice handler string to array
      * @param string $invoice_handler
@@ -113,6 +112,33 @@ trait Core
         }
 
         return file_exists( MODULE_DATA . '/' . $plugin . '.php' ) ? require MODULE_DATA . '/' . $plugin . '.php' : [];
+    }
+
+    /**
+     * Загрузить экземпляр класса платежной системы
+     * @param string $payment
+     * @return IPayment|null
+     */
+    public static function getPayment(string $payment) : ?IPayment
+    {
+        $payment = preg_replace("/[^a-z\s]/", "", trim( $payment ) );
+
+        if( ! $payment )
+        {
+            return null;
+        }
+
+        if( file_exists( MODULE_PATH . '/payments/' . $payment . "/adm.settings.php" ) )
+        {
+            require_once MODULE_PATH . '/payments/' . $payment . "/adm.settings.php";
+
+            if( isset($Paysys) and $Paysys instanceof IPayment)
+            {
+                return $Paysys;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -315,28 +341,28 @@ trait Core
     {
         global $user_group;
 
-        $returnstring = "";
+        $return = "";
 
         foreach ( $user_group as $group )
         {
             if( ( is_array( $none ) and in_array( $group['id'], $none ) )
                 or ( !is_array( $none ) and $group['id'] == $none ) ) continue;
 
-            $returnstring .= '<option value="' . $group['id'] . '" ';
+            $return .= '<option value="' . $group['id'] . '" ';
 
             if( is_array( $id ) )
             {
                 foreach ( $id as $element )
                 {
-                    if( $element == $group['id'] ) $returnstring .= 'SELECTED';
+                    if( $element == $group['id'] ) $return .= 'selected';
                 }
             }
-            elseif( $id and $id == $group['id'] ) $returnstring .= 'SELECTED';
+            elseif( $id and $id == $group['id'] ) $return .= 'selected';
 
-            $returnstring .= ">" . $group['group_name'] . "</option>\n";
+            $return .= ">" . $group['group_name'] . "</option>\n";
         }
 
-        return $returnstring;
+        return $return;
     }
 
     /**
