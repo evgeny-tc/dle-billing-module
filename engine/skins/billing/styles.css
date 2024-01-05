@@ -68,7 +68,6 @@ p.bt_catalog_desc
 	color: #666666;
 }
 
-}
 .statistics_table h4
 {
 	font-size: 14px;
@@ -234,7 +233,7 @@ p.bt_catalog_desc
 .settingsb li a:hover {  
 	background: #f7f7f7;
 	background: -moz-linear-gradient(top,  #f7f7f7 0%, #f2f2f2 100%);
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f7f7f7), color-stop(100%,#e6ef2f2f26e6));
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f7f7f7), color-stop(100%,#e6ef2f));
 	background: -webkit-linear-gradient(top,  #f7f7f7 0%,#f2f2f2 100%);
 	background: -o-linear-gradient(top,  #f7f7f7 0%,#f2f2f2 100%);
 	background: -ms-linear-gradient(top,  #f7f7f7 0%,#f2f2f2 100%);
