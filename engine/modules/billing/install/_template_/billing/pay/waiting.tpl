@@ -2,29 +2,31 @@
 	<input type="hidden" name="billingHash" value="{hash}" />
 
 	<div class="billing-pay-grid">
-		<div class="billing-pay-fields">
-			<div class="billing-form-item">
-				<div>Платеж</div>
-				#{id}
-			</div>
-			<div class="billing-form-item">
-				<div>Назначение</div>
-				{invoice.desc}
-			</div>
-			<div class="billing-form-item">
-				<div>Статус</div>
-				Ожидание оплаты
-			</div>
-			<div class="billing-form-item">
-				<div>Сумма к зачислению</div>
-				[old]<s>{old.invoice.get} {old.invoice.get.currency}</s>[/old] {invoice.get} {invoice.get.currency}
-			</div>
-			[more]
+		<div>
+			<div class="billing-pay-fields">
 				<div class="billing-form-item">
-					<div>{title}</div>
-					{value}
+					<div>Платеж</div>
+					#{id}
 				</div>
-			[/more]
+				<div class="billing-form-item">
+					<div>Назначение</div>
+					{invoice.desc}
+				</div>
+				<div class="billing-form-item">
+					<div>Статус</div>
+					Ожидание оплаты
+				</div>
+				<div class="billing-form-item">
+					<div>Сумма к зачислению</div>
+					[old]<s>{old.invoice.get} {old.invoice.get.currency}</s>[/old] {invoice.get} {invoice.get.currency}
+				</div>
+				[more]
+					<div class="billing-form-item">
+						<div>{title}</div>
+						{value}
+					</div>
+				[/more]
+			</div>
 		</div>
 		<div>
 			<h5 class="blue">Выберите способ оплаты</h5>
