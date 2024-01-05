@@ -8,6 +8,36 @@
 function BillingJSAdmin( hash )
 {
 	/**
+	 * Ожидание применения изменений
+	 * @param elem
+	 */
+	this.progressBtn = function(elem)
+	{
+		let btnText = elem.html();
+		let i = 3;
+
+		elem.html(btnText + '..' + i);
+
+		let timerId = setInterval(function() {
+			i -= 1;
+
+			elem.html(btnText + '..' + i);
+
+			if( ! i )
+			{
+				elem.html(btnText);
+				elem.removeAttr('disabled');
+				elem.prop('onclick', '');
+
+				clearInterval(timerId);
+			}
+
+			console.log(i, elem);
+
+		}, 1000);
+	}
+
+	/**
 	 * Отметить все чекбоксы на странице
 	 * @param obj
 	 */

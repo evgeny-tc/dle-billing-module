@@ -446,6 +446,11 @@ Class Dashboard
 		$linkText = $link && $link != 'javascript:history.back()' ? $this->lang['main_next'] : $this->lang['main_back'];
 
 		$return = <<<HTML
+                    <script>
+                        $( document ).ready(function() {
+                            BillingJS.progressBtn($('.btn-progress'));
+                        });
+                    </script>
 						<div class="content">
 							<div class="alert alert-{$class_status} alert-styled-left alert-arrow-left alert-component message_box">
 								<h4>{$title}</h4>
@@ -458,7 +463,7 @@ Class Dashboard
 								</div>
 								<div class="panel-footer">
 									<div class="text-center">
-										<a class="btn btn-sm bg-teal btn-raised position-left legitRipple" href="{$link}">{$linkText}</a>
+										<a class="btn btn-sm bg-teal btn-raised position-left legitRipple btn-progress" href="{$link}" onclick="return false;" disabled="1">{$linkText}</a>
 									</div>
 								</div>
 							</div>
