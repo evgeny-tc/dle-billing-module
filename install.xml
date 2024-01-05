@@ -10,7 +10,7 @@
 	<filedelete>1</filedelete>
 	<needplugin></needplugin>
 	<mnotice>1</mnotice>
-	<mysqlinstall><![CDATA[CREATE TABLE `{prefix}_billing_history` IF NOT EXISTS (
+	<mysqlinstall><![CDATA[CREATE TABLE  IF NOT EXISTS `{prefix}_billing_history`(
 	`history_id` int(11) NOT NULL AUTO_INCREMENT,
 	`history_plugin` varchar(21) NOT NULL,
 	`history_plugin_id` int(11) NOT NULL,
@@ -24,7 +24,7 @@
 	PRIMARY KEY (`history_id`)
 ) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
 
-CREATE TABLE `{prefix}_billing_invoice` IF NOT EXISTS (
+CREATE TABLE IF NOT EXISTS `{prefix}_billing_invoice` (
 	`invoice_id` int(11) NOT NULL AUTO_INCREMENT,
 	`invoice_paysys` varchar(21) NOT NULL,
 	`invoice_user_name` varchar(40) NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE `{prefix}_billing_invoice` IF NOT EXISTS (
 	PRIMARY KEY (`invoice_id`)
 ) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
 
-CREATE TABLE `{prefix}_billing_refund` IF NOT EXISTS (
+CREATE TABLE IF NOT EXISTS `{prefix}_billing_refund` (
 	`refund_id` int(11) NOT NULL AUTO_INCREMENT,
 	`refund_date` int(11) NOT NULL,
 	`refund_user` varchar(40) NOT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE `{prefix}_billing_refund` IF NOT EXISTS (
 	PRIMARY KEY (`refund_id`)
 ) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
 
-CREATE TABLE `{prefix}_billing_coupons` (
+CREATE TABLE IF NOT EXISTS `{prefix}_billing_coupons` (
   `coupon_id` int(11) NOT NULL AUTO_INCREMENT,
   `coupon_use` varchar(40) NOT NULL,
   `coupon_time_end` int(11) NOT NULL,
