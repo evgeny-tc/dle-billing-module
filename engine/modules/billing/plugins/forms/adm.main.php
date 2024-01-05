@@ -242,7 +242,7 @@ function billingShowForm(form_create_id, form_key = '')
     
     $('.showForm[data-id="'+form_create_id+'"]').removeClass('badge-success').addClass('badge-info');
     
-    $.post("/engine/ajax/BillingAjax.php", { plugin: 'forms', hash: '{$this->Dashboard->hash}', show_form_id: form_create_id }, function(result)
+    $.post("/engine/ajax/controller.php?mod=billing", { plugin: 'forms', hash: '{$this->Dashboard->hash}', show_form_id: form_create_id }, function(result)
 	{
 		console.log(result);
 	}, "json");

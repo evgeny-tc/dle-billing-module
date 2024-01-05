@@ -21,7 +21,8 @@ return [
 	'link_name_2' => "<pre><code>&lt;a href='#' onClick='BillingNews.Form( 1, {news-id} ); return false'&gt;Оплатить поднятие статьи&lt;/a&gt;</code></pre>",
 	'link_name_3' => "<pre><code>&lt;a href='#' onClick='BillingNews.Form( 2, {news-id} ); return false'&gt;Оплатить публикацию статьи на главной странице&lt;/a&gt;</code></pre>",
 
-	'link_help' => "<b>Формат: / пример</b>",
+	'price_placeholder' => "Цены для группы &laquo;%s&raquo; и новостей категории &laquo;%s&raquo;",
+	'link_help' => "<b>Пример настройки цен:</b>",
 	'link_help_instr' => "<table width='100%'>
 							<tr>
 								<td width='45%'><pre><code>{количество дней фиксации}|{название}|{цена}<br>{количество дней фиксации}|{название}|{цена}</code></pre></td>

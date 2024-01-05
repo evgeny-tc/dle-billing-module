@@ -105,7 +105,7 @@ Class ADMIN extends PluginActions
 		{
 			if( $group_info['id'] == 5 or in_array($group_info['id'],  explode(",", $_Config['stop'])) ) continue;
 
-			$returnGroups[] = '<td>' . $group_info['group_name'] . '</td>';
+			$returnGroups[] = '<td style="text-align: center"><a href="?mod=usergroup&action=edit&id=' . $group_info['id'] . '" target="_blank"><b>' . $group_info['group_name'] . '</b></a></td>';
 			$countGroups[] = $group_info['id'];
 		}
 
@@ -113,43 +113,43 @@ Class ADMIN extends PluginActions
 
 		# Категории
 		#
-		$upCategorys = array();
-		$mainCategorys = array();
+		$rowsUP = [];
+		$rowsMain = [];
 
 		foreach( $cat_info as $cat )
 		{
-			if( in_array($cat['id'], explode(",", $_Config['stop_categorys'])) ) continue;
+			if( in_array($cat['id'], explode(",", $_Config['stop_categorys'])) )
+            {
+                continue;
+            }
 
-			$rowCategory = array();
-			$rowCategory[] = $cat['name'];
+			$rowCategory = [];
+			$rowCategory[] = "<a href='?mod=editnews&action=list&start_from=0&search_field=&search_area=0&search_cat%5B%5D={$cat['id']}' target='_blank'>{$cat['name']}</a>";
 
-			$upCategorys[$cat['id']] = array();
-			$upCategorys[$cat['id']][] = $cat['name'];
+			$rowsUP[$cat['id']] = [];
+			$rowsUP[$cat['id']][] = "<a href='?mod=editnews&action=list&start_from=0&search_field=&search_area=0&search_cat%5B%5D={$cat['id']}' target='_blank'>{$cat['name']}</a>";
 
-			$mainCategorys[$cat['id']] = array();
-			$mainCategorys[$cat['id']][] = $cat['name'];
+			$rowsMain[$cat['id']] = [];
+			$rowsMain[$cat['id']][] = "<a href='?mod=editnews&action=list&start_from=0&search_field=&search_area=0&search_cat%5B%5D={$cat['id']}' target='_blank'>{$cat['name']}</a>";
 
 			foreach( $countGroups as $id_group )
 			{
-				$rowCategory[] = "<textarea name=\"save_con[{$id_group}_{$cat['id']}]\" rows=\"3\" class=\"form-control\" style=\"width: 100%;resize: none\">" . $_Config["{$id_group}_{$cat['id']}"] ."</textarea>";
-				$upCategorys[$cat['id']][] = "<input name=\"save_con[up_{$id_group}_{$cat['id']}]\" value=\"" . $_Config["up_{$id_group}_{$cat['id']}"] ."\" class=\"form-control\" type=\"text\" style=\"width: 100%\">";
-				$mainCategorys[$cat['id']][] = "<input name=\"save_con[main_{$id_group}_{$cat['id']}]\" value=\"" . $_Config["main_{$id_group}_{$cat['id']}"] ."\" class=\"form-control\" type=\"text\" style=\"width: 100%\">";
+				$rowCategory[] = "<textarea 
+                                    placeholder='" . sprintf($pluginLang['price_placeholder'], $user_group[$id_group]['group_name'], $cat['name']) . "' 
+                                    name=\"save_con[{$id_group}_{$cat['id']}]\" 
+                                    rows=\"3\" 
+                                    class=\"form-control\" 
+                                    style=\"width: 100%;resize: none\">" . $_Config["{$id_group}_{$cat['id']}"] ."</textarea>";
+
+				$rowsUP[$cat['id']][] = "<input name=\"save_con[up_{$id_group}_{$cat['id']}]\" value=\"" . $_Config["up_{$id_group}_{$cat['id']}"] ."\" class=\"form-control\" type=\"text\" style=\"width: 100%\">";
+				$rowsMain[$cat['id']][] = "<input name=\"save_con[main_{$id_group}_{$cat['id']}]\" value=\"" . $_Config["main_{$id_group}_{$cat['id']}"] ."\" class=\"form-control\" type=\"text\" style=\"width: 100%\">";
 			}
 
 			$this->Dashboard->ThemeAddTR( $rowCategory );
 		}
 
 		$ContentFix = $this->Dashboard->ThemeParserTable('',
-			'<tr>
-				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $pluginLang['link'] . '
-				</td>
-			</tr>
-			<tr>
-				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $pluginLang['link_name_1'] . '
-				</td>
-			</tr>
+			'
 			<tr>
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
 					' . $pluginLang['link_help'] . '
@@ -159,8 +159,19 @@ Class ADMIN extends PluginActions
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
 					' . $pluginLang['link_help_instr'] . '
 				</td>
+			</tr>
+			<tr>
+				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
+					' . $pluginLang['link'] . '
+				</td>
+			</tr>
+			<tr>
+				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
+					' . $pluginLang['link_name_1'] . '
+				</td>
 			</tr>'
 		);
+
 		$ContentFix .= $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("save", $this->Dashboard->lang['save'], "green") );
 
 		$tabs[] = array(
@@ -173,7 +184,7 @@ Class ADMIN extends PluginActions
 		#
 		$this->Dashboard->ThemeAddTR( $returnGroups );
 
-		foreach ($upCategorys as $group_id => $group_field)
+		foreach ($rowsUP as $group_id => $group_field)
 		{
 			$this->Dashboard->ThemeAddTR( $group_field );
 		}
@@ -202,7 +213,7 @@ Class ADMIN extends PluginActions
 		#
 		$this->Dashboard->ThemeAddTR( $returnGroups );
 
-		foreach ($mainCategorys as $group_id => $group_field)
+		foreach ($rowsMain as $group_id => $group_field)
 		{
 			$this->Dashboard->ThemeAddTR( $group_field );
 		}
