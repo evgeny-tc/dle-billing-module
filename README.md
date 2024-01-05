@@ -14,6 +14,7 @@
 - [dle-billing.ru](https://dle-billing.ru/ "dle-billing.ru")
 - [поддержка](https://dle-billing.ru/support/index.php?a=add)
 - [документация](https://dle-billing.ru/doc/)
+- [API](https://dle-billing.ru/doc/api "api")
 
 <p align="center"><a href="https://yoomoney.ru/fundraise/RKcDogSR19k.230521"><img src="https://dle-billing.ru/img/donate3.png"></a></p>
 
@@ -24,11 +25,11 @@
 ## Установка
 1. [Загрузить](https://github.com/evgeny-tc/dle-billing-module/releases/download/beta-10-06/archive.zip "Скачать архив") архив с модулем / [другие версии](https://github.com/evgeny-tc/dle-billing-module/releases)
 2. **Панель управления** -> **Утилиты** -> **Управление плагинами** - загрузить архив
-3. Открыть страницу ваш_сайт.ру/admin.php?mod=billing и запустить установщик
+3. Продолжить установку на странице *ваш_сайт.ру/admin.php?mod=billing*
 
 ## Обновление
-1. **Панель управления** -> **Утилиты** -> **Управление плагинами** - **DLE-Billing** - **Проверить наличие новых версий**
-2. Открыть страницу ваш_сайт.ру/admin.php?mod=billing для автоматического обновления бд и конфигурации модуля.
+1. **Панель управления** -> **Утилиты** -> **Управление плагинами** -> **DLE-Billing** -> **Проверить наличие новых версий**
+2. Продолжить обновление на странице *ваш_сайт.ру/admin.php?mod=billing*
 
 ## Плагины
 - Перевод средств между пользователями
@@ -52,6 +53,3 @@
 - betatransfer.io
 - PayAnyWay
 - enot.io
-
-## API
-Для разработчиков - [документация](https://dle-billing.ru/doc/api "документация").
