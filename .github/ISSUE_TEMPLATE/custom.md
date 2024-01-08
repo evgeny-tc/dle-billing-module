@@ -2,7 +2,7 @@
 name: Предложение
 about: Предложение для новых версий.
 title: ''
-labels: ''
+labels: 'idea'
 assignees: ''
 
 ---
