@@ -5,18 +5,23 @@ if( ! defined( 'DATALIFEENGINE' ) )
 	die( "Hacking attempt!" );
 }
 
-# Регистрация реферала
+# Регистрация
 #
 if( file_exists( ENGINE_DIR . '/data/billing/plugin.referrals.php' ) )
 {
 	$_Config = include ENGINE_DIR . '/data/billing/plugin.referrals.php';
 
-	if( $_Config['status'] == '1' and $_SESSION['myPartner'] )
-	{
-		$_Login = $social_user['nickname'] ? $social_user['nickname'] : $name;
+    $id = intval($id);
+    $_TIME = intval($_TIME);
+    $_SESSION['myPartner'] = $db->safesql( $_SESSION['myPartner'] );
 
-		$db->query( "INSERT INTO " . USERPREFIX . "_billing_referrals (ref_time, ref_login, ref_user_id, ref_from) 
-											VALUES ('" . $_TIME . "', '" . $_Login . "', '" . $id . "', '" . $db->safesql( $_SESSION['myPartner'] ) . "')" );
+	if( $_Config['status'] == '1' and trim($_SESSION['myPartner']) )
+	{
+		$_Login = $social_user['nickname'] ?? $name;
+
+        $_Login = $db->safesql( $_Login );
+
+		$db->query( "INSERT INTO " . USERPREFIX . "_billing_referrals (ref_time, ref_login, ref_user_id, ref_from) VALUES ('{$_TIME}', '{$_Login}', '{$id}', '{$_SESSION['myPartner']}')" );
 
 		$_Lang = include ENGINE_DIR . "/modules/billing/plugins/referrals/lang.php";
 

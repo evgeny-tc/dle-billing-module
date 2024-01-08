@@ -4,18 +4,19 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
+
+namespace Billing;
 
 /**
  * Dashboard panel
- * @var [type]
  */
 Class Dashboard
 {
 	use Core;
 
-	private static $instance;
+	private static self $instance;
 
 	private function __construct(){}
     private function __clone()    {}
@@ -31,35 +32,34 @@ Class Dashboard
         return self::$instance->Loader();
     }
 
+    /**
+     * Current version
+     */
+    public string $version = '0.9.5';
+
 	/**
 	 * DLE config
-	 * @var [type]
+	 * @var array
 	 */
 	public array $dle = [];
 
 	/**
 	 * Authorized user
-	 * @var [type]
+	 * @var array
 	 */
 	public array $member_id = [];
 
 	/**
 	 * Hash string to form
-	 * @var [type]
+	 * @var string
 	 */
 	public string $hash;
 
 	/**
 	 * Local time
-	 * @var [type]
+	 * @var int
 	 */
 	public int $_TIME;
-
-	/**
-	 * Current version
-	 * @var [type]
-	 */
-	public string $version = '0.9.4';
 
 	/**
 	 * Config this module
@@ -75,63 +75,62 @@ Class Dashboard
 
 	/**
 	 * Connect api module
-	 * @var bool
+	 * @var object
 	 */
-	public $API = false;
+	public object $API;
 
 	/**
 	 * Helper sql
-	 * @var [type]
+	 * @var object
 	 */
-	public $LQuery = false;
+	public object $LQuery;
 
 	/**
 	 * Collection plugins for module
-	 * @var [type]
+	 * @var array
 	 */
 	public array $Plugins = [];
 
 	/**
 	 * Collection payments for module
-	 * @var [type]
+	 * @var array
 	 */
 	public array $Payments = [];
 
 	/**
 	 * For Build menu
-	 * @var [type]
 	 */
-	protected $section_num = 0;
-	protected $section = [];
+	//protected int $section_num = 0;
+	protected array $section = [];
 
 	/**
 	 * For Build table
-	 * @var [type]
 	 */
-	protected $list_table_num = 0;
-	protected $list_table = [];
+	protected int $list_table_num = 0;
+	protected array $list_table = [];
 
 	/**
 	 * For build settings panel
-	 * @var [type]
 	 */
-	protected $str_table_num = 0;
-	protected $str_table = [];
+	protected int $str_table_num = 0;
+	protected array $str_table = [];
 
     public string $controller = '';
     protected string $action = '';
 
-	/**
-	 * Main loader
-	 */
+    /**
+     * Main loader
+     * @throws \Exception
+     */
 	private function Loader()
 	{
 		global $config, $member_id, $_TIME, $db, $dle_login_hash, $selected_language;
 
 		$this->lang 	= file_exists(MODULE_PATH . '/lang/' . $selected_language . '/admin.php') ? include MODULE_PATH . '/lang/' . $selected_language . '/admin.php' : include MODULE_PATH . '/lang/admin.php';
 
-		$this->config 	= include MODULE_DATA . '/config.php';
+		$this->config 	= static::getConfig('');
 
+        //TODO: models
 		$this->LQuery 	= new Database(
 			$db,
 			$this->config['fname'],
@@ -139,7 +138,7 @@ Class Dashboard
 		);
 
 		//TODO: v.2.0
-        $this->API 		= new BillingAPI( $db, $member_id, $this->config, $_TIME );
+        $this->API 		= new API( $db, $member_id, $this->config, $_TIME );
 
 		$this->dle 		= $config;
 		$this->member_id = $member_id;
@@ -154,13 +153,13 @@ Class Dashboard
         $defaultRoute[0] = $defaultRoute[0] ?: 'main';
         $defaultRoute[1] = $defaultRoute[1] ?: 'main';
 
-		$this->controller = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $_GET['c'] ) ) ?: $defaultRoute[0];
-		$this->action = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $_GET['m'] ) ) ?: $defaultRoute[1];
+		$this->controller = isset($_GET['c']) ? preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $_GET['c'] ) ) : $defaultRoute[0];
+		$this->action = isset($_GET['m']) ? preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $_GET['m'] ) ) : $defaultRoute[1];
 
         unset($defaultRoute[0], $defaultRoute[1]);
 
 		$arrParams = [];
-		$getParams = $_GET['p'] ? explode('/', $this->LQuery->db->safesql($_GET['p'])) : $defaultRoute;
+		$getParams = isset($_GET['p']) ? explode('/', $this->LQuery->db->safesql($_GET['p'])) : $defaultRoute;
 
 		for( $i = 0; $i < count( $getParams ); $i++ )
 		{
@@ -188,20 +187,23 @@ Class Dashboard
 		}
 		else
 		{
-			throw new Exception($this->lang['main_error_controller']);
+			throw new \Exception($this->lang['main_error_controller']);
 		}
 
 		$Admin = new ADMIN;
 
 		if( in_array($this->action, get_class_methods($Admin) ) )
 		{
-			$Admin->Dashboard = $this;
+            if( property_exists($Admin, 'Dashboard') )
+            {
+                $Admin->Dashboard = $this;
+            }
 
 			echo $Admin->{$this->action}( $arrParams );
 		}
 		else
 		{
-			throw new Exception($this->lang['main_error_metod']);
+			throw new \Exception($this->lang['main_error_metod']);
 		}
 	}
 
@@ -211,16 +213,22 @@ Class Dashboard
 	 * @param string $footer
 	 * @return string
 	 */
-	public function PanelTabs( array $tabs, string $footer = '' )
+	public function PanelTabs( array $tabs, string $footer = '' ) : string
 	{
-		$tabs = is_array( $tabs ) ? $tabs : array( $tabs );
-
 		$titles = '';
+		$links = '';
 		$contents = '';
 
 		for( $i = 0; $i <= count($tabs); $i++ )
 		{
 			if( empty($tabs[$i]['title']) ) continue;
+
+            if( isset($tabs[$i]['link']) )
+            {
+                $links .= '<li style="float: right"><a href="' . $tabs[$i]['link'] . '">' . $tabs[$i]['title'] . '</a></li>';
+
+                continue;
+            }
 
 			$titles .= $i == 0
 							? '<li class="active"><a href="#' . $tabs[$i]['id'] . '" data-toggle="tab">' . $tabs[$i]['title'] . '</a></li>'
@@ -235,6 +243,7 @@ Class Dashboard
 					<div class="panel-heading">
 						<ul class="nav nav-tabs nav-tabs-solid">
 							' . $titles . '
+							' . $links . '
 						</ul>
 					</div>
 					<form action="" enctype="multipart/form-data" method="post">
@@ -254,7 +263,7 @@ Class Dashboard
 	 * @param bool $status
 	 * @return string
 	 */
-	public function Menu( array|null $sectins = [], bool $status = false )
+	public function Menu( array|null $sectins = [], bool $status = false ) : string
 	{
 		if( ! is_array( $sectins ) or ! count( $sectins ) ) return '<div style="text-align: center; padding: 40px">' . $this->lang['null'] . '</div>';
 
@@ -291,26 +300,31 @@ Class Dashboard
 		return $answer . '</div>';
 	}
 
-	/**
-	 * Panel plugin info
-	 * @param $path
-	 * @param $icon
-	 * @param $status
-	 * @param $link
-	 * @return string
-	 */
-	public function PanelPlugin( string $path, ?string $link = '' )
+    /**
+     * Panel plugin info
+     * @param string $path
+     * @param string|null $link
+     * @param string|null $styles
+     * @return string
+     */
+	public function PanelPlugin( string $path, ?string $link = '', ?string $styles = 'float: right' ) : string
 	{
 		$ini = parse_ini_file( MODULE_PATH . '/' . $path . '/info.ini' );
 
-		return $this->MakeMsgInfo(
-			"<span style=\"float: right\">
-				" . ( $link ? "<a href=\"{$link}\" target=\"_blank\" class=\"tip\" title=\"{$this->lang['help']}\">" : '' ) . "
-					<img src=\"/engine/skins/billing/{$path}.png\" onError=\"this.src='engine/skins/billing/icons/plugin.png'\" class=\"bt_icon\" />
-				" . ( $link ? "</a>" : '' ) . "
-			</span>
-			<span style=\"font-size: 18px\">{$ini['title']}</span>
-			<br />{$ini['desc']}" );
+        if( $link )
+        {
+            $icon = "<a href='{$link}' target='_blank' class='tip help_url'>
+                        {$this->lang['help']} <img src='/engine/skins/billing/{$path}.png' onError=\"this.src='engine/skins/billing/icons/plugin.png'\" class='bt_icon' />
+                     </a>";
+        }
+        else
+        {
+            $icon = "<img src='/engine/skins/billing/{$path}.png' onError=\"this.src='engine/skins/billing/icons/plugin.png'\" class='bt_icon' />";
+        }
+
+		return '<span style="text-align: left">' . $this->MakeMsgInfo(
+                "<span style='float: right; text-align: left'>{$icon}</span><span style=\"font-size: 18px\">{$ini['title']}</span><br />{$ini['desc']}"
+            ) . '</span>';
 	}
 
 	/**
@@ -321,7 +335,7 @@ Class Dashboard
 	 * @param bool $multiple
 	 * @return string
 	 */
-	public function GetSelect(array $options, string $name, $selected = [], bool $multiple = false)
+	public function GetSelect(array $options, string $name, mixed $selected = [], bool $multiple = false) : string
 	{
 		$selected = is_array( $selected ) ? $selected : array( $selected );
 
@@ -350,7 +364,7 @@ Class Dashboard
 	 * @param bool $class
 	 * @return string
 	 */
-	public function MakeCheckBox(string $name, $selected, string $value = '1', bool $class = true )
+	public function MakeCheckBox(string $name, $selected, string $value = '1', bool $class = true ) : string
 	{
 		$selected = $selected ? "checked" : '';
 		$class = $class ? "icheck" : '';
@@ -358,7 +372,7 @@ Class Dashboard
 		return "<input class=\"$class\" type=\"checkbox\" name=\"$name\" value=\"$value\" {$selected}>";
 	}
 
-    public function MakeICheck(string $name, $selected)
+    public function MakeICheck(string $name, $selected) : string
     {
         $selected = $selected ? "checked" : "";
 
@@ -375,11 +389,11 @@ Class Dashboard
 	 * @param bool $hash
 	 * @return string
 	 */
-	public function MakeButton(string $name, string $title, string $color, bool $hash = true)
+	public function MakeButton(string $name, string $title, string $color = 'bg-teal', bool $hash = true) : string
 	{
 		$hash = $hash ? "<input type=\"hidden\" name=\"user_hash\" value=\"" . $this->hash . "\" />" : "";
 
-		return "<input class=\"btn bg-teal btn-sm btn-raised legitRipple " . $color . "\" name=\"" . $name . "\" type=\"submit\" value=\"" . $title . "\">" . $hash;
+		return "<input class=\"btn btn-sm btn-raised legitRipple " . $color . "\" name=\"" . $name . "\" type=\"submit\" value=\"" . $title . "\">" . $hash;
 	}
 
 	/**
@@ -387,7 +401,7 @@ Class Dashboard
 	 * @param string $text
 	 * @return string
 	 */
-	public function MakeMsgInfo(string $text)
+	public function MakeMsgInfo(string $text) : string
 	{
 		return "<div class=\"well relative\">" . $text . "</div>";
 	}
@@ -400,7 +414,7 @@ Class Dashboard
 	 * @param string $date
 	 * @return string
 	 */
-	public function MakeCalendar(string $name, $value = '', string $style = '', string $date = 'calendardate')
+	public function MakeCalendar(string $name, $value = '', string $style = '', string $date = 'calendardate') : string
 	{
 		$style = $style ? "style='$style'" : "";
 
@@ -412,26 +426,31 @@ Class Dashboard
 	 * @param string $text
 	 * @return string
 	 */
-	public function ThemePadded( string $text )
+	public function ThemePadded( string $text ) : string
 	{
 		return "<div class=\"panel-footer\"> ". $text ." </div>";
 	}
 
 	/**
-	 * Build info page
+	 * Заглушка страницы
 	 * @param string $title
 	 * @param string $text
 	 * @param string $link
 	 * @param string $class_status
 	 * @return void
 	 */
-	public function ThemeMsg( string $title, string $text, string $link = '', string $class_status = 'success' )
+	public function ThemeMsg( string $title, string $text, string $link = '', string $class_status = 'success' ) : string
 	{
 		$this->ThemeEchoHeader();
 
 		$linkText = $link && $link != 'javascript:history.back()' ? $this->lang['main_next'] : $this->lang['main_back'];
 
 		$return = <<<HTML
+                    <script>
+                        $( document ).ready(function() {
+                            BillingJS.progressBtn($('.btn-progress'));
+                        });
+                    </script>
 						<div class="content">
 							<div class="alert alert-{$class_status} alert-styled-left alert-arrow-left alert-component message_box">
 								<h4>{$title}</h4>
@@ -444,7 +463,7 @@ Class Dashboard
 								</div>
 								<div class="panel-footer">
 									<div class="text-center">
-										<a class="btn btn-sm bg-teal btn-raised position-left legitRipple" href="{$link}">{$linkText}</a>
+										<a class="btn btn-sm bg-teal btn-raised position-left legitRipple btn-progress" href="{$link}" onclick="return false;" disabled="1">{$linkText}</a>
 									</div>
 								</div>
 							</div>
@@ -461,7 +480,7 @@ HTML;
 	 * @param array $array
 	 * @return void
 	 */
-	public function SaveConfig( string $file, array $array )
+	public function SaveConfig( string $file, array $array )  : void
 	{
 		$array = is_array( $array ) ? $array : array( $array );
 
@@ -491,15 +510,13 @@ HTML;
 		fclose( $handler );
 
 		@unlink( ENGINE_DIR . "/cache/system/billing.php" );
-
-		return;
 	}
 
 	/**
 	 * Build setting lines
 	 * @return string
 	 */
-	public function ThemeParserStr()
+	public function ThemeParserStr() : string
 	{
 		if( ! $this->str_table_num ) return '';
 
@@ -530,9 +547,9 @@ HTML;
 	 * @param string $other_tr
 	 * @return string|void
 	 */
-    public function ThemeParserTable( string $id = '', string $other_tr = '', int|bool $row_key = false, string $added_table_class = '' )
+    public function ThemeParserTable( string $id = '', string $other_tr = '', int|bool $row_key = false, string $added_table_class = '' ) : string
     {
-        if( ! $this->list_table_num ) return;
+        if( ! $this->list_table_num ) return '';
 
         $answer = "<table width=\"100%\" class=\"table table-normal table-hover {$added_table_class}\" ".( ( $id ) ? 'id="'.$id.'"':'' ).">";
 
@@ -564,13 +581,11 @@ HTML;
 	 * @param array $array
 	 * @return void
 	 */
-	public function ThemeAddTR( array $array )
+	public function ThemeAddTR( array $array ) : void
 	{
 		$this->list_table_num++;
 
 		$this->list_table[$this->list_table_num] = $array;
-
-		return;
 	}
 
 	/**
@@ -580,7 +595,7 @@ HTML;
 	 * @param string $field
 	 * @return void
 	 */
-	public function ThemeAddStr(string $title, string $desc, string $field)
+	public function ThemeAddStr(string $title, string $desc, string $field) : void
 	{
 		$this->str_table_num++;
 
@@ -589,8 +604,6 @@ HTML;
 			'desc' => $desc,
 			'field' => $field
 		);
-
-		return;
 	}
 
 	/**
@@ -598,18 +611,45 @@ HTML;
 	 * @param string $login
 	 * @return string
 	 */
-	public function ThemeInfoUser( string $login )
+	public function ThemeInfoUser( string $login ) : string
 	{
-		return "<div class=\"btn-group\">
-					<a href=\"" . $this->dle['http_home_url'] . "user/" . urlencode( $login ) . "/\" target=\"_blank\"><i class=\"fa fa-user\" style=\"margin-left: 10px; margin-right: 5px; vertical-align: middle\"></i></a>
-					<a href=\"#\" target=\"_blank\" data-toggle=\"dropdown\" data-original-title=\"" . $this->lang['history_user'] . "\" class=\"status-info tip\"><b>{$login}</b></a>
-					<ul class=\"dropdown-menu text-left\">
-						<li><a href=\"" . $PHP_SELF . "?mod=billing&c=statistics&m=users&p=user/" . urlencode( $login ) . "\"><i class=\"fa fa-bar-chart\"></i> " . $this->lang['user_stats'] . "</a></li>
-						<li><a href=\"" . $PHP_SELF . "?mod=billing&c=transactions&p=user/" . urlencode( $login ) . "\"><i class=\"fa fa-money\"></i> " . $this->lang['user_history'] . "</a></li>
-						<li><a href=\"" . $PHP_SELF . "?mod=billing&c=refund&p=user/" . urlencode( $login ) . "\"><i class=\"fa fa-credit-card\"></i> " . $this->lang['user_refund'] . "</a></li>
-						<li><a href=\"" . $PHP_SELF . "?mod=billing&c=invoice&p=user/" . urlencode( $login ) . "\"><i class=\"fa fa-folder-open-o\"></i> " . $this->lang['user_invoice'] . "</a></li>
+        $login = urlencode( $login );
+
+		return "<div class='btn-group'>
+					<a href='{$this->dle['http_home_url']}user/{$login}/' target='_blank'>
+					    <i class='fa fa-user' style='margin-left: 10px; margin-right: 5px; vertical-align: middle'></i>
+					</a>
+					<a href='#' target='#_blank' data-toggle='dropdown' data-original-title='{$this->lang['history_user']}' class='status-info tip'>
+					    <b>{$login}</b>
+					</a>
+					<ul class='dropdown-menu text-left'>
+						<li>
+                            <a href='?mod=billing&c=statistics&m=users&p=user/{$login}'>
+                                <i class='fa fa-bar-chart'></i> {$this->lang['user_stats']}
+						    </a>
+						</li>
+						<li>
+						    <a href='?mod=billing&c=transactions&p=user/{$login}'>
+						        <i class='fa fa-money'></i> {$this->lang['user_history']}
+						    </a>
+						</li>
+						<li>
+						    <a href='?mod=billing&c=refund&p=user/{$login}'>
+						        <i class='fa fa-credit-card'></i> {$this->lang['user_refund']}
+						    </a>
+						</li>
+						<li>
+						    <a href='?mod=billing&c=invoice&p=user/{$login}'>
+						        <i class=\"fa fa-folder-open-o\"></i> {$this->lang['user_invoice']}
+						    </a>
+						</li>
 						<li class=\"divider\"></li>
-						<li><a href=\"" . $PHP_SELF . "?mod=billing&c=users&login=" . urlencode( $login ) . "\"><i class=\"fa fa-money\"></i> " . $this->lang['user_balance'] . "</a></li>					</ul>
+						<li>
+						    <a href='?mod=billing&c=users&login={$login}'>
+						        <i class='fa fa-money'></i> {$this->lang['user_balance']}
+						    </a>
+						</li>
+					</ul>
 				</div>";
 	}
 
@@ -617,7 +657,7 @@ HTML;
 	 * Build profile xfields
 	 * @return string[]
 	 */
-	public function ThemeInfoUserXfields()
+	public function ThemeInfoUserXfields() : array
 	{
 		$answer = array('' => "");
 
@@ -633,14 +673,14 @@ HTML;
 		return $answer;
 	}
 
-	/**
-	 * Payment info-panel
-	 * @param array $info
-	 * @return string
-	 */
-	public function ThemeInfoBilling( $info = [] )
+    /**
+     * Payment info-panel
+     * @param array|null $info
+     * @return string
+     */
+	public function ThemeInfoBilling( ?array $info = [] ) : string
 	{
-		if( ! $info['config']['title'] ) return '';
+		if( ! isset($info['config']['title']) ) return '';
 
 		$status = $info['config']['status']
 					? "<a style=\"cursor: default; color: green\"> " . $this->lang['pay_status_on'] . "</a>" :
@@ -665,7 +705,7 @@ HTML;
 	 * @param string $section_name
 	 * @return void
 	 */
-	public function ThemeEchoHeader( string $section_name = '' )
+	public function ThemeEchoHeader( string $section_name = '' ) : void
 	{
 		$JSmenu = '';
 
@@ -685,17 +725,21 @@ HTML;
 
 	    foreach( $this->Plugins() as $name => $config )
 		{
-            $status = $config['config']['status'] == '1' ? '' : 'opacity: 0.5';
+            if( ! isset($config['config']['status']) or ! intval($config['config']['status']) )
+            {
+                continue;
+            }
 
-				$JSmenu .= $this->controller == $name
-								? '<li style="' . $status . '" class="active"><a href="'.$PHP_SELF.'?mod=billing&c='.$name.'"> &raquo; '.$config['title'].'</a></li>'
-								: '<li style="' . $status . '"><a href="'.$PHP_SELF.'?mod=billing&c='.$name.'"> &raquo; '.$config['title'].'</a></li>';
+			$JSmenu .= $this->controller == $name
+								? '<li class="active"><a href="?mod=billing&c='.$name.'"> &raquo; '.$config['title'].'</a></li>'
+								: '<li><a href="?mod=billing&c='.$name.'"> &raquo; '.$config['title'].'</a></li>';
 		}
 
 		$JSmenu = "<ul>" . $JSmenu . "</ul>";
 
         $JSmenu = "$('li .active').after('{$JSmenu}');
 					$('.curmod > ul').css('display', 'block');
+					$('a[title=\"Просмотр сайта\"]').attr('href', '/{$this->config['page']}.html');
 					$('.navigation-main > li').filter(':not(:nth-child(2),:first-child,:last-child)').hide();
 					$('.curmod').addClass('active');";
 
@@ -712,27 +756,25 @@ HTML;
 			  <script src="engine/skins/billing/core.js"></script>
 			  <script type="text/javascript">
 			  	jQuery(document).ready(function(){'.$JSmenu.'});
-			  	
-			  	//let DashboardJS = new BillingJS("' . $this->hash . '");	
 			  </script>';
-
-		return;
 	}
 
 	/**
 	 * Footer page
-	 * @return array|mixed|string|string[]|null
+	 * @return string
 	 */
-	public function ThemeEchoFoother()
+	public function ThemeEchoFoother() : string
 	{
-		global $is_loged_in, $skin_footer;
+		global $is_loged_in, $skin_footer, $skin_not_logged_footer;
 
-		$skin_footer = preg_replace('~<div class=\"footer text-muted text-size-small\">\s+(.*?)\s+<\/div>~s', "<div class=\"footer text-muted text-size-small\">&copy 2012 - 2023 <a href=\"https://dle-billing.ru/\" target=\"_blank\">DLE-Billing</a></div>", $skin_footer);
+		$skin_footer = preg_replace('~<div class=\"footer text-muted text-size-small\">\s+(.*?)\s+<\/div>~s', "<div class=\"footer text-muted text-size-small\">&copy 2024 <a href=\"https://dle-billing.ru/\" target=\"_blank\">dle-billing.ru</a></div>", $skin_footer);
 
 		if( $is_loged_in )
-			return $skin_footer;
-		else
-			return $skin_not_logged_footer;
+        {
+            return $skin_footer;
+        }
+
+        return $skin_not_logged_footer;
 	}
 
 	/**
@@ -741,7 +783,7 @@ HTML;
 	 * @param string $toolbar
 	 * @return string
 	 */
-	public function ThemeHeadStart( string $title, string $toolbar = '' )
+	public function ThemeHeadStart( string $title, string $toolbar = '' ) : string
 	{
 		return "<div class=\"panel panel-default\">
 					<div class=\"panel-heading\">
@@ -762,7 +804,7 @@ HTML;
 	 * Footer content
 	 * @return string
 	 */
-	public function ThemeHeadClose()
+	public function ThemeHeadClose() : string
 	{
 		return "		</form>
 					</div>

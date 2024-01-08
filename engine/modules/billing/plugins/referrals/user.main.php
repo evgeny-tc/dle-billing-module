@@ -7,16 +7,19 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class USER
 {
-	private $plugin_config = false;
+    const PLUGIN = 'referrals';
+
+    public DevTools $DevTools;
+
+    private array $pluginConfig;
 
 	function __construct()
 	{
-		if( file_exists( MODULE_DATA . "/plugin.referrals.php" ) )
-		{
-			$this->plugin_config = include MODULE_DATA . "/plugin.referrals.php";
-		}
+        $this->pluginConfig = DevTools::getConfig(static::PLUGIN);
 	}
 
 	public function main( array $GET = [] )
@@ -25,14 +28,14 @@ Class USER
 		#
 		if( ! $this->DevTools->member_id['name'] )
 		{
-			throw new Exception($this->DevTools->lang['pay_need_login']);
+			throw new \Exception($this->DevTools->lang['pay_need_login']);
 		}
 
 		# Плагин выключен
 		#
-		if( ! $this->plugin_config['status'] )
+		if( ! $this->pluginConfig['status'] )
 		{
-			throw new Exception($this->DevTools->lang['cabinet_off']);
+			throw new \Exception($this->DevTools->lang['cabinet_off']);
 		}
 
 		# Действия реферралов
@@ -45,10 +48,12 @@ Class USER
 		$TplLineNull = $this->DevTools->ThemePregMatch( $Content, '~\[not_history\](.*?)\[/not_history\]~is' );
 		$TplLineDate = $this->DevTools->ThemePregMatch( $TplLine, '~\{date=(.*?)\}~is' );
 
-		$this->DevTools->LQuery->DbWhere( array(
-			"history_plugin = '{s} ' "=>'referrals',
-			"history_user_name = '{s}' " => $this->DevTools->member_id['name']
-		));
+		$this->DevTools->LQuery->DbWhere(
+            [
+                "history_plugin = '{s} ' " => 'referrals',
+                "history_user_name = '{s}' " => $this->DevTools->member_id['name']
+            ]
+        );
 
 		$NumData = $this->DevTools->LQuery->db->super_query( "SELECT COUNT(*) as `count`
 												FROM " . USERPREFIX . "_billing_history " . $this->DevTools->LQuery->where );
@@ -125,7 +130,7 @@ Class USER
 			$_SESSION['myPartner'] = "$Login";
 		}
 
-		header('Location: ' . $this->plugin_config['link']);
+		header('Location: ' . $this->pluginConfig['link']);
 
 		exit();
 	}

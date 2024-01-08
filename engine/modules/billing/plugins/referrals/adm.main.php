@@ -7,17 +7,20 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class ADMIN extends PluginActions
 {
-	public function main( array $GET = [] )
+    const PLUGIN = 'referrals';
+
+    public function main( array $GET ) : string
 	{
         $this->checkInstall();
 
         # Настройки и установка
 		#
-		$_Lang = include MODULE_PATH . "/plugins/referrals/lang.php";
-
-		$_Config = $this->Dashboard->LoadConfig( 'referrals' );
+		$_Lang = Dashboard::getLang(static::PLUGIN);
+		$_Config = $this->Dashboard->LoadConfig( static::PLUGIN );
 
         $_List = file_exists(MODULE_DATA . '/plugin.referrals.list.dat') ? file(MODULE_DATA . '/plugin.referrals.list.dat') : '';
 
@@ -57,7 +60,7 @@ Class ADMIN extends PluginActions
                 ];
 			}
 
-			$this->save("plugin.referrals.list", $_saved);
+			$this->save($_saved);
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $_Lang['bonus_add'] );
 		}
 
@@ -105,7 +108,6 @@ Class ADMIN extends PluginActions
 						$this->Dashboard->API->Pagination(
 							$ResultCount['count'],
 							$GET['page'],
-							$PHP_SELF .
 							"?mod=billing&c=referrals&p=page/{p}",
 							" <li><a href=\"{page_num_link}\">{page_num}</a></li>",
 							"<li class=\"active\"><span>{page_num}</span></li>",
@@ -138,19 +140,21 @@ Class ADMIN extends PluginActions
             {
                 $remove_num += 1;
 
-                $this->Dashboard->ThemeAddTR( array(
-                    $remove_num,
-                    "<input name='added_bonus[e{$remove_num}][plugin]' value='{$bonus['plugin']}' class='form-control' type='text' style='width: 100%'>",
-                    "<input name='added_bonus[e{$remove_num}][desc]' value='{$bonus['desc']}' class='form-control' type='text' style='width: 100%'>",
-                    "<select name='added_bonus[e{$remove_num}][act]' style='width: 100%'><option " . ( $bonus['act'] == '-' ? 'selected' : '' ) . ">-</option><option " . ( $bonus['act'] == '+' ? 'selected' : '' ) . ">+</option></select>",
-                    "<input name='added_bonus[e{$remove_num}][sum]' value='{$bonus['sum']}' placeholder='>0.00' class='form-control' type='text' style='width: 100%'>",
-                    "<input name='added_bonus[e{$remove_num}][bonus]' placeholder='0.00' value='{$bonus['bonus']}' class='form-control' type='text' style='width: 40%'>
+                $this->Dashboard->ThemeAddTR(
+                    [
+                        $remove_num,
+                        "<input name='added_bonus[e{$remove_num}][plugin]' value='{$bonus['plugin']}' class='form-control' type='text' style='width: 100%'>",
+                        "<input name='added_bonus[e{$remove_num}][desc]' value='{$bonus['desc']}' class='form-control' type='text' style='width: 100%'>",
+                        "<select name='added_bonus[e{$remove_num}][act]' style='width: 100%'><option " . ( $bonus['act'] == '-' ? 'selected' : '' ) . ">-</option><option " . ( $bonus['act'] == '+' ? 'selected' : '' ) . ">+</option></select>",
+                        "<input name='added_bonus[e{$remove_num}][sum]' value='{$bonus['sum']}' placeholder='>0.00' class='form-control' type='text' style='width: 100%'>",
+                        "<input name='added_bonus[e{$remove_num}][bonus]' placeholder='0.00' value='{$bonus['bonus']}' class='form-control' type='text' style='width: 40%'>
 		                &nbsp;или&nbsp;
 		                <input name='added_bonus[e{$remove_num}][bonus_percent]' value='{$bonus['bonus_percent']}' placeholder='10' class='form-control' type='text' style='width: 20%'> %",
-                    "<div style='text-align: center'>
+                        "<div style='text-align: center'>
                         <a href='#' onClick='$($(this).parent().parent().parent()).remove()' class='tip' title='{$_Lang['remove']}'><i class='fa fa-trash-o position-left' style='cursor: pointer'></i></a>
                      </div>"
-                ));
+                    ]
+                );
             }
 
 		$TabSecond = $this->Dashboard->ThemeParserTable('bonuses-list');
@@ -244,18 +248,14 @@ HTML;
 		return $Content;
 	}
 
-    private function clear(string $value)
+    private function clear(string $value) : string
     {
-        $value = str_replace("'", '', $value);
-
-        return $value;
+        return str_replace("'", '', $value);
     }
 
-    private function save( string $file, array $array )
+    private function save(array $array) : void
     {
-        $array = is_array( $array ) ? $array : array( $array );
-
-        $handler = fopen( MODULE_DATA . '/' . $file . '.dat', "w" );
+        $handler = fopen( MODULE_DATA . '/' . "plugin.referrals.list" . '.dat', "w" );
 
         fwrite( $handler, serialize($array) );
 
@@ -266,9 +266,11 @@ HTML;
      * Процесс установки
      * @return void
      */
-    public function install()
+    public function install() : void
     {
         $this->Dashboard->CheckHash();
+
+        $_Lang = Dashboard::getLang(static::PLUGIN);
 
         @unlink(ROOT_DIR . '/engine/data/billing/plugin.referrals.php');
 
@@ -293,10 +295,43 @@ HTML;
 
         $this->Dashboard->SaveConfig('plugin.referrals', $default);
 
-        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_install'], '?mod=billing&c=' . $this->Dashboard->controller );
+        $moreInstall = '';
+        $statusInstall = 'success';
+
+        # htaccess
+        #
+        if( is_writable( ".htaccess" ) )
+        {
+            if ( ! strpos( file_get_contents(".htaccess"), "# referrals" ) )
+            {
+                $htaccess_array = file( ".htaccess" );
+
+                foreach ($htaccess_array as $num => $htrow)
+                {
+                    if( str_contains($htrow, 'RewriteEngine On'))
+                    {
+                        $htaccess_array[$num] = "{$htrow}\t# referrals\n\tRewriteRule ^partner/(.*)(/?)+$ index.php?do=static&page=billing&seourl=billing&route=referrals/redirect&p=$1 [L]";
+                    }
+                }
+
+                file_put_contents( ".htaccess", $htaccess_array );
+            }
+        }
+        else
+        {
+            $statusInstall = 'warning';
+            $moreInstall = $_Lang['install'];
+        }
+
+        $this->Dashboard->ThemeMsg(
+            $this->Dashboard->lang['plugin_install'],
+            $this->Dashboard->PanelPlugin(path: 'plugins/' . $this->Dashboard->controller, link: 'https://dle-billing.ru/doc/plugins/referrals/', styles: '' ) . $moreInstall,
+            '?mod=billing&c=' . $this->Dashboard->controller,
+            $statusInstall
+        );
     }
 
-    public function uninstall()
+    public function uninstall() : void
     {
         $this->Dashboard->CheckHash();
 

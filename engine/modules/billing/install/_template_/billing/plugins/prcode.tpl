@@ -1,11 +1,10 @@
-<h4>Активировать промо код</h4>
+<h5 class="blue">Активировать промо код</h5>
 
 <form action="" method="post">
 
 	<ul class="ui-form">
 		<li class="form-group">
-			<label>Введите код:</label>
-			<input type="text" name="bCode" style="width: 100%" required>
+			<input type="text" name="bCode" placeholder="Введите код" style="width: 100%" required>
 		</li>
 	</ul>
 

@@ -4,52 +4,54 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
-Class Payment
+namespace Billing;
+
+Class LiqPay implements IPayment
 {
-	public $doc = 'https://dle-billing.ru/doc/payments/liqpay/';
+	public string $doc = 'https://dle-billing.ru/doc/payments/liqpay/';
 
-	function Settings( $config )
+	public function Settings( array $config ) : array
 	{
-		$Form = array();
+		$Form = [];
 
-		$Form[] = array(
-			"Публичный ключ:",
-			"Из настроек магазина. Public key",
-			"<input name=\"save_con[public_key]\" class=\"form-control\" type=\"password\" value=\"" . $config['public_key'] ."\" style=\"width: 100%\">"
-		);
+		$Form[] = [
+            "Публичный ключ:",
+            "Из настроек магазина. Public key",
+            "<input name=\"save_con[public_key]\" class=\"form-control\" type=\"password\" value=\"" . $config['public_key'] ."\" style=\"width: 100%\">"
+        ];
 
-		$Form[] = array(
-			"Приватный ключ:",
-			"Из настроек магазина. Private key",
-			"<input name=\"save_con[private_key]\" class=\"form-control\" type=\"password\" value=\"" . $config['private_key'] ."\" style=\"width: 100%\">"
-		);
+		$Form[] = [
+            "Приватный ключ:",
+            "Из настроек магазина. Private key",
+            "<input name=\"save_con[private_key]\" class=\"form-control\" type=\"password\" value=\"" . $config['private_key'] ."\" style=\"width: 100%\">"
+        ];
 
-		$Form[] = array(
-			"Валюта платежа:",
-			"Выберите валюту совершения платежа.",
-			"<select name=\"save_con[currency]\" class=\"uniform\">
+		$Form[] = [
+            "Валюта платежа:",
+            "Выберите валюту совершения платежа.",
+            "<select name=\"save_con[currency]\" class=\"uniform\">
 				<option value=\"USD\" " . ( $config['currency'] == 'USD' ? "selected" : "" ) . ">USD</option>
 				<option value=\"EUR\" " . ( $config['currency'] == 'EUR' ? "selected" : "" ) . ">EUR</option>
 				<option value=\"UAH\" " . ( $config['currency'] == 'UAH' ? "selected" : "" ) . ">UAH</option>
 			</select>"
-		);
+        ];
 
-		$Form[] = array(
-			"Режим работы:",
-			"Выберите режим работы оплаты.",
-			"<select name=\"save_con[server]\" class=\"uniform\">
+		$Form[] = [
+            "Режим работы:",
+            "Выберите режим работы оплаты.",
+            "<select name=\"save_con[server]\" class=\"uniform\">
 				<option value=\"\" " . ( $config['server'] == '' ? "selected" : "" ) . ">Рабочий</option>
 				<option value=\"1\" " . ( $config['server'] == 1 ? "selected" : "" ) . ">Тестовый</option>
 			</select>"
-		);
+        ];
 
 		return $Form;
 	}
 
-	function Form( $id, $config_payment, $invoice, $currency, $desc ) 
+	public function Form( int $id, array $config_payment, array $invoice, string $currency, string $desc ) : string
 	{
 		global $config;
 
@@ -57,9 +59,9 @@ Class Payment
 
 		$billing_config = require MODULE_DATA . '/config.php';
 
-		$liqpay = new LiqPay($config_payment['public_key'], $config_payment['private_key']);
+		$liqpay = new \LiqPay($config_payment['public_key'], $config_payment['private_key']);
 
-		$html = $liqpay->cnb_form(array
+		return $liqpay->cnb_form(array
 		(
 				'sandbox' 		 => $config_payment['server'],
 				'server_url'	 => $config['http_home_url'] . $billing_config['page'] . '.html/pay/handler/payment/liqpay/key/' . $billing_config['secret'],
@@ -71,26 +73,23 @@ Class Payment
 				'description'    => $desc,
 				'order_id'       => $id
 		));
-
-		return $html;
-
 	}
 
-	function check_id( $data )
+	public function check_id( array $result ) : int
 	{
-		$_get = json_decode( base64_decode( $data['data'] ) );
+		$_get = json_decode( base64_decode( $result['data'] ) );
 
-		return $_get->order_id;
+		return intval($_get->order_id);
 	}
 
-	function check_ok( $data )
+	public function check_ok( array $result ) : string
 	{
 		echo "ok";
 
-		return;
+		return '';
 	}
 
-	function check_out( $data, $config, $invoice )
+	public function check_out( array $data, array $config, array $invoice ) : string|bool
 	{
 		require_once 'LiqPay.php';
 
@@ -98,7 +97,8 @@ Class Payment
 				$config['private_key'] .
 				$data['data'] .
 				$config['private_key']
-				, 1 ));
+				, 1 )
+        );
 
 		if( $sign != $data['signature'] )
 		{
@@ -117,8 +117,8 @@ Class Payment
 			return "Action: " . $_get->action;
 		}
 
-		return 200;
+		return true;
 	}
 }
 
-$Paysys = new Payment;
+$Paysys = new LiqPay;

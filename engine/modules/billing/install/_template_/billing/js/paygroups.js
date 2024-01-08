@@ -14,7 +14,7 @@ function BillingGroup()
     this.Form = function( group_id, pay = 0 )
     {
         let _this = this;
-        let height = 310;
+        let height = 240;
 
         $('#paygrouptpl').remove();
 
@@ -29,9 +29,10 @@ function BillingGroup()
                 result => {
                     if( result.url )
                     {
-                        window.open(result.url);
+                        _this.ShowModal(result.html, 140);
+                        BillingJsCore.iframe('Оплата', result.url);
 
-                        height = 140;
+                        return;
                     }
 
                     _this.ShowModal(result.html, height);

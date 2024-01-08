@@ -4,12 +4,16 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
+
+namespace Billing;
 
 Class ADMIN
 {
-    function main( $Get )
+    public Dashboard $Dashboard;
+
+    public function main( array $Get ) : string
     {
         $Name = $this->Dashboard->LQuery->parsVar( $Get['billing'], "/[^a-zA-Z0-9\s]/" );
 
@@ -33,13 +37,9 @@ Class ADMIN
             );
         }
 
-        # Загрузить файл пс
+        # Загрузить класс платежной системы
         #
-        if( file_exists( DLEPlugins::Check( MODULE_PATH . '/payments/' . $Name . '/adm.settings.php' ) ) )
-        {
-            require_once DLEPlugins::Check( MODULE_PATH . '/payments/' . $Name . '/adm.settings.php' );
-        }
-        else
+        if( ! $classPayment = Dashboard::getPayment($Name) )
         {
             $this->Dashboard->ThemeMsg( $this->Dashboard->lang['error'], $this->Dashboard->lang['paysys_fail_error'] );
         }
@@ -49,7 +49,7 @@ Class ADMIN
         $Payments = $this->Dashboard->Payments();
         $Payment = $Payments[$Name]['config'];
 
-        $Content = $this->Dashboard->PanelPlugin('payments/' . $Name, $Paysys->doc );
+        $Content = $this->Dashboard->PanelPlugin('payments/' . $Name, $classPayment->doc );
 
         # Форма
         #
@@ -88,7 +88,7 @@ Class ADMIN
         $this->Dashboard->ThemeAddStr(
             $this->Dashboard->lang['payment_convert_text'],
             $this->Dashboard->lang['payment_convert_text_desc'],
-            $this->Dashboard->API->Convert( 1 ) . "&nbsp;" . $this->Dashboard->API->Declension( 1 ) . " = <input name=\"save_con[convert]\" class=\"form-control\" type=\"text\" value=\"" . $Payment['convert'] ."\"  style=\"width: 30px\" required> <span class='payment_currency_name'></span>"
+            $this->Dashboard->API->Convert( 1 ) . "&nbsp;" . $this->Dashboard->API->Declension( 1 ) . " = <input autocomplete=\"off\" name=\"save_con[convert]\" class=\"form-control\" step=\"0.01\" type=\"number\" value=\"" . $Payment['convert'] ."\"  style=\"width: 90px\" required> <span class='payment_currency_name'></span>"
         );
 
         $tabs[] = array(
@@ -106,10 +106,10 @@ Class ADMIN
         $this->Dashboard->ThemeAddStr(
             $this->Dashboard->lang['paysys_url_v2'],
             $this->Dashboard->lang['paysys_url_desc_v2'],
-            '<input type="text" class="form-control" value="' . $this->Dashboard->dle['http_home_url'] . '/index.php?do=static&page=' . $this->Dashboard->config['page'] . '&seourl=' . $this->Dashboard->config['page'] . '&route=pay/handler/payment/' . $Name . '/key/' . $this->Dashboard->config['secret'] . '/' . '" disable>'
+            '<input type="text" class="form-control" value="' . $this->Dashboard->dle['http_home_url'] . 'index.php?do=static&page=' . $this->Dashboard->config['page'] . '&seourl=' . $this->Dashboard->config['page'] . '&route=pay/handler/payment/' . $Name . '/key/' . $this->Dashboard->config['secret'] . '/' . '" disable>'
         );
 
-        foreach( $Paysys->Settings( $Payment ) as $Form )
+        foreach( $classPayment->Settings( $Payment ) as $Form )
         {
             $this->Dashboard->ThemeAddStr( $Form[0], $Form[1], $Form[2] );
         }

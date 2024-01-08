@@ -7,32 +7,38 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class USER
 {
-	var $plugin_config = false;
+    const PLUGIN = 'refund';
+
+    public DevTools $DevTools;
+
+    private array $pluginСonfig;
 
 	function __construct()
 	{
-		if( file_exists( MODULE_DATA . '/plugin.refund.php' ) )
-		{
-			$this->plugin_config = include MODULE_DATA . '/plugin.refund.php';
-		}
+        $this->pluginСonfig = DevTools::getConfig(static::PLUGIN);
 	}
 
-	public function main( array $GET =[] )
+    /**
+     * @throws \Exception
+     */
+    public function main(array $GET = [] )
 	{
 		# Проверка авторизации
 		#
 		if( ! $this->DevTools->member_id['name'] )
 		{
-			throw new Exception($this->DevTools->lang['pay_need_login']);
+			throw new \Exception($this->DevTools->lang['pay_need_login']);
 		}
 
 		# Плагин выключен
 		#
-		if( ! $this->plugin_config['status'] )
+		if( ! $this->pluginСonfig['status'] )
 		{
-			throw new Exception($this->DevTools->lang['cabinet_off']);
+			throw new \Exception($this->DevTools->lang['cabinet_off']);
 		}
 
 		# Создать запрос
@@ -44,31 +50,48 @@ Class USER
 			$_Requisites = $this->DevTools->LQuery->db->safesql( $_POST['bs_requisites'] );
 			$_Money = $this->DevTools->API->Convert( $_POST['bs_summa'] );
 
-			$_MoneyCommission = $this->DevTools->API->Convert( ( $_Money / 100 ) * (float) $this->plugin_config['com'] );
+			$_MoneyCommission = $this->DevTools->API->Convert( ( $_Money / 100 ) * (float) $this->pluginСonfig['com'] );
 
 			if( ! $_Money )
 			{
-                throw new Exception($this->DevTools->lang['pay_summa_error']);
+                throw new \Exception($this->DevTools->lang['pay_summa_error']);
 			}
 
-            if( $_Money < $this->plugin_config['minimum'] )
+            if( $_Money < $this->pluginСonfig['minimum'] )
 			{
-                throw new Exception(
-                    sprintf( $this->DevTools->lang['refund_error_minimum'], $this->plugin_config['minimum'], $this->DevTools->API->Declension( $this->plugin_config['minimum'] ) )
+                throw new \Exception(
+                    sprintf( $this->DevTools->lang['refund_error_minimum'], $this->pluginСonfig['minimum'], $this->DevTools->API->Declension( $this->pluginСonfig['minimum'] ) )
                 );
 			}
 
             if( ! $_Requisites )
 			{
-                throw new Exception($this->DevTools->lang['refund_error_requisites']);
+                throw new \Exception($this->DevTools->lang['refund_error_requisites']);
 			}
 
             if( $_Money > $this->DevTools->BalanceUser )
 			{
-                throw new Exception($this->DevTools->lang['refund_error_balance']);
+                throw new \Exception($this->DevTools->lang['refund_error_balance']);
 			}
 
 			$_Money = $this->DevTools->API->Convert( $_POST['bs_summa'] );
+
+            # .. email уведомление
+            #
+            if( $this->pluginСonfig['email'] )
+            {
+                include_once \DLEPlugins::Check( ENGINE_DIR . '/classes/mail.class.php' );
+
+                $mail = new \dle_mail( $this->DevTools->dle, true );
+
+                $mail->send(
+                    $this->pluginСonfig['email'],
+                    $this->DevTools->lang['refund_email_title'],
+                    sprintf( $this->DevTools->lang['refund_email_msg'], $this->DevTools->member_id['name'], $_Money, $this->DevTools->API->Declension($_Money), $_Requisites, $this->DevTools->dle['http_home_url'] . $this->DevTools->dle['admin_path'] . "?mod=billing&c=refund" )
+                );
+
+                unset( $mail );
+            }
 
 			$RefundId = $this->DevTools->LQuery->DbCreatRefund(
 				$this->DevTools->member_id['name'],
@@ -85,30 +108,15 @@ Class USER
 				$RefundId
 			);
 
-			# .. email уведомление
-			#
-			if( $this->plugin_config['email'] )
-			{
-				include_once DLEPlugins::Check( ENGINE_DIR . '/classes/mail.class.php' );
-
-				$mail = new dle_mail( $this->DevTools->dle, true );
-
-				$mail->send(
-					$this->plugin_config['email'],
-					$this->DevTools->lang['refund_email_title'],
-					sprintf( $this->DevTools->lang['refund_email_msg'], $this->DevTools->member_id['name'], $_Money, $this->DevTools->API->Declension($_Money), $_Requisites, $this->DevTools->dle['http_home_url'] . $this->DevTools->dle['admin_path'] . "?mod=billing&c=refund" )
-				);
-
-				unset( $mail );
-			}
-
 			header( 'Location: /' . $this->DevTools->config['page'] . '.html/' . $this->DevTools->get_plugin . '/ok/' );
+
+            return '';
 		}
 
-		$this->DevTools->ThemeSetElement( "{requisites}", $this->xfield( $this->plugin_config['requisites'] ) );
-		$this->DevTools->ThemeSetElement( "{minimum}", $this->plugin_config['minimum'] );
-		$this->DevTools->ThemeSetElement( "{minimum.currency}", $this->DevTools->API->Declension( $this->plugin_config['minimum'] ) );
-		$this->DevTools->ThemeSetElement( "{commission}", intval( $this->plugin_config['com'] ) );
+		$this->DevTools->ThemeSetElement( "{requisites}", $this->xfield( $this->pluginСonfig['requisites'] ) );
+		$this->DevTools->ThemeSetElement( "{minimum}", $this->pluginСonfig['minimum'] );
+		$this->DevTools->ThemeSetElement( "{minimum.currency}", $this->DevTools->API->Declension( $this->pluginСonfig['minimum'] ) );
+		$this->DevTools->ThemeSetElement( "{commission}", intval( $this->pluginСonfig['com'] ) );
 
 		# Список запросов
 		#

@@ -7,39 +7,40 @@
  * @copyright     Copyright (c) 2012-2023, mr_Evgen
  */
 
-Class Payment
+namespace Billing;
+
+Class Interkassa implements IPayment
 {
-	public $doc = 'https://dle-billing.ru/doc/payments/interkassa';
+	public string $doc = 'https://dle-billing.ru/doc/payments/interkassa';
 
-	function Settings( $config )
+	public function Settings( array $config ) : array
 	{
-		$Form = array();
+		$Form = [];
 
-		$Form[] = array(
+		$Form[] = [
 			"Идентификатор магазина (ID):",
 			"Можно получить в <a href='https://new.interkassa.com/account/checkout' target='_blank'>личном кабинете</a>.",
 			"<input name=\"save_con[login]\" class=\"form-control\" type=\"text\" value=\"" . $config['login'] ."\" style=\"width: 100%\">"
-		);
+		];
 
-		$Form[] = array(
+		$Form[] = [
 			"Ваш текущий секретный ключ:",
 			"<a href='https://new.interkassa.com/account/checkout' target='_blank'>Настройка кассы</a> вкладка 'Безопасность'",
 			"<input name=\"save_con[secret]\" class=\"form-control\" type=\"password\" value=\"" . $config['secret'] ."\" style=\"width: 100%\">"
-		);
+		];
 
-		$Form[] = array(
+		$Form[] = [
 			"Валюта платежа:",
 			"Например: RUB или UAH",
 			"<input name=\"save_con[paycurrency]\" class=\"form-control\" type=\"text\" value=\"" . $config['paycurrency'] ."\" style=\"width: 100%\">"
-		);
+		];
 		
 		return $Form;
 	}
 
-	function Form( $id, $config, $invoice, $currency, $desc )
+	public function Form( int $id, array $config, array $invoice, string $currency, string $desc ) : string
 	{
-		return '
-			     <form name="payment" method="post" id="paysys_form" action="https://sci.interkassa.com/">
+		return '<form name="payment" method="post" id="paysys_form" action="https://sci.interkassa.com/">
 					  <input type="hidden" name="ik_co_id" value="' . $config['login'] . '" />
 					  <input type="hidden" name="ik_cur" value="' . $config['paycurrency'] . '" />
 					  <input type="hidden" name="ik_pm_no" value="' . $id . '" />
@@ -50,17 +51,17 @@ Class Payment
 
 	}
 
-	function check_id( $data )
+	public function check_id( array $result ) : int
 	{
-		return $data["ik_pm_no"];
+		return intval($result["ik_pm_no"]);
 	}
 
-	function check_ok( $data )
+	public function check_ok( array $result ) : string
 	{
 		return '200';
 	}
 
-	function check_out( $data, $config, $invoice )
+	public function check_out( array $data, array $config, array $invoice ) : string|bool
 	{
 		$save_secret = $data['ik_sign'];
 
@@ -68,19 +69,18 @@ Class Payment
 
 		ksort($data, SORT_STRING);
 
-		array_push($data, trim($config['secret']));
+		$data[] = trim($config['secret']);
 
 		$signString = implode(':', $data);
 		$sign = base64_encode(md5($signString, true));
 
-		if( $save_secret == $sign )
+		if( $save_secret !== $sign )
 		{
-			return 200;
+			return "bad sign";
 		}
 
-		return "bad sign";
+		return true;
 	}
 }
 
-$Paysys = new Payment;
-?>
+$Paysys = new Interkassa;

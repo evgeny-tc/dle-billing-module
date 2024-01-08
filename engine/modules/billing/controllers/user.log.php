@@ -4,18 +4,22 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
+
+namespace Billing;
 
 Class USER
 {
+    public DevTools $DevTools;
+
     public function main( array $GET = [] )
     {
         # Проверка авторизации
         #
         if( ! $this->DevTools->member_id['name'] )
         {
-            throw new Exception($this->DevTools->lang['pay_need_login']);
+            throw new \Exception($this->DevTools->lang['pay_need_login']);
         }
 
         $Content = $this->DevTools->ThemeLoad( "history" );

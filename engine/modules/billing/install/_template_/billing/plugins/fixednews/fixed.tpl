@@ -11,7 +11,7 @@
 		<table width="100%" class="billing-table">
 			<tr>
 				<td width="30%">Статья:</td>
-				<td>{post.title} ({post.autor})</td>
+				<td>{post.title} (от {post.autor})</td>
 			</tr>
 			<tr>
 				<td>Срок фиксации:</td>
@@ -23,17 +23,12 @@
 					</select>
 				</td>
 			</tr>
-			<tr>
-				<td>К оплате:</td>
-				<td><span id="BillingFixedBalancePay"></span><td>
-			</tr>
 		</table>
 
-		<div style="text-align: center; padding-top: 10px">
-			<span id="BillingFixedBtn">
-				<button type="submit" class="btn" onClick="BillingNews.Pay(0)">
-					<span>Перейти к оплате</span>
-				</button>
-			</span>
-		</div>
+	<div class="billing_modal_footer">
+		<h2 id="BillingFixedBalancePay"></h2>
+		<button type="submit" class="btn" onClick="BillingNews.Pay()">
+			<span>Перейти к оплате</span>
+		</button>
+	</div>
 </div>

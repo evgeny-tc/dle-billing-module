@@ -1,8 +1,11 @@
-/* Личный кабинет */
+/**
+ * DLE-Billing
+ * Личный кабинет
+ */
 .billing-panel
 {
-	padding-bottom: 10px;
-	border-bottom: 1px solid #ededed;
+	padding-bottom: 15px;
+	/*border-bottom: 1px solid #ededed;*/
 }
 
 .billing-foto
@@ -25,40 +28,71 @@
 
 .billing-balance
 {
-	font-size: 1.2em;
+	font-size: 1.3em;
+	font-weight: bold;
+	line-height: 22px;
+}
+
+.billing-balance span
+{
+	font-size: 13px;
+}
+
+.billing-balance div
+{
+	float: right;
+	margin-top: 7px;
 }
 
 .billing-menu
 {
-	float: right;
-	font-size: 1.2em;
-	margin: 14px;
+	padding-bottom: 25px;
+	white-space: nowrap;
+	overflow: auto;
+	-ms-overflow-style: none;  /* IE and Edge */
+	scrollbar-width: none;  /* Firefox */
 }
 
-.billing-menu a
-{
-	margin-right: 10px;
-	text-decoration: none !important;
+.billing-menu::-webkit-scrollbar {
+	display: none;
 }
 
-.billing-item
+.billing-menu-content
 {
-	color: #3394e6;
+	padding-top: 13px;
+	border-top: 2px solid #ededed;
+	width: 100%;
 }
 
 .billing-item-active
 {
 	color: #5a5a5a;
-	padding-bottom: 5px;
-	border-bottom: 1px solid #ededed;
+	padding-top: 15px;
+	border-top: 2px solid #5a5a5a;
+	margin-right: 10px;
+}
+.billing-item
+{
+	padding-top: 15px;
+	border-top: 2px solid #ededed;
+	color: #3394e6;
+	margin-right: 10px;
 }
 
+
+.billing-menu a
+{
+	text-decoration: none !important;
+}
+œ
 .billing-content
 {
 	margin-top: 20px;
 }
 
-/* Таблица */
+/**
+ * Таблицы
+ */
 .billing-table
 {
 	width: 100%;
@@ -84,7 +118,9 @@
     box-shadow: 0 0 1px #666;
 }
 
-/* Постраничная навигация */
+/**
+ * Постраничная навигация
+ */
 .billing-pagination
 {
 	text-align: center;
@@ -125,7 +161,9 @@
 	color: #d1ebf4;
 }
 
-/* Форма созания платежа */
+/**
+ * Форма создания платежа
+ */
 .billing-pay-step
 {
 	display:block;
@@ -146,8 +184,7 @@
 
 .billing-pay-label > img
 {
-	margin-left: 20%;
-	margin-top: 4px;
+	overflow: hidden;
 }
 
 .billing-pay-label > input
@@ -155,26 +192,49 @@
 	visibility: hidden;
 	position: absolute;
 }
-.billing-pay-label > input + img
+.billing-pay-label > input + div + img
 {
 	cursor: pointer;
 	opacity: 0.5;
 }
-.billing-pay-label > input:checked + img
+.billing-pay-label > input:checked + div + img
 {
 	opacity: 1;
+}
+.billing-pay-label > input + div
+{
+	cursor: pointer;
+	opacity: 0.5;
+}
+.billing-pay-label > input:checked + div
+{
+	opacity: 1;
+}
+
+@media only screen and (max-width: 425px) {
+	.billing-pay-grid
+	{
+		display: block !important;
+	}
 }
 
 .billing-pay-grid
 {
 	 display: grid;
-	 grid-template-columns: repeat(2, 50%);
+	 grid-template-columns: 35% 65%;
 }
 
 .billing-pay-grid > *
 {
 	 border-radius: 5px;
 	 margin: 1px;
+}
+
+.billing-pay-grid p
+{
+	text-align: center;
+	padding-top: 50px;
+	clear: both;
 }
 
 .billing-btn_clear
@@ -190,8 +250,84 @@ hr.payment__section
 	margin: 0 0 5px;
 }
 
-.payment__desc span
+.payment__desc
 {
+	padding-top: 6px;
 	font-size: 11px;
+	color: #333333;
+}
+
+.billing-form-item div
+{
+	font-size: 12px;
 	color: grey;
 }
+.billing-form-item
+{
+	padding-bottom: 10px;
+}
+
+.billing-pay-step-start
+{
+	background-color: #e7e7e729;
+	line-height: 60px;
+	border: 1px solid #efe8e8;
+}
+
+.billing-pay-fields
+{
+	background-color: #e7e7e729;
+	padding: 10px;
+	margin: 0 20px 0 0;
+	border: 1px solid #efe8e8;
+	border-radius: 5px;
+}
+
+/**
+* Модальное окно
+*/
+.billing_modal_footer
+{
+	position: absolute;
+	bottom: 0;
+	margin-bottom: 0;
+	background-color: #eeeeee;
+	padding: 15px;
+	left: 0;
+	width: 92.5%;
+}
+
+.billing_modal_footer h2
+{
+	vertical-align: middle;
+	position: absolute;
+	top: 23px;
+	left: 20px;
+}
+
+.billing_modal_footer button
+{
+	float: right;
+}
+
+.billing-pay-btn-active
+{
+	background-color: #0c5f7ebf;
+}
+
+.billing-payment-item
+{
+	border: 1px solid #f1f1f1;
+	border-radius: 10px;
+	width: 30%;
+	height: 70px;
+	float: left;
+	margin-right: 10px;
+	margin-bottom: 10px;
+	cursor: pointer;
+	text-align: center;
+	font-size: 11px;
+	color: #333333;
+	overflow: hidden;
+}
+

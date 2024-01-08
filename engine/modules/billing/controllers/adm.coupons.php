@@ -4,14 +4,16 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
+
+namespace Billing;
 
 Class ADMIN
 {
-    private array $_Config = [];
+    public Dashboard $Dashboard;
 
-    public function main( array $GET = [] )
+    public function main( array $GET = [] ) : string
     {
         # Удалить отмеченные
         #
@@ -81,19 +83,23 @@ Class ADMIN
 
             $this->Dashboard->ThemeMsg(
                 $this->Dashboard->lang['coupons']['create']['ok'],
-                '<table class="table table-normal table-hover">' . $_Answer . '</table>', '?mod=billing&c=coupons' );
+                '<table class="table table-normal table-hover">' . $_Answer . '</table>',
+                '?mod=billing&c=coupons'
+            );
         }
 
         # Список
         #
-        $this->Dashboard->ThemeAddTR( array(
-            '<td width="1%">#</td>',
-            '<td>' . $this->Dashboard->lang['coupons']['list']['key'] . '</td>',
-            '<td>' . $this->Dashboard->lang['coupons']['list']['value'] . '</td>',
-            '<td>' . $this->Dashboard->lang['coupons']['list']['time'] . '</td>',
-            '<td>' . $this->Dashboard->lang['coupons']['list']['use'] . '</td>',
-            '<td width="2%"><center><input type="checkbox" value="" name="massact_list[]" onclick="checkAll(this)" /></center></td>'
-        ));
+        $this->Dashboard->ThemeAddTR(
+            [
+                '<td width="1%">#</td>',
+                '<td>' . $this->Dashboard->lang['coupons']['list']['key'] . '</td>',
+                '<td>' . $this->Dashboard->lang['coupons']['list']['value'] . '</td>',
+                '<td>' . $this->Dashboard->lang['coupons']['list']['time'] . '</td>',
+                '<td>' . $this->Dashboard->lang['coupons']['list']['use'] . '</td>',
+                '<td width="2%"><center><input type="checkbox" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></center></td>'
+            ]
+        );
 
         $PerPage = $this->Dashboard->config['paging'];
 
@@ -119,20 +125,20 @@ Class ADMIN
             if( intval($Value['coupon_time_end']) and intval($Value['coupon_time_end']) < time() )
                 $_status = false;
 
-            $this->Dashboard->ThemeAddTR( array(
-                $Value['coupon_id'],
-                $_status ? $Value['coupon_key'] : "<s>{$Value['coupon_key']}</s>",
-                $Value['coupon_type'] == 1
-                    ? $this->Dashboard->API->Convert($Value['coupon_value']) . ' ' . $this->Dashboard->API->Declension( $Value['coupon_value'] )
-                    : intval($Value['coupon_value']) . '%',
-                intval($Value['coupon_time_end'])
-                    ? static::dateStatus($Value['coupon_time_end'])
-                    : '',
-                $Value['coupon_use'] ? $this->Dashboard->ThemeInfoUser( $Value['coupon_use'] ) : '',
-                "<center><input name=\"massact_list[]\" value=\"".$Value['coupon_id']."\" type=\"checkbox\"></center>"
-            ) );
-
-            $id += 1;
+            $this->Dashboard->ThemeAddTR(
+                [
+                    $Value['coupon_id'],
+                    $_status ? $Value['coupon_key'] : "<s>{$Value['coupon_key']}</s>",
+                    $Value['coupon_type'] == 1
+                        ? $this->Dashboard->API->Convert($Value['coupon_value']) . ' ' . $this->Dashboard->API->Declension( $Value['coupon_value'] )
+                        : intval($Value['coupon_value']) . '%',
+                    intval($Value['coupon_time_end'])
+                        ? static::dateStatus($Value['coupon_time_end'])
+                        : '',
+                    $Value['coupon_use'] ? $this->Dashboard->ThemeInfoUser( $Value['coupon_use'] ) : '',
+                    "<center><input name=\"massact_list[]\" value=\"".$Value['coupon_id']."\" type=\"checkbox\"></center>"
+                ]
+            );
         }
 
         $TabFirst = $this->Dashboard->ThemeParserTable();
@@ -142,14 +148,14 @@ Class ADMIN
             $TabFirst .= $this->Dashboard->ThemePadded( '
 				<div class="pull-left" style="margin:7px; vertical-align: middle">
 					<ul class="pagination pagination-sm">' .
-                $this->Dashboard->API->Pagination(
-                    $NumData,
-                    $GET['page'],
-                    "?mod=billing&c=coupons&p=page/{p}",
-                    "<li><a href=\"{page_num_link}\">{page_num}</a></li>",
-                    "<li class=\"active\"><span>{page_num}</span></li>",
-                    $PerPage
-                ) . '
+                            $this->Dashboard->API->Pagination(
+                                $NumData,
+                                $GET['page'],
+                                "?mod=billing&c=coupons&p=page/{p}",
+                                "<li><a href=\"{page_num_link}\">{page_num}</a></li>",
+                                "<li class=\"active\"><span>{page_num}</span></li>",
+                                $PerPage
+                            ) . '
 						</ul>
 					</ul>
 				</div>
@@ -164,11 +170,11 @@ Class ADMIN
             $TabFirst .= $this->Dashboard->ThemePadded( $this->Dashboard->lang['history_no'], '' );
         }
 
-        $tabs[] = array(
+        $tabs[] = [
             'id' => 'list',
             'title' => $this->Dashboard->lang['coupons']['list']['title'],
             'content' => $TabFirst
-        );
+        ];
 
         # Форма создания кодов
         #
@@ -205,13 +211,13 @@ Class ADMIN
             "<input name=\"create[theme]\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"0000-0000-0000-0000\">"
         );
 
-        $tabs[] = array(
+        $tabs[] = [
             'id' => 'create',
             'title' => $this->Dashboard->lang['coupons']['create']['title'],
             'content' => $this->Dashboard->ThemeParserStr() .
                 $this->Dashboard->ThemePadded(
                     $this->Dashboard->MakeButton("btnGenerate", $this->Dashboard->lang['coupons']['create']['btn'], "green") )
-        );
+        ];
 
         $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['coupons']['menu']['name'] );
 
@@ -221,14 +227,14 @@ Class ADMIN
         return $Content;
     }
 
-    private function generate()
+    private function generate() : string
     {
         $chars = 'ABDEFGHKNQRSTYZ23456789';
 
         return substr($chars, rand(1, strlen($chars)) - 1, 1);
     }
 
-    public static function dateStatus(int $time)
+    public static function dateStatus(int $time) : string
     {
         if( $time < time() )
             return '<font color="red"> ' . date("d.m.Y H:i", $time) . '</font>';

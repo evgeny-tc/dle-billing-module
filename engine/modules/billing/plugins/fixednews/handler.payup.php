@@ -4,16 +4,25 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
-return new class
-{
-    public function pay(array $Invoice, BillingAPI $API)
-    {
-        global $db, $_TIME;
+namespace Billing;
 
-        $_Lang              = include MODULE_PATH . "/plugins/fixednews/lang.php";
+return new class extends Handler
+{
+    private array $_Lang;
+    private array $_Config;
+
+    public function __construct()
+    {
+        $this->_Lang = DevTools::getLang('fixednews');
+        $this->_Config = DevTools::getConfig('fixednews');
+    }
+
+    public function pay(array $Invoice, Api $API) : bool
+    {
+        global $db;
 
         $InfoPay = unserialize($Invoice['invoice_payer_info']);
 
@@ -27,17 +36,15 @@ return new class
         return true;
     }
 
-    public function desc(array $infopay = [])
+    public function desc(array $info = []) : array
     {
-        $_Lang              = include MODULE_PATH . "/plugins/fixednews/lang.php";
-
-        return [sprintf($_Lang['handler']['up']['story'], $infopay['params']['post_title'], ), $infopay['params']['post_id']];
+        return [sprintf($this->_Lang['handler']['up']['story'], $info['params']['post_title'], ), $info['params']['post_id']];
     }
 
-    public function prepay( array $invoice, array|bool $infopay, array &$more_data )
+    public function prepay( array $invoice, array|bool $info, array &$more_data ) : void
     {
-        $_Lang              = include MODULE_PATH . "/plugins/fixednews/lang.php";
-
-        $more_data[$_Lang['handler']['post']] = $infopay['params']['post_title'];
+        $more_data[$this->_Lang['handler']['post']] = $info['params']['post_title'];
     }
+
+    public function prepay_check( array $invoice, array|bool &$info ) : void {}
 };

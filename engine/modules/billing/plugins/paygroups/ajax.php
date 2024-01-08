@@ -7,18 +7,23 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-define( 'BILLING_MODULE', TRUE );
-define( 'MODULE_PATH', ENGINE_DIR . "/modules/billing" );
-define( 'MODULE_DATA', ENGINE_DIR . "/data/billing" );
-
-$_Config = include MODULE_DATA . '/plugin.paygroups.php';
-$_ConfigGroups = include MODULE_DATA . '/plugin.paygroups_list.php';
-$_ConfigBilling = include MODULE_DATA . '/config.php';
-
-require_once MODULE_PATH . "/plugins/paygroups/lang.php";
 require_once MODULE_PATH . '/OutAPI.php';
-require_once MODULE_PATH . '/helpers/database.php';
 
+/**
+ * Lang
+ */
+$pluginLang = Billing\DevTools::getLang('paygroups');
+
+/**
+ * Config's
+ */
+$_Config = Billing\DevTools::getConfig('paygroups');
+$_ConfigGroups = Billing\DevTools::getConfig('paygroups_list');
+$_ConfigBilling = Billing\DevTools::getConfig('');
+
+/**
+ * Get params
+ */
 $group_id = intval( $_POST['params']['group_id'] );
 $group_settings = $_ConfigGroups['group_' . $group_id];
 
@@ -26,30 +31,30 @@ $_TimePay = intval( $_POST['params']['days'] );
 
 if( ! $is_logged )
 {
-	billing_error( $plugin_lang['error_login'] );
+	billing_error( $pluginLang['error_login'] );
 }
 
 if( ! $group_id or ! $user_group[$group_id]['group_name'] )
 {
-	billing_error( $plugin_lang['error_group'] );
+	billing_error( $pluginLang['error_group'] );
 }
 
 if( ! $_Config['status'] or ! $group_settings['status'] or in_array($group_id , explode(",", $_Config['stop'] ) ) )
 {
-	billing_error( $plugin_lang['error_off'] );
+	billing_error( $pluginLang['error_off'] );
 }
 
 if( ! in_array( $member_id['user_group'], explode(",", $group_settings['start']) ) )
 {
-	billing_error( $plugin_lang['group_denied'] );
+	billing_error( $pluginLang['group_denied'] );
 }
 
 if( $member_id['user_group'] == $group_id and ! $group_settings['type'] )
 {
-	billing_error( $plugin_lang['group_was_paid'] );
+	billing_error( $pluginLang['group_was_paid'] );
 }
 
-$LQuery 	= new Database( $db, $_ConfigBilling['fname'], $_TIME );
+$LQuery = new Billing\Database( $db, $_ConfigBilling['fname'], $_TIME );
 
 #
 #
@@ -86,7 +91,7 @@ if( $_TimePay and $_POST['params']['pay'] )
 	#
 	if( ! $_Price )
 	{
-		billing_error( $plugin_lang['group_denied'] );
+		billing_error( $pluginLang['group_denied'] );
 	}
 
 	# начать оплату
@@ -112,8 +117,8 @@ if( $_TimePay and $_POST['params']['pay'] )
 
 	billing_ok([
 		'invoice_id' => $invoice_id,
-		'url' => "/{$_ConfigBilling['page']}.html/pay/waiting/id/{$invoice_id}",
-		'html' => sprintf($plugin_lang['html_pay_wait'], "/{$_ConfigBilling['page']}.html/pay/waiting/id/{$invoice_id}")
+		'url' => "/{$_ConfigBilling['page']}.html/pay/waiting/id/{$invoice_id}/&modal=1",
+		'html' => sprintf($pluginLang['html_pay_wait'], "/{$_ConfigBilling['page']}.html/pay/waiting/id/{$invoice_id}")
 	]);
 }
 

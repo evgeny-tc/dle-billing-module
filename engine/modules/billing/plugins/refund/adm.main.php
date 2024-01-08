@@ -7,9 +7,11 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class ADMIN extends PluginActions
 {
-	public function main( array $Get = [] )
+    public function main( array $Get ) : string
 	{
         $this->checkInstall();
 
@@ -54,22 +56,27 @@ Class ADMIN extends PluginActions
 				}
 				else if( $RemoveAct == "back" )
 				{
-					$GetRefund = $this->Dashboard->LQuery->DbGetRefundById( $remove_id );
+					$getRefundItem = $this->Dashboard->LQuery->DbGetRefundById( $remove_id );
 
-					$this->Dashboard->API->PlusMoney(
-						$GetRefund['refund_user'],
-						$this->Dashboard->API->Convert( $GetRefund['refund_summa'] ),
-						str_replace("{remove_id}", $remove_id, $this->Dashboard->lang['refund_back']),
-						'refund',
-						$remove_id
-					);
+                    if( ! intval($getRefundItem['refund_date_return']) and ! intval($getRefundItem['refund_date_cancel']) )
+                    {
+                        $this->Dashboard->API->PlusMoney(
+                            $getRefundItem['refund_user'],
+                            $this->Dashboard->API->Convert( $getRefundItem['refund_summa'] ),
+                            str_replace("{remove_id}", $remove_id, $this->Dashboard->lang['refund_back']),
+                            'refund',
+                            $remove_id
+                        );
 
-					$this->Dashboard->LQuery->DbRefundCancel( $remove_id );
+                        $this->Dashboard->LQuery->DbRefundCancel( $remove_id );
+                    }
 				}
 			}
 
-			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['refund_act'], $PHP_SELF . "?mod=billing&c=refund" );
+			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['refund_act'], "?mod=billing&c=refund" );
 		}
+
+        $Content = '';
 
 		# Настройки
 		#
@@ -86,7 +93,7 @@ Class ADMIN extends PluginActions
                 '<th>'.$this->Dashboard->lang['history_date'].'</th>',
                 '<th>'.$this->Dashboard->lang['history_user'].'</th>',
                 '<th>'.$this->Dashboard->lang['status'].'</th>',
-                '<th><center><input type="checkbox" value="" name="remove_list[]" onclick="checkAll(this)" /></center></th>'
+                '<th><center><input type="checkbox" value="" name="remove_list[]" onclick="BillingJS.checkAll(this)" /></center></th>'
             ]
         );
 
@@ -196,9 +203,11 @@ HTML;
 							) . '</ul>
 						<div class="table-bottom-select" style="float: right">
 								<select name="act" class="uniform">
+									<option disabled>' . $this->Dashboard->lang['refund_change'] . '</option>
+									<option value="back">' . $this->Dashboard->lang['refund_act_no'] . '</option>
+									<option disabled>' . $this->Dashboard->lang['refund_change_status'] . '</option>
 									<option value="ok">' . $this->Dashboard->lang['refund_act_ok'] . '</option>
 									<option value="wait">' . $this->Dashboard->lang['refund_wait'] . '</option>
-									<option value="back">' . $this->Dashboard->lang['refund_act_no'] . '</option>
 									<option value="remove">' . $this->Dashboard->lang['remove'] . '</option>
 								</select>
 							' . $this->Dashboard->MakeButton("act_do", $this->Dashboard->lang['act'], "gold") . '</div>',
@@ -319,7 +328,7 @@ HTML;
 		);
 
 		$Content = $this->Dashboard->PanelPlugin('plugins/refund' );
-        $Content .= $Get['user'] ? $this->Dashboard->MakeMsgInfo( "<a href='{$PHP_SELF}?mod=billing&c=refund' title='{$this->Dashboard->lang['remove']}' class='btn bg-danger btn-sm btn-raised position-left legitRipple' style='vertical-align: middle;'><i class='fa fa-repeat'></i> " . $Get['user'] . "</a> <span style='vertical-align: middle;'>{$this->Dashboard->lang['info_login']}</span>", "icon-user", "blue") : "";
+        $Content .= $Get['user'] ? $this->Dashboard->MakeMsgInfo( "<a href='?mod=billing&c=refund' title='{$this->Dashboard->lang['remove']}' class='btn bg-danger btn-sm btn-raised position-left legitRipple' style='vertical-align: middle;'><i class='fa fa-repeat'></i> " . $Get['user'] . "</a> <span style='vertical-align: middle;'>{$this->Dashboard->lang['info_login']}</span>", "icon-user", "blue") : "";
 		$Content .= $this->Dashboard->PanelTabs( $tabs );
 		$Content .= $this->Dashboard->ThemeEchoFoother();
 

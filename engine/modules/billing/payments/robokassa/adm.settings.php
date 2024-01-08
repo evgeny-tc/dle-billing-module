@@ -7,170 +7,172 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-Class Payment
-{
-	public $doc = 'https://dle-billing.ru/doc/payments/robokassa/';
+namespace Billing;
 
-	public function Settings( $config )
+Class Robokassa implements IPayment
+{
+	public string $doc = 'https://dle-billing.ru/doc/payments/robokassa/';
+
+	public function Settings( array $config ) : array
 	{
-		$Form = array();
+		$Form = [];
 
 		$config['fiscalization'] = intval( $config['fiscalization'] );
 
 		echo <<<HTML
-<script>
-	window.onload = function ()
-	{
-		let robokassaFiscalizationOn = {$config['fiscalization']};
-		
-		if( ! robokassaFiscalizationOn )
-			robokassaFiscalizationToogle();
-	};
-	
-	function robokassaFiscalizationToogle()
-	{
-		$('.fiscalization_data').each(function(idx)
-		{
-			$( this ).parent().parent().parent().toggle();
-		});
-	}
-</script>
+        <script>
+            window.onload = function ()
+            {
+                let robokassaFiscalizationOn = {$config['fiscalization']};
+                
+                if( ! robokassaFiscalizationOn )
+                    robokassaFiscalizationToogle();
+            };
+            
+            function robokassaFiscalizationToogle()
+            {
+                $('.fiscalization_data').each(function(idx)
+                {
+                    $( this ).parent().parent().parent().toggle();
+                });
+            }
+        </script>
 HTML;
 
-		$Form[] = array(
-			"Идентификатор магазина:",
-			"Ваш идентификатор в системе Робокасса.",
-			"<input name=\"save_con[login]\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . $config['login'] ."\">"
-		);
+		$Form[] = [
+            "Идентификатор магазина:",
+            "Ваш идентификатор в системе Робокасса.",
+            "<input name=\"save_con[login]\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . $config['login'] ."\">"
+        ];
 
-		$Form[] = array(
-			"Пароль #1:",
-			"Используется интерфейсом инициализации оплаты.",
-			"<input name=\"save_con[pass1]\" class=\"form-control\" type=\"password\" style=\"width: 100%\" value=\"" . $config['pass1'] ."\">"
-		);
+		$Form[] = [
+            "Пароль #1:",
+            "Используется интерфейсом инициализации оплаты.",
+            "<input name=\"save_con[pass1]\" class=\"form-control\" type=\"password\" style=\"width: 100%\" value=\"" . $config['pass1'] ."\">"
+        ];
 
-		$Form[] = array(
-			"Пароль #2:",
-			"Используется интерфейсом оповещения о платеже, XML-интерфейсах.",
-			"<input name=\"save_con[pass2]\" class=\"form-control\" style=\"width: 100%\" type=\"password\" value=\"" . $config['pass2'] ."\">"
-		);
+		$Form[] = [
+            "Пароль #2:",
+            "Используется интерфейсом оповещения о платеже, XML-интерфейсах.",
+            "<input name=\"save_con[pass2]\" class=\"form-control\" style=\"width: 100%\" type=\"password\" value=\"" . $config['pass2'] ."\">"
+        ];
 
-		$Form[] = array(
-			"Режим работы:",
-			"Выберите режим работы оплаты.",
-			static::MultiSelect(
-				'server',
-				[
-					'0' => "Тестовый",
-					'1' => "Рабочий"
-				],
-				$config['server']
-			)
-		);
+		$Form[] = [
+            "Режим работы:",
+            "Выберите режим работы оплаты.",
+            static::MultiSelect(
+                'server',
+                [
+                    '0' => "Тестовый",
+                    '1' => "Рабочий"
+                ],
+                $config['server']
+            )
+        ];
 
-		$Form[] = array(
-			"Фискализация:",
-			"Включите передачу <a href='https://docs.robokassa.ru/fiscalization/' target='_blank'>фискальных данных</a>",
-			"<input class=\"icheck\" " . ( $config['fiscalization'] ? 'checked' : '' ) . " type=\"checkbox\" onchange=\"robokassaFiscalizationToogle()\" name=\"save_con[fiscalization]\" value=\"1\">"
-		);
+		$Form[] = [
+            "Фискализация:",
+            "Включите передачу <a href='https://docs.robokassa.ru/fiscalization/' target='_blank'>фискальных данных</a>",
+            "<input class=\"icheck\" " . ( $config['fiscalization'] ? 'checked' : '' ) . " type=\"checkbox\" onchange=\"robokassaFiscalizationToogle()\" name=\"save_con[fiscalization]\" value=\"1\">"
+        ];
 
-		$Form[] = array(
-			"<span class='fiscalization_data'></span>Система налогообложения:",
-			"Необязательное поле, если у организации имеется только один тип налогообложения. (Данный параметр обзятально задается в личном кабинете магазина)",
-			static::MultiSelect(
-				'sno',
-				[
-					'' => "Не выбран",
-					'osn' => "Общая СН",
-					'usn_income' => "Упрощенная СН (доходы)",
-					'usn_income_outcome' => "Упрощенная СН (доходы минус расходы)",
-					'esn' => "Единый сельскохозяйственный налог",
-					'patent' => "Патентная СН"
-				],
-				$config['sno']
-			)
-		);
+		$Form[] = [
+            "<span class='fiscalization_data'></span>Система налогообложения:",
+            "Необязательное поле, если у организации имеется только один тип налогообложения. (Данный параметр обзятально задается в личном кабинете магазина)",
+            static::MultiSelect(
+                'sno',
+                [
+                    '' => "Не выбран",
+                    'osn' => "Общая СН",
+                    'usn_income' => "Упрощенная СН (доходы)",
+                    'usn_income_outcome' => "Упрощенная СН (доходы минус расходы)",
+                    'esn' => "Единый сельскохозяйственный налог",
+                    'patent' => "Патентная СН"
+                ],
+                $config['sno']
+            )
+        ];
 
-		$Form[] = array(
-			"<span class='fiscalization_data'></span>Наименование товара:",
-			"Строка, максимальная длина 128 символа",
-			"<input name=\"save_con[fiscalization_name]\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . $config['fiscalization_name'] ."\">"
-		);
+		$Form[] = [
+            "<span class='fiscalization_data'></span>Наименование товара:",
+            "Строка, максимальная длина 128 символа",
+            "<input name=\"save_con[fiscalization_name]\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . $config['fiscalization_name'] ."\">"
+        ];
 
-		$Form[] = array(
-			"<span class='fiscalization_data'></span>Признак способа расчёта:",
-			"Этот параметр необязательный. Если этот параметр не передан клиентом, то в чеке будет указано значение параметра по умолчанию из Личного кабинета.",
-			static::MultiSelect(
-				'payment_method',
-				[
-					'' => "Не выбран",
-					'full_prepayment' => "Предоплата 100%",
-					'prepayment' => "Предоплата",
-					'advance' => "Аванс",
-					'full_payment' => "Полный расчёт",
-					'credit' => "Передача в кредит",
-					'credit_payment' => "Оплата кредита"
-				],
-				$config['payment_method']
-			)
-		);
+		$Form[] = [
+            "<span class='fiscalization_data'></span>Признак способа расчёта:",
+            "Этот параметр необязательный. Если этот параметр не передан клиентом, то в чеке будет указано значение параметра по умолчанию из Личного кабинета.",
+            static::MultiSelect(
+                'payment_method',
+                [
+                    '' => "Не выбран",
+                    'full_prepayment' => "Предоплата 100%",
+                    'prepayment' => "Предоплата",
+                    'advance' => "Аванс",
+                    'full_payment' => "Полный расчёт",
+                    'credit' => "Передача в кредит",
+                    'credit_payment' => "Оплата кредита"
+                ],
+                $config['payment_method']
+            )
+        ];
 
-		$Form[] = array(
-			"<span class='fiscalization_data'></span>Признак способа расчёта:",
-			"Этот параметр необязательный. Если этот параметр не передан клиентом, то в чеке будет указано значение параметра по умолчанию из Личного кабинета.",
-			static::MultiSelect(
-				'payment_object',
-				[
-					'' => "Не выбран",
-					'commodity' => "Товар",
-					'job' => "Работа",
-					'service' => "Услуга",
-					'gambling_bet' => "Ставка азартной игры",
-					'gambling_prize' => "Выигрыш азартной игры",
-					'lottery' => "Лотерейный билет",
-					'lottery_prize' => "Выигрыш лотереи",
-					'intellectual_activity' => "Предоставление результатов интеллектуальной деятельности",
-					'payment' => "Платеж",
-					'agent_commission' => "Агентское вознаграждение",
-					'composite' => "Составной предмет расчета",
-					'resort_fee' => "Курортный сбор",
-					'another' => "Иной предмет расчета",
-					'property_right' => "Имущественное право",
-					'non-operating_gain' => "Внереализационный доход",
-					'insurance_premium' => "Страховые взносы",
-					'sales_tax' => "Торговый сбор"
-				],
-				$config['payment_object']
-			)
-		);
+		$Form[] = [
+            "<span class='fiscalization_data'></span>Признак способа расчёта:",
+            "Этот параметр необязательный. Если этот параметр не передан клиентом, то в чеке будет указано значение параметра по умолчанию из Личного кабинета.",
+            static::MultiSelect(
+                'payment_object',
+                [
+                    '' => "Не выбран",
+                    'commodity' => "Товар",
+                    'job' => "Работа",
+                    'service' => "Услуга",
+                    'gambling_bet' => "Ставка азартной игры",
+                    'gambling_prize' => "Выигрыш азартной игры",
+                    'lottery' => "Лотерейный билет",
+                    'lottery_prize' => "Выигрыш лотереи",
+                    'intellectual_activity' => "Предоставление результатов интеллектуальной деятельности",
+                    'payment' => "Платеж",
+                    'agent_commission' => "Агентское вознаграждение",
+                    'composite' => "Составной предмет расчета",
+                    'resort_fee' => "Курортный сбор",
+                    'another' => "Иной предмет расчета",
+                    'property_right' => "Имущественное право",
+                    'non-operating_gain' => "Внереализационный доход",
+                    'insurance_premium' => "Страховые взносы",
+                    'sales_tax' => "Торговый сбор"
+                ],
+                $config['payment_object']
+            )
+        ];
 
-		$Form[] = array(
-			"<span class='fiscalization_data'></span>Налоговая ставка в ККТ:",
-			"Обязательное поле. Это поле устанавливает налоговую ставку в ККТ. Определяется для каждого вида товара по отдельности, но за все единицы конкретного товара вместе.",
-			static::MultiSelect(
-				'tax',
-				[
-					'none' => "Без НДС",
-					'vat0' => "НДС по ставке 0%",
-					'vat10' => "НДС чека по ставке 10%",
-					'vat110' => "НДС чека по расчетной ставке 10/110",
-					'vat20' => "НДС чека по ставке 20%",
-					'vat120' => "НДС чека по расчетной ставке 20/120"
-				],
-				$config['tax']
-			)
-		);
+		$Form[] = [
+            "<span class='fiscalization_data'></span>Налоговая ставка в ККТ:",
+            "Обязательное поле. Это поле устанавливает налоговую ставку в ККТ. Определяется для каждого вида товара по отдельности, но за все единицы конкретного товара вместе.",
+            static::MultiSelect(
+                'tax',
+                [
+                    'none' => "Без НДС",
+                    'vat0' => "НДС по ставке 0%",
+                    'vat10' => "НДС чека по ставке 10%",
+                    'vat110' => "НДС чека по расчетной ставке 10/110",
+                    'vat20' => "НДС чека по ставке 20%",
+                    'vat120' => "НДС чека по расчетной ставке 20/120"
+                ],
+                $config['tax']
+            )
+        ];
 
-		$Form[] = array(
-			"<span class='fiscalization_data'></span>Маркировка товара:",
-			"Передаётся в том виде, как она напечатана на упаковке товара. Параметр является обязательным только для тех магазинов, которые продают товары подлежащие обязательной маркировке. Код маркировки расположен на упаковке товара, рядом со штрих-кодом или в виде QR-кода.",
-			"<input name=\"save_con[nomenclature_code]\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . $config['nomenclature_code'] ."\">"
-		);
+		$Form[] = [
+            "<span class='fiscalization_data'></span>Маркировка товара:",
+            "Передаётся в том виде, как она напечатана на упаковке товара. Параметр является обязательным только для тех магазинов, которые продают товары подлежащие обязательной маркировке. Код маркировки расположен на упаковке товара, рядом со штрих-кодом или в виде QR-кода.",
+            "<input name=\"save_con[nomenclature_code]\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . $config['nomenclature_code'] ."\">"
+        ];
 
 		return $Form;
 	}
 
-	private static function MultiSelect(string $field_name, array $positions, $selected = '')
+	private static function MultiSelect(string $field_name, array $positions, ?string $selected = '') : string
 	{
 		$_return = [
 			"<select name=\"save_con[{$field_name}]\" class=\"uniform\">"
@@ -186,7 +188,7 @@ HTML;
 		return implode($_return);
 	}
 
-	public function Form( $id, $config, $invoice, $currency, $desc )
+	public function Form( int $id, array $config, array $invoice, string $currency, string $desc ) : string
 	{
 		$invoice['invoice_pay'] = trim(htmlspecialchars(strip_tags($invoice['invoice_pay'])));
 
@@ -238,17 +240,17 @@ HTML;
 
 	}
 
-	public function check_id( $data )
+	public function check_id( array $result ) : int
 	{
-		return $data["InvId"];
+		return intval($result["InvId"]);
 	}
 
-	public function check_ok( $data )
+	public function check_ok( array $data ) : string
 	{
 		return 'OK'.$data["InvId"];
 	}
 
-	public function check_out( $data, $config, $invoice )
+	public function check_out( array $data, array $config, array $invoice ) : string|bool
 	{
 		$out_summ = $data['OutSum'];
 		$inv_id = $data["InvId"];
@@ -263,8 +265,8 @@ HTML;
 			return "bad sign\n";
 		}
 
-		return 200;
+		return true;
 	}
 }
 
-$Paysys = new Payment;
+$Paysys = new Robokassa;

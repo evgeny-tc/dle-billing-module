@@ -7,11 +7,13 @@
  * @copyright     Copyright (c) 2012-2023, mr_Evgen
  */
 
-Class Payment
-{
-	public $doc = 'https://dle-billing.ru/doc/payments/anypay';
+namespace Billing;
 
-	function Settings( $config ) 
+Class AnyPay implements IPayment
+{
+	public string $doc = 'https://dle-billing.ru/doc/payments/anypay';
+
+	public function Settings( array $config ) : array
 	{
 		$Form = [];
 	
@@ -43,14 +45,7 @@ Class Payment
 		return $Form;
 	}
 
-	private function generateSign($params, $separator = ':')
-	{
-		$signature = implode(':', $params);
-
-		return md5($signature);
-	}
-
-	function Form( $id, $config_payment, $invoice, $currency, $desc )
+	public function Form( int $id, array $config_payment, array $invoice, string $currency, string $desc ) : string
 	{
         global $config;
 
@@ -70,8 +65,7 @@ Class Payment
 
         $sign = hash('sha256', implode(':', $arr_sign));
 
-        return '
-			     <form name="payment" method="post" id="paysys_form" action="https://anypay.io/merchant">
+        return '<form name="payment" method="post" id="paysys_form" action="https://anypay.io/merchant">
 					  <input type="hidden" name="merchant_id" value="' . $config_payment['id'] . '" />
 					  <input type="hidden" name="pay_id" value="' . $id . '" />
 					  <input type="hidden" name="amount" value="' . $invoice['invoice_pay'] . '" />
@@ -83,18 +77,18 @@ Class Payment
 					  <input type="submit" class="btn" value="Оплатить">
 				</form> ';
 	}
-	
-	function check_id( $result ) 
+
+    public function check_id( array $result ) : int
 	{
-		return $result['pay_id'];
+		return intval($result['pay_id']);
 	}
-	
-	function check_ok( $result ) 
+
+    public function check_ok( array $result ) : string
 	{
 		return 'OK' . $result['pay_id'];
 	}
 	
-	function check_out( $result, $config_payment, $invoice )
+	public function check_out( array $result, array $config_payment, array $invoice ) : string|bool
 	{
         $status = 'paid';
 
@@ -115,16 +109,18 @@ Class Payment
 
         $sign = hash('sha256', implode(":", $arr_sign));
 
-        if(!in_array($_SERVER['REMOTE_ADDR'], $arr_ip)){
+        if(!in_array($_SERVER['REMOTE_ADDR'], $arr_ip))
+        {
             return "bad ip!";
         }
 
-        if($sign != $result['sign']){
+        if($sign != $result['sign'])
+        {
             return 'wrong sign!';
         }
 
-        return 200;
+        return true;
     }
 }
 
-$Paysys = new Payment;
+$Paysys = new AnyPay;

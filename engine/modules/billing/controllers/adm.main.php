@@ -4,57 +4,65 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module/
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023, mr_Evgen
+ * @copyright     Copyright (c) 2012-2024
  */
+
+namespace Billing;
 
 Class ADMIN
 {
-	function main()
+    public Dashboard $Dashboard;
+
+    /**
+     * Главная страница
+     * @return string
+     */
+	public function main() : string
 	{
 		$this->Dashboard->ThemeEchoHeader();
 
 		# Вкладка №1
 		#
-		$section = array(
-			array(
-				'icon' => "engine/skins/billing/icons/configure.png",
-				'link' => "?mod=billing&c=main&m=settings",
-				'title' => $this->Dashboard->lang['menu_1'],
-				'desc' => $this->Dashboard->lang['menu_1_d']
-			),
-			array(
-				'icon' => "engine/skins/billing/icons/transactions.png",
-				'link' => "?mod=billing&c=transactions",
-				'title' => $this->Dashboard->lang['menu_2'],
-				'desc' => $this->Dashboard->lang['menu_2_d']
-			),
-			array(
-				'icon' => "engine/skins/billing/icons/users.png",
-				'link' => "?mod=billing&c=users",
-				'title' => $this->Dashboard->lang['menu_3'],
-				'desc' => $this->Dashboard->lang['menu_3_d']
-			),
-			array(
-				'icon' => "engine/skins/billing/icons/invoice.png",
-				'link' => "?mod=billing&c=invoice",
-				'title' => $this->Dashboard->lang['menu_4'],
-				'desc' => $this->Dashboard->lang['menu_4_d']
-			),
-			array(
-				'icon' => "engine/skins/billing/icons/statistics.png",
-				'link' => "?mod=billing&c=statistics",
-				'title' => $this->Dashboard->lang['menu_5'],
-				'desc' => $this->Dashboard->lang['menu_5_d']
-			),
-            array(
+		$section = [
+            [
+                'icon' => "engine/skins/billing/icons/configure.png",
+                'link' => "?mod=billing&c=main&m=settings",
+                'title' => $this->Dashboard->lang['menu_1'],
+                'desc' => $this->Dashboard->lang['menu_1_d']
+            ],
+            [
+                'icon' => "engine/skins/billing/icons/transactions.png",
+                'link' => "?mod=billing&c=transactions",
+                'title' => $this->Dashboard->lang['menu_2'],
+                'desc' => $this->Dashboard->lang['menu_2_d']
+            ],
+            [
+                'icon' => "engine/skins/billing/icons/users.png",
+                'link' => "?mod=billing&c=users",
+                'title' => $this->Dashboard->lang['menu_3'],
+                'desc' => $this->Dashboard->lang['menu_3_d']
+            ],
+            [
+                'icon' => "engine/skins/billing/icons/invoice.png",
+                'link' => "?mod=billing&c=invoice",
+                'title' => $this->Dashboard->lang['menu_4'],
+                'desc' => $this->Dashboard->lang['menu_4_d']
+            ],
+            [
+                'icon' => "engine/skins/billing/icons/statistics.png",
+                'link' => "?mod=billing&c=statistics",
+                'title' => $this->Dashboard->lang['menu_5'],
+                'desc' => $this->Dashboard->lang['menu_5_d']
+            ],
+            [
                 'icon' => "engine/skins/billing/icons/coupons.png",
                 'link' => "?mod=billing&c=coupons",
                 'title' => $this->Dashboard->lang['coupons']['menu']['name'],
                 'desc' => $this->Dashboard->lang['coupons']['menu']['desc']
-            )
-		);
+            ]
+        ];
 
-        if( $this->Dashboard->config['test'] )
+        if( isset($this->Dashboard->config['test']) and intval($this->Dashboard->config['test']) )
         {
             $section[] = [
                 'icon' => "engine/skins/billing/icons/log.png",
@@ -64,30 +72,32 @@ Class ADMIN
             ];
         }
 
-		$tabs[] = array(
-			'id' => 'main',
-			'title' => $this->Dashboard->lang['tab_1'],
-			'content' => $this->Dashboard->Menu( $section )
-		);
+		$tabs[] = [
+            'id' => 'main',
+            'title' => $this->Dashboard->lang['tab_1'],
+            'content' => $this->Dashboard->Menu( $section )
+        ];
 
 		# Вкладка №2
 		#
+        $sectionPayments = [];
+
 		foreach ($this->Dashboard->Payments() as $name => $info )
 		{
-			$sectionPayments[] = array(
-				'icon' => 'engine/skins/billing/payments/' . $name . '.png',
-				'link' => '?mod=billing&c=payment&p=billing/' . $name,
-				'title' => $info['title'],
-				'desc' => $info['desc'],
-				'on' => $info['config']['status'],
-			);
+			$sectionPayments[] = [
+                'icon' => 'engine/skins/billing/payments/' . $name . '.png',
+                'link' => '?mod=billing&c=payment&p=billing/' . $name,
+                'title' => $info['title'],
+                'desc' => $info['desc'],
+                'on' => isset($info['config']['status']) ?? 0
+            ];
 		}
 
-		$tabs[] = array(
-				'id' => 'payments',
-				'title' => $this->Dashboard->lang['tab_2'],
-				'content' => $this->Dashboard->Menu( $sectionPayments, true )
-		);
+		$tabs[] = [
+            'id' => 'payments',
+            'title' => $this->Dashboard->lang['tab_2'],
+            'content' => $this->Dashboard->Menu( $sectionPayments, true )
+        ];
 
         # Вкладка №3
         #
@@ -126,7 +136,7 @@ Class ADMIN
                     '<img class="billing-plugin-item-image" src="engine/skins/billing/plugins/' . $name . '.png" onError="this.src=\'/engine/skins/billing/icons/plugin.png\'">',
                     $name,
                     "<a href='?mod=billing&c={$name}'>{$info['title']}</a><br><span style='color: grey; font-size: 12px'>{$info['desc']}</span>",
-                    $info['author'],
+                    "<a href='{$info['link']}' target='_blank'>{$info['author']}</a>",
                     $info['config']['version'] ? (
                         version_compare($info['version'], $info['config']['version']) > 0 ? '<font color="red" class="tip" title="' . $this->Dashboard->lang['plugins_table_status']['need_update'] . ' ' . $info['version'] . '">' . $info['config']['version'] . '</font>' : '<font color="green">' . $info['config']['version'] . '</font>'
                     ) : $info['version'],
@@ -148,10 +158,11 @@ Class ADMIN
 		return $Content;
 	}
 
-	/*
-		Настройки модуля
-	 */
-	function settings()
+    /**
+     * Настройки модуля
+     * @return string
+     */
+	public function settings() : string
 	{
 		# Сохранить
 		#
@@ -336,16 +347,16 @@ Class ADMIN
 			$_NumURL ++;
 
 			$_ListURL .= '<div class="url-item" id="url-item-' . $_NumURL . '" class="url-item" >
-				<span onClick="urlRemove(' . $_NumURL . ')"><i class="fa fa-trash"></i></span>
-					<input name="save_url[' . $_NumURL . '][start]" class="form-control" style="width: 90%; text-align: center" type="text" placeholder="start..." value="' . $url[0] . '">
-				<i class="fa fa-refresh"></i>
-					<input name="save_url[' . $_NumURL . '][end]" class="form-control" style="width: 90%; text-align: center" type="text" placeholder="end..." value="' . $url[1] . '">
-			</div>';
+				            <span onClick="BillingJS.urlRemove(' . $_NumURL . ')"><i class="fa fa-trash"></i></span>
+					        <input name="save_url[' . $_NumURL . '][start]" class="form-control" style="width: 90%; text-align: center" type="text" placeholder="start..." value="' . $url[0] . '">
+				            <i class="fa fa-refresh"></i>
+					        <input name="save_url[' . $_NumURL . '][end]" class="form-control" style="width: 90%; text-align: center" type="text" placeholder="end..." value="' . $url[1] . '">
+			            </div>';
 		}
 
 		$ChangeURL = '<div class="url-list">
 						<div class="url-item" style="line-height: 80px">
-							<buttom class="btn bg-teal btn-raised position-center legitRipple" style="width: 40px" onClick="urlAdded()">+ </buttom>
+							<buttom class="btn bg-teal btn-raised position-center legitRipple" onClick="BillingJS.urlAdd()">' . $this->Dashboard->lang['plus_add'] . '</buttom>
 						</div>
 						' . $_ListURL . '
 					  </div>
@@ -377,7 +388,11 @@ Class ADMIN
 		return $Content;
 	}
 
-	function log()
+    /**
+     * Журнал интеграций
+     * @return string
+     */
+	public function log() : string
 	{
 		# Очистить
 		#
@@ -402,10 +417,8 @@ Class ADMIN
             ]
         );
 
-		if( $_LogFile = file_exists( 'pay.logger.php' ) )
+		if( $handle = @fopen('pay.logger.php', "r") )
 		{
-			$handle = @fopen('pay.logger.php', "r");
-
 			$log_id = 0;
 
 			while ( ($_LogStr = fgets($handle, 4096)) !== false)
@@ -442,7 +455,10 @@ Class ADMIN
 			}
 
 			$Content .= $this->Dashboard->ThemeParserTable();
-			$Content .= $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("clear", $this->Dashboard->lang['history_search_btn_null'], "blue") );
+			$Content .= $this->Dashboard->ThemePadded(
+                $this->Dashboard->MakeButton("clear", $this->Dashboard->lang['history_search_btn_null'], 'bg-danger') .
+                '<a class="btn btn-sm btn-raised legitRipple bg-slate-600" style="float: right" href="?mod=billing&m=exportlog"> ' . $this->Dashboard->lang['export_btn'] . '</a>'
+            );
 		}
 		else
 		{
@@ -450,14 +466,44 @@ Class ADMIN
 			$Content .= $this->Dashboard->ThemePadded( $this->Dashboard->lang['nullpadding'], '' );
 		}
 
-
 		$Content .= $this->Dashboard->ThemeHeadClose();
 		$Content .= $this->Dashboard->ThemeEchoFoother();
 
 		return $Content;
 	}
 
-	private function LogType( $msg_id )
+    /**
+     * @return void
+     */
+    public function exportlog() : void
+    {
+        $data = [];
+
+        if( $handle = @fopen('pay.logger.php', "r") )
+        {
+            while (($_LogStr = fgets($handle, 4096)) !== false)
+            {
+                $_Log = explode('|', $_LogStr);
+
+                if( ! $_Log[1] ) continue;
+
+                $data[] = $_Log[1];
+                $data[] = $this->Dashboard->lang['logger_do_' . $_Log[0]];
+                $data[] = $_Log[2];
+                $data[] = '';
+            }
+        }
+
+        echo '<pre>'.implode('<br>', $data).'</pre>';
+
+        die;
+    }
+
+    /**
+     * @param $msg_id
+     * @return string
+     */
+	private function LogType( $msg_id ) : string
 	{
 		if( in_array( $msg_id, array( 0, 1, 5, 6, 8, 9, 10, 14 ) )  )
 		{

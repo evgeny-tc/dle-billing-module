@@ -4,12 +4,14 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
-if( ! defined( 'MODULE_PATH' ) )
+if( ! defined( 'BILLING_MODULE' ) )
 {
-    define( 'MODULE_PATH', ENGINE_DIR . "/modules/billing" );
+    define("BILLING_MODULE", TRUE);
+    define("MODULE_PATH", ENGINE_DIR . "/modules/billing");
+    define("MODULE_DATA", ENGINE_DIR . "/data/billing");
 }
 
 $List = opendir( MODULE_PATH . "/plugins/" );

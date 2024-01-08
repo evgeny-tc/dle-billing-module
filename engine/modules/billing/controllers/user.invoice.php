@@ -4,23 +4,30 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
+
+namespace Billing;
 
 Class USER
 {
-    public function main( array $GET = [] )
+    public DevTools $DevTools;
+
+    /**
+     * @throws \Exception
+     */
+    public function main(array $GET = [] )
     {
         # Проверка авторизации
         #
         if( ! $this->DevTools->member_id['name'] )
         {
-            throw new Exception($this->DevTools->lang['pay_need_login']);
+            throw new \Exception($this->DevTools->lang['pay_need_login']);
         }
 
         # Удалить
         #
-        if( intval($_POST['invoice_delete']) )
+        if( isset($_POST['invoice_delete']) and intval($_POST['invoice_delete']) )
         {
             $this->DevTools->CheckHash( $_POST['bs_hash'] );
 
@@ -30,11 +37,11 @@ Class USER
 
             if( ! $Del['invoice_id'] OR $Del['invoice_user_name'] != $this->DevTools->member_id['name'] )
             {
-                throw new Exception($this->DevTools->lang['pay_invoice_error']);
+                throw new \Exception($this->DevTools->lang['pay_invoice_error']);
             }
             else if( $Del['invoice_date_pay'] )
             {
-                throw new Exception($this->DevTools->lang['invoice_paid_error']);
+                throw new \Exception($this->DevTools->lang['invoice_paid_error']);
             }
 
             $this->DevTools->LQuery->DbInvoiceRemove( $Delete_id );
@@ -60,9 +67,11 @@ Class USER
         $TplLineNull = $this->DevTools->ThemePregMatch( $Content, '~\[not_invoice\](.*?)\[/not_invoice\]~is' );
         $TplLineDate = $this->DevTools->ThemePregMatch( $TplLine, '~\{creat-date=(.*?)\}~is' );
 
-        $this->DevTools->LQuery->DbWhere( array(
-            "invoice_user_name = '{s}' " => $this->DevTools->member_id['name']
-        ));
+        $this->DevTools->LQuery->DbWhere(
+            [
+                "invoice_user_name = '{s}' " => $this->DevTools->member_id['name']
+            ]
+        );
 
         # SQL
         #

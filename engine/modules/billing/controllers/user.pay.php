@@ -4,26 +4,30 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
+
+namespace Billing;
 
 Class USER
 {
+    public DevTools $DevTools;
+
     private array $PaymentsArray = [];
 
     /**
      * Страница пополнения баланса
      * @param array $GET
-     * @return void
-     * @throws Exception
+     * @return string
+     * @throws \Exception
      */
-    public function main( array $GET = [] )
+    public function main( array $GET = [] ) : string
     {
         # Проверка авторизации
         #
         if( ! $this->DevTools->member_id['name'] )
         {
-            throw new Exception($this->DevTools->lang['pay_need_login']);
+            throw new \Exception($this->DevTools->lang['pay_need_login']);
         }
 
         $this->PaymentsArray = $this->DevTools->Payments();
@@ -46,7 +50,7 @@ Class USER
 
             if( ! $_ConvertSum = $this->DevTools->API->Convert( $_POST['billingPaySum'] ) )
             {
-                throw new Exception($this->DevTools->lang['pay_summa_error']);
+                throw new \Exception($this->DevTools->lang['pay_summa_error']);
             }
 
             $_InvoiceID = $this->DevTools->LQuery->DbCreatInvoice(
@@ -74,7 +78,7 @@ Class USER
 
             header( 'Location: /' . $this->DevTools->config['page'].'.html/pay/waiting/id/' . $_InvoiceID );
 
-            return;
+            return '';
         }
 
         # Форма создания платежа
@@ -93,15 +97,16 @@ Class USER
 
     /**
      * Страницы результата оплаты
-     * @param array $GET
+     * @param array $get
      * @return mixed
+     * @throws \Exception
      */
-    public function ok(array $GET = [])
+    public function ok(array $get = []) : string
     {
         return $this->DevTools->Show( $this->DevTools->ThemeLoad( "pay/success" ) );
     }
 
-    public function bad(array $GET = [])
+    public function bad(array $get = []) : string
     {
         return $this->DevTools->Show( $this->DevTools->ThemeLoad( "pay/fail" ) );
     }
@@ -110,10 +115,12 @@ Class USER
      * Квитанция, переход к оплате
      * @param array $GET
      * @return mixed|string
-     * @throws Exception
+     * @throws \Exception
      */
-    public function waiting( array $GET = [] )
+    public function waiting( array $GET = [] ) : string
     {
+        $GET['id'] = intval($GET['id']);
+
         $Content = '';
 
         $InfoPay = [];
@@ -124,7 +131,7 @@ Class USER
 
         if( ! $Invoice or $this->DevTools->checkUser( $Invoice['invoice_user_name'] ) === false )
         {
-            throw new Exception($this->DevTools->lang['pay_invoice_error']);
+            throw new \Exception($this->DevTools->lang['pay_invoice_error']);
         }
 
         # Оплата с баланса
@@ -151,12 +158,16 @@ Class USER
         }
 
         $this->DevTools->ThemeSetElement( "{invoice.id}", $Invoice['invoice_id'] );
+
         $this->DevTools->ThemeSetElement( "{invoice.date.create}", langdate( "j.m.Y H:i", $Invoice['invoice_date_creat']) );
         $this->DevTools->ThemeSetElement( "{invoice.date.pay}", langdate( "j.m.Y H:i", $Invoice['invoice_date_pay']) );
+
         $this->DevTools->ThemeSetElement( "{invoice.payment.tag}", $Invoice['invoice_paysys'] );
         $this->DevTools->ThemeSetElement( "{invoice.payment.title}", $this->PaymentsArray[$Invoice['invoice_paysys']]['config']['title'] );
+
         $this->DevTools->ThemeSetElement( "{invoice.pay}", $Invoice['invoice_pay'] );
         $this->DevTools->ThemeSetElement( "{invoice.pay.currency}",  $this->PaymentsArray[$Invoice['invoice_paysys']]['config']['currency']  );
+
         $this->DevTools->ThemeSetElement( "{invoice.get}", $Invoice['invoice_get'] );
         $this->DevTools->ThemeSetElement( "{invoice.get.currency}", $this->DevTools->API->Declension( $Invoice['invoice_pay'] ) );
 
@@ -179,6 +190,7 @@ Class USER
         {
             header("Cache-Control: no-cache");
 
+            $this->DevTools->ThemeSetElement( "{id}", $GET['id'] );
             $this->DevTools->ThemeSetElement( "{title}", str_replace("{id}", $GET['id'], $this->DevTools->lang['pay_invoice']) );
 
             $from_balance = false;
@@ -200,14 +212,9 @@ Class USER
 
                 list($pluginHandler, $fileHandler) = DevTools::exInvoiceHandler($Invoice['invoice_handler']);
 
-                if( file_exists( MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php' ) )
+                if( $Handler = DevTools::getHandler($pluginHandler, $fileHandler) )
                 {
-                    $Handler = include MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php';
-
-                    if( in_array('prepay', get_class_methods($Handler) ) )
-                    {
-                        $Handler->prepay($Invoice, $InfoPay, $more_data);
-                    }
+                    $Handler->prepay($Invoice, $InfoPay, $more_data);
                 }
             }
 
@@ -216,6 +223,9 @@ Class USER
             if( $couponKey = trim( $_POST['coupon'] ) )
             {
                 $this->DevTools->CheckHash( $_POST['billingHash'] );
+
+                $this->DevTools->ThemeSetElement( "[coupon_result]", "" );
+                $this->DevTools->ThemeSetElement( "[/coupon_result]", "" );
 
                 if( $couponData = $this->DevTools->LQuery->getCoupon($couponKey) )
                 {
@@ -230,6 +240,7 @@ Class USER
             }
             else
             {
+                $this->DevTools->ThemeSetElementBlock( "coupon_result", '' );
                 $this->DevTools->ThemeSetElement( "{coupon_result}", "" );
             }
 
@@ -255,7 +266,7 @@ Class USER
                 if( $Invoice['invoice_get'] <= 0 )
                     $Invoice['invoice_get'] = 1;
 
-                $this->DevTools->ThemeSetElement( "{invoice.get}", $Invoice['invoice_get'] );
+                $this->DevTools->ThemeSetElement( "{invoice.get}", $this->DevTools->API->Convert(money:$Invoice['invoice_get'], number_format_f: true) );
                 $this->DevTools->ThemeSetElement( "{invoice.get.currency}", $this->DevTools->API->Declension( $Invoice['invoice_get'] ) );
             }
             else
@@ -279,24 +290,28 @@ Class USER
                 $Invoice['invoice_paysys'] = $_POST['billingPayment'];
 
                 if($_Payment['convert'])
+                {
                     $Invoice['invoice_pay'] = $this->DevTools->API->Convert($Invoice['invoice_get'] * $_Payment['convert'], $_Payment['format']);
+                }
 
                 # есть обработчик
                 #
-                if( isset($Handler) and in_array('prepay_check', get_class_methods($Handler) ) )
+                if( isset($Handler) )
                 {
                     $Handler->prepay_check($Invoice, $InfoPay);
                 }
 
+                # оплата с баланса
+                #
                 if( $from_balance and $_POST['billingPayment'] == 'balance' )
                 {
                     if( floatval($Invoice['invoice_get']) <= floatval($this->DevTools->BalanceUser) )
                     {
-                        $logData = (isset($Handler) and in_array('desc', get_class_methods($Handler))) ? $Handler->desc($InfoPay) : ['null', 0];
+                        $logData = (isset($Handler) ) ? $Handler->desc($InfoPay) : ['null', 0];
 
                         if( $_coupon and ! $this->DevTools->LQuery->useCoupon($couponData, $Invoice) )
                         {
-                            throw new Exception($this->DevTools->lang['coupon_use_error']);
+                            throw new \Exception($this->DevTools->lang['coupon_use_error']);
                         }
 
                         $resultPay = $this->DevTools->API->MinusMoney(
@@ -315,15 +330,15 @@ Class USER
                         return $this->DevTools->Show( $this->DevTools->ThemeLoad( 'pay/fail' ) );
                     }
 
-                    throw new Exception( $this->DevTools->lang['pay_sum_error'] );
+                    throw new \Exception( $this->DevTools->lang['pay_sum_error'] );
                 }
                 else if( ! $_Payment['status'] )
                 {
-                    throw new Exception( $this->DevTools->lang['pay_paysys_error'] );
+                    throw new \Exception( $this->DevTools->lang['pay_paysys_error'] );
                 }
                 else if( $Invoice['invoice_get'] < $_Payment['minimum'] )
                 {
-                    throw new Exception(
+                    throw new \Exception(
                         sprintf(
                             $this->DevTools->lang['pay_minimum_error'],
                             $_Payment['title'],
@@ -334,7 +349,7 @@ Class USER
                 }
                 else if( $Invoice['invoice_get'] > $_Payment['max'] )
                 {
-                    throw new Exception(
+                    throw new \Exception(
                         sprintf(
                             $this->DevTools->lang['pay_max_error'],
                             $_Payment['title'],
@@ -344,25 +359,25 @@ Class USER
                     );
                 }
 
-                if( file_exists( MODULE_PATH . '/payments/' . $Invoice['invoice_paysys'] . "/adm.settings.php" )  )
+                if( $Payment = DevTools::getPayment($Invoice['invoice_paysys']) )
                 {
-                    require_once MODULE_PATH . '/payments/' . $Invoice['invoice_paysys'] . "/adm.settings.php";
+                    $payForm = '';
 
-                    $RedirectForm = $this->DevTools->config['redirect']  ? '<script type="text/javascript">
-								window.onload = function() { document.getElementById("paysys_form").submit(); }
-						</script>' : '';
+                    if( $this->DevTools->config['redirect'] )
+                    {
+                        $payForm = '<script type="text/javascript">window.onload = function() { document.getElementById("paysys_form").submit(); }</script>';
+                    }
 
                     if( $_coupon and $this->DevTools->LQuery->useCoupon($couponData, $Invoice) )
                     {
                         $this->DevTools->LQuery->DbInvoiceUpdate(
-                            $GET['id'],
-                            true,
-                            '',
-                            $Invoice['invoice_pay']
+                            invoice_id: $GET['id'],
+                            wait: true,
+                            invoice_pay: $Invoice['invoice_pay']
                         );
                     }
 
-                    $payForm = $RedirectForm . $Paysys->Form(
+                    $payForm .= $Payment->Form(
                             $GET['id'],
                             $this->PaymentsArray[$Invoice['invoice_paysys']]['config'],
                             $Invoice,
@@ -372,16 +387,14 @@ Class USER
 
                     if( $_GET['modal'] )
                     {
-                        echo $this->DevTools->Show( $payForm );;
+                        echo $this->DevTools->Show( str_replace('<form', '<form target="_blank"', $payForm) );;
                         exit;
                     }
 
                     return $payForm;
                 }
-                else
-                {
-                    throw new Exception($this->DevTools->lang['pay_file_error']);
-                }
+
+                throw new \Exception($this->DevTools->lang['pay_file_error']);
             }
         }
 
@@ -393,21 +406,21 @@ Class USER
      * @param array $GET
      * @return void
      */
-    public function handler( array $GET = [] )
+    public function handler( array $GET = [] ) : void
     {
         header($_SERVER['SERVER_PROTOCOL'].' HTTP 200 OK', true, 200);
         header( "Content-type: text/html; charset=" . $this->DevTools->dle['charset'] );
 
         @http_response_code(200);
 
-        $SecretKey = $this->DevTools->LQuery->parsVar( $GET['key'], '~[^a-z|0-9|\-|.]*~is' );
-        $GetPaysys = $this->DevTools->LQuery->parsVar( $GET['payment'], '~[^a-z|0-9|\-|.]*~is' );
+        $secretKey = $this->DevTools->LQuery->parsVar( $GET['key'], '~[^a-z|0-9|\-|.]*~is' );
+        $getPayment = $this->DevTools->LQuery->parsVar( $GET['payment'], '~[^a-z|0-9|\-|.]*~is' );
 
         $this->PaymentsArray = $this->DevTools->Payments();
 
         # .. логирование
         #
-        $this->logging( 0, $GetPaysys );
+        $this->logging( 0, $getPayment );
 
         # .. полученные данные
         #
@@ -417,7 +430,7 @@ Class USER
 
         # Проверка ключа
         #
-        if( ! isset( $SecretKey ) or $SecretKey != $this->DevTools->config['secret'] )
+        if( ! isset( $secretKey ) or $secretKey != $this->DevTools->config['secret'] )
         {
             $this->logging( 3 );
 
@@ -426,7 +439,7 @@ Class USER
 
         # Проверка системы оплаты
         #
-        if( ! isset( $GetPaysys ) or ! $this->PaymentsArray[$GetPaysys]['config']['status'] )
+        if( ! isset( $getPayment ) or ! $this->PaymentsArray[$getPayment]['config']['status'] )
         {
             $this->logging( 4 );
 
@@ -437,51 +450,49 @@ Class USER
 
         # Подключение класса системы оплаты
         #
-        if( file_exists( DLEPlugins::Check( MODULE_PATH . '/payments/' . $GetPaysys . "/adm.settings.php" ) ) )
+        if( $Payment = DevTools::getPayment($getPayment) )
         {
-            require_once DLEPlugins::Check( MODULE_PATH . '/payments/' . $GetPaysys . '/adm.settings.php' );
-
             $this->logging( 6 );
 
             # ..номер квитанции
             #
-            $CheckID = $Paysys->check_id( $DATA );
+            $getInvoiceID = $Payment->check_id( $DATA );
 
-            $CheckPayerRequisites = '';
+            $payerRequisites = '';
 
-            if( in_array('check_payer_requisites', get_class_methods($Paysys) ) )
+            if( in_array('check_payer_requisites', get_class_methods($Payment) ) )
             {
-                $CheckPayerRequisites = $Paysys->check_payer_requisites( $DATA );
+                $payerRequisites = $Payment->check_payer_requisites( $DATA );
             }
 
-            if( ! intval( $CheckID ) )
+            if( ! intval( $getInvoiceID ) )
             {
                 $this->logging( 7 );
 
-                die( $this->billingMessage($Paysys, $this->DevTools->lang['handler_error_id']) );
+                die( $this->billingMessage($Payment, $this->DevTools->lang['handler_error_id']) );
             }
 
-            $this->logging( 8, $CheckID );
+            $this->logging( 8, $getInvoiceID );
 
             # .. данные квитанции
             #
-            $Invoice = $this->DevTools->LQuery->DbGetInvoiceByID( $CheckID );
+            $Invoice = $this->DevTools->LQuery->DbGetInvoiceByID( $getInvoiceID );
 
             if( ! $Invoice )
             {
                 $this->logging( 15 );
 
-                die( $this->billingMessage($Paysys, $this->DevTools->lang['pay_invoice_error']) );
+                die( $this->billingMessage($Payment, $this->DevTools->lang['pay_invoice_error']) );
             }
 
             if( $Invoice['invoice_date_pay'] )
             {
                 $this->logging( 16 );
 
-                die( $this->billingMessage($Paysys, $this->DevTools->lang['pay_invoice_pay']) );
+                die( $this->billingMessage($Payment, $this->DevTools->lang['pay_invoice_pay']) );
             }
 
-            $Invoice['invoice_paysys'] = $GetPaysys;
+            $Invoice['invoice_paysys'] = $getPayment;
 
             # если цена не по купону -> конвертируем
             #
@@ -489,23 +500,23 @@ Class USER
 
             if( ! $InfoPay['coupon']['coupon_id'] )
             {
-                $Invoice['invoice_pay'] = $this->DevTools->API->Convert($Invoice['invoice_pay'] * $this->PaymentsArray[$GetPaysys]['config']['convert'], $this->PaymentsArray[$GetPaysys]['config']['format']);
+                $Invoice['invoice_pay'] = $this->DevTools->API->Convert($Invoice['invoice_pay'] * $this->PaymentsArray[$getPayment]['config']['convert'], $this->PaymentsArray[$getPayment]['config']['format']);
             }
 
             # .. проверка параметров запроса пс
             #
-            $CheckInvoice = $Paysys->check_out( $DATA, $this->PaymentsArray[$GetPaysys]['config'], $Invoice );
+            $paymentVerification = $Payment->check_out( $DATA, $this->PaymentsArray[$getPayment]['config'], $Invoice );
 
-            if( $CheckInvoice === 200 )
+            if( $paymentVerification === true )
             {
-                $this->logging( 9, $CheckInvoice );
+                $this->logging( 9, '200' );
 
-                if( $this->RegisterPay( $Invoice, $CheckPayerRequisites ) )
+                if( $this->RegisterPay( $Invoice, $payerRequisites ) )
                 {
                     $this->logging( 10, $Invoice['invoice_get'] . ' ' . $this->DevTools->API->Declension( $Invoice['invoice_get'] ) );
                     $this->logging( 14 );
 
-                    echo $Paysys->check_ok( $DATA );
+                    echo $Payment->check_ok( $DATA );
                 }
                 else
                 {
@@ -516,9 +527,9 @@ Class USER
             }
             else
             {
-                $this->logging( "9.1", $CheckInvoice );
+                $this->logging( "9.1", $paymentVerification );
 
-                echo $CheckInvoice;
+                echo $paymentVerification;
             }
         }
         else
@@ -533,15 +544,15 @@ Class USER
 
     /**
      * Вывод сообщения для ПС
-     * @param $payment
-     * @param $text
+     * @param IPayment $payment
+     * @param string|null $text
      * @return mixed
      */
-    private function billingMessage( $payment, $text )
+    private function billingMessage( IPayment $Payment, ?string $text = '' ) : string
     {
-        if( in_array('null_info', get_class_methods($payment) ) )
+        if( in_array('null_info', get_class_methods($Payment) ) )
         {
-            return $payment->null_info( $text );
+            return $Payment->null_info( $text );
         }
 
         return $text;
@@ -550,13 +561,13 @@ Class USER
     /**
      * Логирование
      * TODO: replace new method
-     * @param $step
-     * @param $info
-     * @return bool
+     * @param int $step
+     * @param string $info
+     * @return void
      */
-    private function logging( $step = 0, $info = '' )
+    private function logging( int $step = 0, string $info = '' ) : void
     {
-        if( ! $this->DevTools->config['test'] ) return false;
+        if( ! $this->DevTools->config['test'] ) return;
 
         if( filesize('pay.logger.php') > 1024 and ! $step )
         {
@@ -581,8 +592,6 @@ Class USER
         );
 
         fclose( $handler );
-
-        return true;
     }
 
     /**
@@ -590,23 +599,23 @@ Class USER
      * @param $DATA
      * @return mixed
      */
-    private function ClearData( $DATA )
+    private function ClearData( array $data ) : array
     {
-        foreach( $DATA as $key=>$val )
+        foreach( $data as $key => $val )
         {
-            if( in_array( $key, array( 'do', 'page', 'seourl', 'route', 'key' ) ) ) unset( $DATA[$key] );
+            if( in_array( $key, array( 'do', 'page', 'seourl', 'route', 'key' ) ) ) unset( $data[$key] );
         }
 
-        return $DATA;
+        return $data;
     }
 
     /**
-     * Изменить статус квитанции, зачислить платеж
+     * Изменить статус квитанции, зачислить средства
      * @param array $Invoice
-     * @param $CheckPayerRequisites
-     * @return bool|void
+     * @param string|null $payerRequisites
+     * @return bool
      */
-    private function RegisterPay( array $Invoice, string|null $CheckPayerRequisites = '' )
+    private function RegisterPay( array $Invoice, ?string $payerRequisites = '' ) : bool
     {
         $this->PaymentsArray = $this->DevTools->Payments();
 
@@ -616,11 +625,10 @@ Class USER
         }
 
         $this->DevTools->LQuery->DbInvoiceUpdate(
-            $Invoice['invoice_id'],
-            false,
-            $Invoice['invoice_paysys'],
-            $Invoice['invoice_pay'],
-            $CheckPayerRequisites
+            invoice_id: $Invoice['invoice_id'],
+            invoice_payment: $Invoice['invoice_paysys'],
+            invoice_pay: $Invoice['invoice_pay'],
+            check_payer_requisites: $payerRequisites
         );
 
         # есть обработчик
@@ -631,14 +639,9 @@ Class USER
 
             $this->logging( 1, $Invoice['invoice_handler'] );
 
-            if( file_exists( MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php' ) )
+            if( $Handler = DevTools::getHandler($pluginHandler, $fileHandler) )
             {
-                $Handler = include MODULE_PATH . '/plugins/' . $pluginHandler . '/handler.' . $fileHandler . '.php';
-
-                if( in_array('pay', get_class_methods($Handler) ) )
-                {
-                    $Handler->pay($Invoice, $this->DevTools->API);
-                }
+                $Handler->pay($Invoice, $this->DevTools->API);
             }
 
             return true;

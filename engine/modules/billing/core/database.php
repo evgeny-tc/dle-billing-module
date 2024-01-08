@@ -4,8 +4,10 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
+
+namespace Billing;
 
 Class Database
 {
@@ -19,24 +21,29 @@ Class Database
 	 * Connect db
 	 * @var
 	 */
-	public $db;
+	public \db $db;
 
 	/**
 	 * String balance field in db
 	 * @var
 	 */
-	public $BalanceField;
+	public string $BalanceField;
 
 	/**
 	 * Local time
 	 * @var
 	 */
-	public $_TIME;
+	public int $_TIME;
 
-	function __construct( $db, $field, $time )
+    /**
+     * @param object $db
+     * @param string $field
+     * @param int $time
+     */
+	function __construct( object $db, string $field, int $time )
 	{
 		$this->db = $db;
-		$this->BalanceField = $field;
+		$this->BalanceField = (string)$field;
 		$this->_TIME = $time;
 	}
 
@@ -363,20 +370,36 @@ Class Database
      * Update invoice by id
      * @param int $invoice_id
      * @param bool $wait
-     * @param string $invoice_paysys
-     * @param float $invoice_pay
-     * @param string $check_payer_requisites
+     * @param string|null $invoice_payment
+     * @param float|null $invoice_pay
+     * @param string|null $check_payer_requisites
      * @return void
      */
-	public function DbInvoiceUpdate( int $invoice_id, bool $wait = false, string $invoice_paysys = '', float $invoice_pay, string $check_payer_requisites = '' ) : void
+	public function DbInvoiceUpdate( int $invoice_id, bool $wait = false, ?string $invoice_payment = '', ?float $invoice_pay = 0, ?string $check_payer_requisites = '') : void
 	{
 		$time = ! $wait ? $this->_TIME : 0;
 
+        $update_fields = [
+            "invoice_date_pay = '" . $time . "'"
+        ];
+
+        if( isset($invoice_payment) )
+        {
+            $update_fields[] = "invoice_paysys = '" . $invoice_payment . "'";
+        }
+
+        if( isset($invoice_pay) )
+        {
+            $update_fields[] = "invoice_pay = '" . $invoice_pay . "'";
+        }
+
+        if( isset($check_payer_requisites) )
+        {
+            $update_fields[] = "invoice_payer_requisites = '" . $check_payer_requisites . "'";
+        }
+
 		$this->db->query( "UPDATE " . USERPREFIX . "_billing_invoice
-									SET invoice_date_pay = '" . $time . "',
-										invoice_paysys = '" . $invoice_paysys . "',
-										invoice_pay = '" . $invoice_pay . "',
-										invoice_payer_requisites = '" . $check_payer_requisites . "'
+									SET " . implode(', ', $update_fields) . "
 									WHERE invoice_id = '" . intval( $invoice_id ) . "'" );
 	}
 

@@ -7,15 +7,19 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class ADMIN extends PluginActions
 {
-	public function main( array $Get = [] )
+    const PLUGIN = 'fixednews';
+
+    public function main( array $Get = [] ) : string
 	{
         $this->checkInstall();
 
         global $user_group, $cat_info;
 
-        $plugin_lang = include MODULE_PATH . "/plugins/fixednews/lang.php";
+        $pluginLang = Dashboard::getLang(static::PLUGIN);
 
 		# Сохранить настройки
 		#
@@ -45,7 +49,7 @@ Class ADMIN extends PluginActions
 
 		$_Config = $this->Dashboard->LoadConfig( 'fixednews' );
 
-		$this->Dashboard->ThemeEchoHeader( $plugin_lang['settings_title'] );
+		$this->Dashboard->ThemeEchoHeader( $pluginLang['settings_title'] );
 
 		# Форма настроек
 		#
@@ -72,14 +76,14 @@ Class ADMIN extends PluginActions
 		);
 
 		$this->Dashboard->ThemeAddStr(
-			$plugin_lang['stop'],
-			$plugin_lang['stop_desc'],
+			$pluginLang['stop'],
+			$pluginLang['stop_desc'],
 			$this->Dashboard->GetSelect($dle_groups, "save_con[stop][]", explode(",", $_Config['stop']), true )
 		);
 
 		$this->Dashboard->ThemeAddStr(
-			$plugin_lang['stop_cat'],
-			$plugin_lang['stop_cat_desc'],
+			$pluginLang['stop_cat'],
+			$pluginLang['stop_cat_desc'],
 			$this->Dashboard->GetSelect($dle_categorys, "save_con[stop_categorys][]", explode(",", $_Config['stop_categorys']), true )
 		);
 
@@ -88,7 +92,7 @@ Class ADMIN extends PluginActions
 
 		$tabs[] = array(
 				'id' => 'settings',
-				'title' => $plugin_lang['settings_title'],
+				'title' => $pluginLang['settings_title'],
 				'content' => $SettingForm
 		);
 
@@ -101,7 +105,7 @@ Class ADMIN extends PluginActions
 		{
 			if( $group_info['id'] == 5 or in_array($group_info['id'],  explode(",", $_Config['stop'])) ) continue;
 
-			$returnGroups[] = '<td>' . $group_info['group_name'] . '</td>';
+			$returnGroups[] = '<td style="text-align: center"><a href="?mod=usergroup&action=edit&id=' . $group_info['id'] . '" target="_blank"><b>' . $group_info['group_name'] . '</b></a></td>';
 			$countGroups[] = $group_info['id'];
 		}
 
@@ -109,59 +113,70 @@ Class ADMIN extends PluginActions
 
 		# Категории
 		#
-		$upCategorys = array();
-		$mainCategorys = array();
+		$rowsUP = [];
+		$rowsMain = [];
 
 		foreach( $cat_info as $cat )
 		{
-			if( in_array($cat['id'], explode(",", $_Config['stop_categorys'])) ) continue;
+			if( in_array($cat['id'], explode(",", $_Config['stop_categorys'])) )
+            {
+                continue;
+            }
 
-			$rowCategory = array();
-			$rowCategory[] = $cat['name'];
+			$rowCategory = [];
+			$rowCategory[] = "<a href='?mod=editnews&action=list&start_from=0&search_field=&search_area=0&search_cat%5B%5D={$cat['id']}' target='_blank'>{$cat['name']}</a>";
 
-			$upCategorys[$cat['id']] = array();
-			$upCategorys[$cat['id']][] = $cat['name'];
+			$rowsUP[$cat['id']] = [];
+			$rowsUP[$cat['id']][] = "<a href='?mod=editnews&action=list&start_from=0&search_field=&search_area=0&search_cat%5B%5D={$cat['id']}' target='_blank'>{$cat['name']}</a>";
 
-			$mainCategorys[$cat['id']] = array();
-			$mainCategorys[$cat['id']][] = $cat['name'];
+			$rowsMain[$cat['id']] = [];
+			$rowsMain[$cat['id']][] = "<a href='?mod=editnews&action=list&start_from=0&search_field=&search_area=0&search_cat%5B%5D={$cat['id']}' target='_blank'>{$cat['name']}</a>";
 
 			foreach( $countGroups as $id_group )
 			{
-				$rowCategory[] = "<textarea name=\"save_con[{$id_group}_{$cat['id']}]\" rows=\"3\" class=\"form-control\" style=\"width: 100%;resize: none\">" . $_Config["{$id_group}_{$cat['id']}"] ."</textarea>";
-				$upCategorys[$cat['id']][] = "<input name=\"save_con[up_{$id_group}_{$cat['id']}]\" value=\"" . $_Config["up_{$id_group}_{$cat['id']}"] ."\" class=\"form-control\" type=\"text\" style=\"width: 100%\">";
-				$mainCategorys[$cat['id']][] = "<input name=\"save_con[main_{$id_group}_{$cat['id']}]\" value=\"" . $_Config["main_{$id_group}_{$cat['id']}"] ."\" class=\"form-control\" type=\"text\" style=\"width: 100%\">";
+				$rowCategory[] = "<textarea 
+                                    placeholder='" . sprintf($pluginLang['price_placeholder'], $user_group[$id_group]['group_name'], $cat['name']) . "' 
+                                    name=\"save_con[{$id_group}_{$cat['id']}]\" 
+                                    rows=\"3\" 
+                                    class=\"form-control\" 
+                                    style=\"width: 100%;resize: none\">" . $_Config["{$id_group}_{$cat['id']}"] ."</textarea>";
+
+				$rowsUP[$cat['id']][] = "<input name=\"save_con[up_{$id_group}_{$cat['id']}]\" value=\"" . $_Config["up_{$id_group}_{$cat['id']}"] ."\" class=\"form-control\" type=\"text\" style=\"width: 100%\">";
+				$rowsMain[$cat['id']][] = "<input name=\"save_con[main_{$id_group}_{$cat['id']}]\" value=\"" . $_Config["main_{$id_group}_{$cat['id']}"] ."\" class=\"form-control\" type=\"text\" style=\"width: 100%\">";
 			}
 
 			$this->Dashboard->ThemeAddTR( $rowCategory );
 		}
 
 		$ContentFix = $this->Dashboard->ThemeParserTable('',
-			'<tr>
+			'
+			<tr>
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $plugin_lang['link'] . '
+					' . $pluginLang['link_help'] . '
 				</td>
 			</tr>
 			<tr>
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $plugin_lang['link_name_1'] . '
+					' . $pluginLang['link_help_instr'] . '
 				</td>
 			</tr>
 			<tr>
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $plugin_lang['link_help'] . '
+					' . $pluginLang['link'] . '
 				</td>
 			</tr>
 			<tr>
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $plugin_lang['link_help_instr'] . '
+					' . $pluginLang['link_name_1'] . '
 				</td>
 			</tr>'
 		);
+
 		$ContentFix .= $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("save", $this->Dashboard->lang['save'], "green") );
 
 		$tabs[] = array(
 				'id' => 'fix',
-				'title' => $plugin_lang['fix'],
+				'title' => $pluginLang['fix'],
 				'content' => $ContentFix
 		);
 
@@ -169,7 +184,7 @@ Class ADMIN extends PluginActions
 		#
 		$this->Dashboard->ThemeAddTR( $returnGroups );
 
-		foreach ($upCategorys as $group_id => $group_field)
+		foreach ($rowsUP as $group_id => $group_field)
 		{
 			$this->Dashboard->ThemeAddTR( $group_field );
 		}
@@ -177,12 +192,12 @@ Class ADMIN extends PluginActions
 		$ContentUp = $this->Dashboard->ThemeParserTable('',
 			'<tr>
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $plugin_lang['link'] . '
+					' . $pluginLang['link'] . '
 				</td>
 			</tr>
 			<tr>
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $plugin_lang['link_name_2'] . '
+					' . $pluginLang['link_name_2'] . '
 				</td>
 			</tr>'
 		);
@@ -190,7 +205,7 @@ Class ADMIN extends PluginActions
 
 		$tabs[] = array(
 				'id' => 'up_post',
-				'title' => $plugin_lang['up'],
+				'title' => $pluginLang['up'],
 				'content' => $ContentUp
 		);
 
@@ -198,7 +213,7 @@ Class ADMIN extends PluginActions
 		#
 		$this->Dashboard->ThemeAddTR( $returnGroups );
 
-		foreach ($mainCategorys as $group_id => $group_field)
+		foreach ($rowsMain as $group_id => $group_field)
 		{
 			$this->Dashboard->ThemeAddTR( $group_field );
 		}
@@ -206,12 +221,12 @@ Class ADMIN extends PluginActions
 		$ContentUp = $this->Dashboard->ThemeParserTable('',
 			'<tr>
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $plugin_lang['link'] . '
+					' . $pluginLang['link'] . '
 				</td>
 			</tr>
 			<tr>
 				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
-					' . $plugin_lang['link_name_3'] . '
+					' . $pluginLang['link_name_3'] . '
 				</td>
 			</tr>'
 		);
@@ -219,7 +234,7 @@ Class ADMIN extends PluginActions
 
 		$tabs[] = array(
 				'id' => 'post_main',
-				'title' => $plugin_lang['post_main'],
+				'title' => $pluginLang['post_main'],
 				'content' => $ContentUp
 		);
 
@@ -230,4 +245,22 @@ Class ADMIN extends PluginActions
 
 		return $Content;
 	}
+
+    public function install() : void
+    {
+        $this->Dashboard->CheckHash();
+
+        $this->Dashboard->SaveConfig( "plugin." . $this->Dashboard->controller,
+            [
+                'status' => 0,
+                'version' => parse_ini_file( MODULE_PATH . '/plugins/' . $this->Dashboard->controller . '/info.ini' )['version']
+            ]
+        );
+
+        $this->Dashboard->ThemeMsg(
+            $this->Dashboard->lang['plugin_install'],
+            $this->Dashboard->PanelPlugin(path: 'plugins/' . $this->Dashboard->controller, link: 'https://dle-billing.ru/doc/plugins/fixednews/', styles: '' ) . sprintf($this->Dashboard->lang['plugin_install_js'], 'https://dle-billing.ru/doc/plugins/fixednews/'),
+            '?mod=billing&c=' . $this->Dashboard->controller
+        );
+    }
 }

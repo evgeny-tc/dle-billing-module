@@ -7,20 +7,24 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class ADMIN extends PluginActions
 {
-	public array $_Lang = [];
+    const PLUGIN = 'bonuses';
+
+    public array $_Lang = [];
 
 	function __construct()
 	{
-		$this->_Lang = include MODULE_PATH . '/plugins/bonuses/lang.php';
+		$this->_Lang = Dashboard::getLang(static::PLUGIN);
 	}
 
-	public function main( array $Get = [] )
+	public function main( array $Get ) : string
 	{
 		$this->checkInstall();
 
-		$_Config = $this->Dashboard->LoadConfig( 'bonuses' );
+		$_Config = $this->Dashboard->LoadConfig( static::PLUGIN );
 
 		# Сохранить настройки
 		#
@@ -170,8 +174,7 @@ Class ADMIN extends PluginActions
 		$this->Dashboard->ThemeAddStr(
 			$this->_Lang['active_bills'],
 			$this->_Lang['active_bills_desc'],
-			"<input name=\"save_con[active_count]\" class=\"form-control\" style=\"width: 30%\" type=\"text\" value=\"" . $_Config['active_count'] ."\">" 
-				. $this->Dashboard->API->Declension( $_Config['active_count'] )
+			"<input name=\"save_con[active_count]\" class=\"form-control\" type=\"text\" value=\"" . $_Config['active_count'] ."\">"
 		);
 
 		$this->Dashboard->ThemeAddStr(

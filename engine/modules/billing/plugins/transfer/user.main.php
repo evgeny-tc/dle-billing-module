@@ -7,32 +7,39 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 Class USER
 {
-	var $plugin_config = false;
+    const PLUGIN = 'transfer';
+
+    public DevTools $DevTools;
+
+    private array $pluginСonfig;
 
 	function __construct()
 	{
-		if( file_exists( MODULE_DATA . '/plugin.transfer.php' ) )
-		{
-			$this->plugin_config = include MODULE_DATA . '/plugin.transfer.php';
-		}
+        $this->pluginСonfig = DevTools::getConfig(static::PLUGIN);
 	}
 
-	public function ok( array $GET = [] )
+    /**
+     * Перевод выполнен
+     * @throws \Exception
+     */
+    public function ok(array $GET = [] ) : string
 	{
 		# Проверка авторизации
 		#
 		if( ! $this->DevTools->member_id['name'] )
 		{
-			throw new Exception($this->DevTools->lang['pay_need_login']);
+			throw new \Exception($this->DevTools->lang['pay_need_login']);
 		}
 
 		# Плагин выключен
 		#
-		if( ! $this->plugin_config['status'] )
+		if( ! $this->pluginСonfig['status'] )
 		{
-			throw new Exception($this->DevTools->lang['cabinet_off']);
+			throw new \Exception($this->DevTools->lang['cabinet_off']);
 		}
 
 		$Get = explode("|", base64_decode( urldecode( $GET['info'] ) ) );
@@ -42,23 +49,29 @@ Class USER
 			return $this->DevTools->lang['pay_hash_error'];
 		}
 
-		return $this->DevTools->ThemeMsg( $this->DevTools->lang['transfer_msgOk'], sprintf( $this->DevTools->lang['transfer_log_text'], urlencode( $Get[0] ), $Get[0], $Get[1], $Get[2] ) );
+		return $this->DevTools->ThemeMsg(
+            $this->DevTools->lang['transfer_msgOk'],
+            sprintf( $this->DevTools->lang['transfer_log_text'], urlencode( $Get[0] ), $Get[0], $this->DevTools->API->Convert(money: $Get[1], number_format_f: true), $Get[2] )
+        );
 	}
 
-	public function main( array $GET = [] )
+    /**
+     * @throws \Exception
+     */
+    public function main(array $GET = [] )
 	{
 		# Проверка авторизации
 		#
 		if( ! $this->DevTools->member_id['name'] )
 		{
-			throw new Exception($this->DevTools->lang['pay_need_login']);
+			throw new \Exception($this->DevTools->lang['pay_need_login']);
 		}
 
 		# Плагин выключен
 		#
-		if( ! $this->plugin_config['status'] )
+		if( ! $this->pluginСonfig['status'] )
 		{
-			throw new Exception($this->DevTools->lang['cabinet_off']);
+			throw new \Exception($this->DevTools->lang['cabinet_off']);
 		}
 
 		# Сделать перевод
@@ -70,32 +83,32 @@ Class USER
 			$_SearchUser = $this->DevTools->LQuery->DbSearchUserByName( htmlspecialchars( trim( $_POST['bs_user_name'] ), ENT_COMPAT, $this->DevTools->config_dle['charset'] ) );
 
 			$_Money = $this->DevTools->LQuery->db->safesql( $_POST['bs_summa'] );
-			$_MoneyCommission = $this->DevTools->API->Convert( ( $_Money / 100 ) * (float) $this->plugin_config['com'] );
+			$_MoneyCommission = $this->DevTools->API->Convert( ( $_Money / 100 ) * (float) $this->pluginСonfig['com'] );
 
 			if( ! $_Money )
 			{
-                throw new Exception($this->DevTools->lang['pay_summa_error']);
+                throw new \Exception($this->DevTools->lang['pay_summa_error']);
 			}
 
             if( ! $_SearchUser['name'] )
 			{
-                throw new Exception($this->DevTools->lang['transfer_error_get']);
+                throw new \Exception($this->DevTools->lang['transfer_error_get']);
 			}
 
             if( $_Money > $this->DevTools->BalanceUser )
 			{
-                throw new Exception($this->DevTools->lang['refund_error_balance']);
+                throw new \Exception($this->DevTools->lang['refund_error_balance']);
 			}
 
             if( $_SearchUser['name'] == $this->DevTools->member_id['name'] )
 			{
-                throw new Exception($this->DevTools->lang['transfer_error_name_me']);
+                throw new \Exception($this->DevTools->lang['transfer_error_name_me']);
 			}
 
-            if( $_Money < $this->plugin_config['minimum'] )
+            if( $_Money < $this->pluginСonfig['minimum'] )
 			{
-                throw new Exception(
-                    sprintf( $this->DevTools->lang['transfer_error_minimum'], $this->plugin_config['minimum'], $this->DevTools->API->Declension( $this->plugin_config['minimum'] ) )
+                throw new \Exception(
+                    sprintf( $this->DevTools->lang['transfer_error_minimum'], $this->pluginСonfig['minimum'], $this->DevTools->API->Declension( $this->pluginСonfig['minimum'] ) )
                 );
 			}
 
@@ -122,14 +135,14 @@ Class USER
 			return;
 		}
 
-		$GetSum = $GET['sum'] ?: $this->plugin_config['minimum'];
+		$GetSum = $GET['sum'] ?: $this->pluginСonfig['minimum'];
 
 		$this->DevTools->ThemeSetElement( "{hash}", $this->DevTools->hash );
 		$this->DevTools->ThemeSetElement( "{get.sum}", $GetSum );
 		$this->DevTools->ThemeSetElement( "{get.sum.currency}", $this->DevTools->API->Declension( $GetSum ) );
-		$this->DevTools->ThemeSetElement( "{minimum}", $this->plugin_config['minimum'] );
-		$this->DevTools->ThemeSetElement( "{minimum.currency}", $this->DevTools->API->Declension( $this->plugin_config['minimum'] ) );
-		$this->DevTools->ThemeSetElement( "{commission}", intval( $this->plugin_config['com'] ) );
+		$this->DevTools->ThemeSetElement( "{minimum}", $this->pluginСonfig['minimum'] );
+		$this->DevTools->ThemeSetElement( "{minimum.currency}", $this->DevTools->API->Declension( $this->pluginСonfig['minimum'] ) );
+		$this->DevTools->ThemeSetElement( "{commission}", intval( $this->pluginСonfig['com'] ) );
 		$this->DevTools->ThemeSetElement( "{to}", $GET['to'] );
 
 		$Content = $this->DevTools->ThemeLoad( "plugins/transfer" );
@@ -152,13 +165,13 @@ Class USER
 		{
 			$TimeLine = $TplLine;
 
-			$params = array(
-				'{date=' . $TplLineDate . '}' => $this->DevTools->ThemeChangeTime( $Value['history_date'], $TplLineDate ),
-				'{transfer.desc}' => $Value['history_text'],
-				'{transfer.sum}' => $Value['history_plus'] > 0
-										? '<font color="green">+' . $Value['history_plus'] . ' ' . $Value['history_currency'] . '</font>'
-										: '<font color="red">-' . $Value['history_minus'] . ' ' . $Value['history_currency'] . '</font>'
-			);
+			$params = [
+                '{date=' . $TplLineDate . '}' => $this->DevTools->ThemeChangeTime( $Value['history_date'], $TplLineDate ),
+                '{transfer.desc}' => $Value['history_text'],
+                '{transfer.sum}' => $Value['history_plus'] > 0
+                    ? '<font color="green">+' . $Value['history_plus'] . ' ' . $Value['history_currency'] . '</font>'
+                    : '<font color="red">-' . $Value['history_minus'] . ' ' . $Value['history_currency'] . '</font>'
+            ];
 
 			$TimeLine = str_replace(array_keys($params), array_values($params), $TimeLine);
 

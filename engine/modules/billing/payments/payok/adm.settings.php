@@ -7,33 +7,35 @@
  * @copyright     Copyright (c) 2012-2023, mr_Evgen
  */
 
-Class Payment
+namespace Billing;
+
+Class Payok implements IPayment
 {
-	public $doc = 'https://dle-billing.ru/doc/payments/payok-io';
+	public string $doc = 'https://dle-billing.ru/doc/payments/payok-io';
 
-	function Settings( $config )
+	public function Settings( array $config ) : array
 	{
-		$Form = array();
+		$Form = [];
 
-		$Form[] = array(
+		$Form[] = [
 			"ID вашего магазина:",
 			"",
 			"<input name=\"save_con[shop_id]\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . $config['shop_id'] ."\">"
-		);
+		];
 
-		$Form[] = array(
+		$Form[] = [
 			"Способ оплаты: (необязательно)",
 			"<a href='https://payok.io/cabinet/documentation/doc_methods.php' target='_blank'>Cписок названий методов</a>",
 			"<input name=\"save_con[method]\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . $config['method'] ."\">"
-		);
+		];
 
-		$Form[] = array(
+		$Form[] = [
 			"Секретный ключ:",
 			"",
 			"<input name=\"save_con[secret]\" class=\"form-control\" style=\"width: 100%\" type=\"text\" value=\"" . $config['secret'] ."\">"
-		);
+		];
 
-		$Form[] = array(
+		$Form[] = [
 			"Валюта по стандарту ISO 4217:",
 			"",
 			"<select name=\"save_con[currency]\" class=\"uniform\">
@@ -42,12 +44,12 @@ Class Payment
     			<option value=\"USD\" " . ( $config['currency'] == 'USD' ? "selected" : "" ) . ">Доллары</option>
     			<option value=\"EUR\" " . ( $config['currency'] == 'EUR' ? "selected" : "" ) . ">Евро</option>
 			</select>"
-		);
+		];
 
 		return $Form;
 	}
 
-	function Form( $id, $config, $invoice, $currency, $desc )
+	public function Form( int $id, array $config, array $invoice, string $currency, string $desc ) : string
 	{
         $array = [
             $invoice['invoice_pay'],
@@ -73,17 +75,17 @@ Class Payment
                 </form>";
 	}
 
-	function check_id( $data )
+	public function check_id( array $result ) : int
 	{
-		return $data["payment_id"];
+		return intval($result["payment_id"]);
 	}
 
-	function check_ok( $data )
+	public function check_ok( array $result ) : string
 	{
-		return 'OK'.$data["payment_id"];
+		return 'OK'.$result["payment_id"];
 	}
 
-	function check_out( $data, $config, $invoice )
+	public function check_out( array $data, array $config, array $invoice ) : string|bool
 	{
         $array = [
             $config['secret'],
@@ -98,12 +100,11 @@ Class Payment
 
         IF ( $sign != $data[ 'sign' ] )
         {
-            return 'Подпись не совпадает.';
+            return 'Подпись не совпадает';
         }
 
-		return 200;
+		return true;
 	}
 }
 
-$Paysys = new Payment;
-?>
+$Paysys = new Payok;

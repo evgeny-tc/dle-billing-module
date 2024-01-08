@@ -13,6 +13,10 @@ return array
       'sum' => "На общую сумму",
     ],
 
+    'pay' => [
+        'desc' => 'Назначение платежа'
+    ],
+
     'table' => [
         'user' => "Пользователь",
         'time' => "<span style='white-space: nowrap'>Дата и время</span>",
@@ -55,5 +59,5 @@ return array
     'tag_value' => [
         'name' => "Новый заказ",
         'pay_name' => "Оплата заказа"
-    ]
+    ],
 );

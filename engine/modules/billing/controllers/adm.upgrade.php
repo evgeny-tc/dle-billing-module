@@ -4,12 +4,16 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module/
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023, mr_Evgen
+ * @copyright     Copyright (c) 2012-2024
  */
+
+namespace Billing;
 
 Class ADMIN
 {
-	function main()
+    public Dashboard $Dashboard;
+
+    public function main() : void
 	{
 		$List = opendir( MODULE_PATH . '/upgrades/' );
 

@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
 if( !defined('BILLING_MODULE') ) {
@@ -17,12 +17,12 @@ if( !defined('BILLING_MODULE') ) {
 #
 if( ! $groupPrices = $_Config["{$member_id['user_group']}_{$_PostCategory}"] )
 {
-    billing_error( $_Lang['error']['off'] );
+    billing_error( "{$member_id['user_group']}_{$_PostCategory}" );
 }
 
 $arGroupPrice = explode("\n", $groupPrices);
 
-$tpl = new dle_template();
+$tpl = new \dle_template();
 $tpl->dir = TEMPLATE_DIR;
 
 # Оплата

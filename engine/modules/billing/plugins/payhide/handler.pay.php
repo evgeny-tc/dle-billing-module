@@ -4,33 +4,38 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
 
-return new class
+namespace Billing;
+
+return new class extends Handler
 {
-    public function pay(array $Invoice, BillingAPI $API)
+    private array $_Lang;
+    private array $_Config;
+
+    public function __construct()
     {
-        global $db, $_TIME;
+        $this->_Lang = DevTools::getLang('payhide');
+        $this->_Config = DevTools::getConfig('payhide');
+    }
 
-        include MODULE_PATH . "/plugins/payhide/lang.php";
-
-        $plugin_config = include MODULE_DATA . "/plugin.payhide.php";
-
+    public function pay(array $Invoice, API $API) : bool
+    {
         $InfoPay = unserialize($Invoice['invoice_payer_info']);
 
         $InfoPay['params']['pagelink'] = base64_decode($InfoPay['params']['pagelink']);
 
         # Процент автору статьи
         #
-        if( $InfoPay['params']['post_autor'] and $plugin_config['percent'])
+        if( $InfoPay['params']['post_autor'] and $this->_Config['percent'])
         {
-            $Partner = $API->Convert( ( $Invoice['invoice_get'] / 100 ) * $plugin_config['percent'] );
+            $Partner = $API->Convert( ( $Invoice['invoice_get'] / 100 ) * $this->_Config['percent'] );
 
             $API->PlusMoney(
                 $InfoPay['params']['post_autor'],
                 $Partner,
-                sprintf( $plugin_lang['balance_log'], $InfoPay['params']['pagelink'], urlencode( $Invoice['invoice_user_name'] ), $Invoice['invoice_user_name'] ),
+                sprintf( $this->_Lang['balance_log'], $InfoPay['params']['pagelink'], urlencode( $Invoice['invoice_user_name'] ), $Invoice['invoice_user_name'] ),
                 'payhide',
                 $InfoPay['params']['post_id']
             );
@@ -49,44 +54,34 @@ return new class
         return true;
     }
 
-    public function desc(array $infopay = [])
+    public function desc(array $info = []) : array
     {
-        include MODULE_PATH . "/plugins/payhide/lang.php";
-
-        $infopay['params']['pagelink'] = base64_decode($infopay['params']['pagelink']);
+        $info['params']['pagelink'] = base64_decode($info['params']['pagelink']);
 
         return [
-            sprintf( $infopay['params']['title'] ?: $plugin_lang['balance_desc'], $infopay['params']['pagelink'] ),
-            $infopay['params']['payhide_post_id']
+            sprintf( $info['params']['title'] ?: $this->_Lang['balance_desc'], $info['params']['pagelink'] ),
+            $info['params']['payhide_post_id']
         ];
     }
 
-    public function prepay_check( array $invoice, array|bool &$infopay )
+    public function prepay_check( array $invoice, array|bool &$info ) : void
     {
-        global $_TIME;
-
-        include MODULE_PATH . "/plugins/payhide/lang.php";
-
-        if( ! $infopay['params']['tag'] )
+        if( ! $info['params']['tag'] )
         {
-            throw new Exception($plugin_lang['handler']['error']['tag']);
+            throw new Exception($this->_Lang['handler']['error']['tag']);
         }
     }
 
-    public function prepay( array $invoice, array|bool $infopay, array &$more_data )
+    public function prepay( array $invoice, array|bool $info, array &$more_data ): void
     {
-        global $user_group;
-
-        include MODULE_PATH . "/plugins/payhide/lang.php";
-
         $more_data[""] = sprintf(
-            $infopay['params']['title'] ?: $plugin_lang['handler']['title'],
-            base64_decode($infopay['params']['pagelink'])
+            $info['params']['title'] ?: $this->_Lang['handler']['title'],
+            base64_decode($info['params']['pagelink'])
         );
 
-        if( $infopay['params']['endtime'] )
+        if( $info['params']['endtime'] )
         {
-            $more_data[$plugin_lang['handler']['end']] = langdate('j.m.Y H:i', $infopay['params']['endtime']);
+            $more_data[$this->_Lang['handler']['end']] = langdate('j.m.Y H:i', $info['params']['endtime']);
         }
     }
 };

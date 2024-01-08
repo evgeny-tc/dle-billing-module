@@ -11,26 +11,18 @@
 		<table width="100%" class="billing-table">
 			<tr>
 				<td width="30%">Статья:</td>
-				<td>{post.title}</td>
-			</tr>
-			<tr>
-				<td>Автор:</td>
-				<td>{post.autor}</td>
+				<td>{post.title} (от {post.autor})</td>
 			</tr>
 			<tr>
 				<td></td>
 				<td>Единоразовое поднятие статьи</td>
 			</tr>
-			<tr>
-				<td>К оплате:</td>
-				<td>{pay.sum} {pay.sum.currency}<td>
-			</tr>
-
 		</table>
 
-		<div style="text-align: center; padding-top: 10px">
-			<button type="submit" class="btn" onClick="BillingNews.Pay(1)">
-				<span>Перейти к оплате</span>
-			</button>
-		</div>
+	<div class="billing_modal_footer">
+		<h2>{pay.sum} {pay.sum.currency}</h2>
+		<button type="submit" class="btn" onClick="BillingNews.Pay(1)">
+			<span>Перейти к оплате</span>
+		</button>
+	</div>
 </div>

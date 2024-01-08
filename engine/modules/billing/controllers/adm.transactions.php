@@ -4,14 +4,18 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2024
  */
+
+namespace Billing;
 
 Class ADMIN
 {
-	public function main( array $Get = [] )
+    public Dashboard $Dashboard;
+
+    public function main( array $Get ) : string
 	{
-		if( $Get['user'] )
+		if( isset($Get['user']) )
 		{
 			$_POST['search_login'] = $Get['user'];
 		}
@@ -98,36 +102,34 @@ Class ADMIN
 
 		# Список
 		#
-		$this->Dashboard->ThemeAddTR( array(
-				'<th width="1%">#</th>',
-				#'<th>'.$this->Dashboard->lang['history_code'].'</th>',
-				'<th>'.$this->Dashboard->lang['history_date'].'</th>',
-				'<th>'.$this->Dashboard->lang['history_summa'].'</th>',
-				'<th>'.$this->Dashboard->lang['history_user'].'</th>',
-				'<th>'.$this->Dashboard->lang['history_balance'].'</th>',
-				'<th>'.$this->Dashboard->lang['history_comment'].'</th>',
-				'<th width="1%"><center><input type="checkbox" value="" name="massact_list[]" onclick="checkAll(this)" /></center></th>',
-		));
+		$this->Dashboard->ThemeAddTR(
+            [
+                '<th width="1%">#</th>',
+                '<th>'.$this->Dashboard->lang['history_date'].'</th>',
+                '<th>'.$this->Dashboard->lang['history_summa'].'</th>',
+                '<th>'.$this->Dashboard->lang['history_user'].'</th>',
+                '<th>'.$this->Dashboard->lang['history_balance'].'</th>',
+                '<th>'.$this->Dashboard->lang['history_comment'].'</th>',
+                '<th class="th_checkbox"><input type="checkbox" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></th>',
+            ]
+        );
 
 		$NumData = $this->Dashboard->LQuery->DbGetHistoryNum();
 
 		foreach( $Data as $Value )
 		{
-			$this->Dashboard->ThemeAddTR( array(
-				$Value['history_id'],
-				#$Value['history_plugin'] . " / " . $Value['history_plugin_id'],
-				$this->Dashboard->ThemeChangeTime( $Value['history_date'] ),
-				$Value['history_plus'] > 0  ? "<font color=\"green\">+{$Value['history_plus']} {$Value['history_currency']}</font>"
-											: "<font color=\"red\">-{$Value['history_minus']} {$Value['history_currency']}</font>",
-				$this->Dashboard->ThemeInfoUser( $Value['history_user_name'] ),
-				$this->Dashboard->API->Convert( $Value['history_balance'] ) . "&nbsp;	" . $this->Dashboard->API->Declension( $Value['history_balance'] ),
-				(
-                    '<a href="#" onClick="logShowDialogByID( \'#log_' . $Value['history_id'] . '\' ); return false">' .
-					(strlen( $Value['history_text'] ) > 20
-						? mb_substr( strip_tags( $Value['history_text'] ), 0, 30, $this->Dashboard->dle['charset'] ) . '..'
-						: $Value['history_text']) . '</a>'
-				),
-				"<center>" . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['history_id'], false) . '</center>
+			$this->Dashboard->ThemeAddTR(
+                [
+                    $Value['history_id'],
+                    $this->Dashboard->ThemeChangeTime( $Value['history_date'] ),
+                    $Value['history_plus'] > 0  ? "<span class=\"color-green\">+{$Value['history_plus']} {$Value['history_currency']}</span>"
+                        : "<span class=\"color-red\">-{$Value['history_minus']} {$Value['history_currency']}</span>",
+                    $this->Dashboard->ThemeInfoUser( $Value['history_user_name'] ),
+                    $this->Dashboard->API->Convert( $Value['history_balance'] ) . "&nbsp;	" . $this->Dashboard->API->Declension( $Value['history_balance'] ),
+                    '<div class="th_description">
+                        <a href="#" onClick="BillingJS.openDialog( \'#log_' . $Value['history_id'] . '\' ); return false">' . (strip_tags($Value['history_text']) ?: '---') . '</a>
+                    </div>',
+                    "<span class='settingsb'>" . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['history_id'], false) . '</span>
 					<div id="log_' . $Value['history_id'] . '" title="' . $this->Dashboard->lang['history_transaction'] . $Value['history_id'] . '" style="display:none">
 						<b>' . $this->Dashboard->lang['history_transaction_text'] . '</b>
 						<br />
@@ -139,7 +141,8 @@ Class ADMIN
 							' . $Value['history_plugin'] . ' / ' . $Value['history_plugin_id'] . '
 						</p>
 					</div>'
-			));
+                ]
+            );
 		}
 
 		$ContentList = $this->Dashboard->ThemeParserTable();
@@ -155,13 +158,14 @@ Class ADMIN
 								$this->Dashboard->API->Pagination(
 									$NumData,
 									$Get['page'],
-									$PHP_SELF . "?mod=billing&c=transactions&p=" . ( $Get['user'] ? "user/{$Get['user']}/" : "" ) . "page/{p}",
+									"?mod=billing&c=transactions&p=" . ( $Get['user'] ? "user/{$Get['user']}/" : "" ) . "page/{p}",
 									"<li><a href=\"{page_num_link}\">{page_num}</a></li>",
 									"<li class=\"active\"><span>{page_num}</span></li>",
 									$PerPage
 								) .
-				"</ul><div style=\"float: right\">
-					<input class=\"btn bg-teal btn-sm btn-raised legitRipple\" type=\"submit\" name=\"mass_remove\" value=\"" . $this->Dashboard->lang['remove'] . "\">
+				"</ul>
+                    <div style=\"float: right\">
+                        " . $this->Dashboard->MakeButton('mass_remove', $this->Dashboard->lang['remove'], 'bg-danger') . "
 					</div>"
 			);
 		}

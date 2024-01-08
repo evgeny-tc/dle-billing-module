@@ -1,16 +1,16 @@
 <?php
-/*
-=====================================================
- Billing
------------------------------------------------------
- evgeny.tc@gmail.com
------------------------------------------------------
- This code is copyrighted
-=====================================================
-*/
+/**
+ * DLE Billing
+ *
+ * @link          https://github.com/evgeny-tc/dle-billing-module
+ * @author        dle-billing.ru <evgeny.tc@gmail.com>
+ * @copyright     Copyright (c) 2012-2024
+ */
 
-if(!defined('DATALIFEENGINE')) {
-  die("Hacking attempt!");
+if( !defined( 'DATALIFEENGINE' ) OR !defined( 'LOGGED_IN' ) ) {
+    header( "HTTP/1.1 403 Forbidden" );
+    header ( 'Location: ../../' );
+    die( "Hacking attempt!" );
 }
 
-require_once DLEPlugins::Check(ENGINE_DIR . '/modules/billing/admin.php');
+require_once ENGINE_DIR . '/modules/billing/admin.php';

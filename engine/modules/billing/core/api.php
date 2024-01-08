@@ -7,11 +7,13 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+namespace Billing;
+
 /**
  * API 1.0
  * TODO: update
  */
-Class BillingAPI
+Class API
 {
     /**
      * Config this module
@@ -170,7 +172,7 @@ Class BillingAPI
             $Text = str_replace( $key, $this->db->safesql( $value ), $Text);
         }
 
-        # .. отправить pm на сайте
+        # отправить pm на сайте
         #
         if( $user_id )
         {
@@ -187,9 +189,9 @@ Class BillingAPI
         #
         if( $user_email )
         {
-            include_once DLEPlugins::Check( ENGINE_DIR . '/classes/mail.class.php' );
+            include_once \DLEPlugins::Check( ENGINE_DIR . '/classes/mail.class.php' );
 
-            $mail = new dle_mail( $config, true );
+            $mail = new \dle_mail( $config, true );
 
             $mail->send( $user_email, $Title[1], $Text );
 
@@ -285,27 +287,31 @@ Class BillingAPI
 
     /**
      * Convert the number to billing format for pay
-     * @param $money
+     * @param mixed $money
      * @param string|null $format
-     * @return float|int
+     * @param bool $number_format_f
+     * @return string
      */
-    public function Convert( mixed $money, string|null $format = '', bool $number_format_f = false )
+    public function Convert( mixed $money, string|null $format = '', bool $number_format_f = false ) : string
     {
         $format = $format ?: $this->config['format'];
-        $money = floatval($money) ?: 0.00;
+        $money = floatval($money) > 0 ? $money : 0.00;
 
-        if( $format == 'int' ) return $number_format_f ? number_format(intval($money), 0, '', ' ') : $money;
+        if( $format == 'int' )
+        {
+            return $number_format_f ? number_format(intval($money), 0, '', ' ') : $money;
+        }
 
-        return $number_format_f ? number_format($money, 2, ',', ' ') : $money;
+        return $number_format_f ? number_format($money, 2, '.', ' ') : $money;
     }
 
     /**
      * Name currency
-     * @param $number
-     * @param $titles
+     * @param mixed $number
+     * @param string $titles
      * @return string
      */
-    public function Declension( $number, $titles = '' )
+    public function Declension( mixed $number, string $titles = '' ): string
     {
         $number = intval( $number );
 
@@ -344,17 +350,32 @@ Class BillingAPI
             if( file_exists( MODULE_PATH . '/plugins/' . $name . '/hook.class.php' )
                 and file_exists( MODULE_DATA . '/plugin.' . $name . '.php' ))
             {
+                if(  ! class_exists('Hooks') )
+                {
+                    require_once MODULE_PATH . '/core/hooks.php';
+                }
+
                 $Hook = include( MODULE_PATH . '/plugins/' . $name . '/hook.class.php' );
 
-                if( (new ReflectionClass($Hook))->isAnonymous() )
+                if( $Hook instanceof Hooks)
                 {
-                    $Hook->plugin = include MODULE_DATA . '/plugin.' . $name . '.php';
-                    $Hook->api = $this;
-
-                    if( in_array('pay', get_class_methods($Hook) ) )
+                    if( in_array('init', get_class_methods($Hook) ) )
                     {
-                        $Hook->pay( $user, $plus, $minus, $balance, $desc, $plugin, $plugin_id );
+                        $Hook->init(
+                            include MODULE_DATA . '/plugin.' . $name . '.php',
+                            $this
+                        );
                     }
+
+                    $Hook->pay(
+                        (string)$user,
+                        floatval($plus),
+                        floatval($minus),
+                        floatval($balance),
+                        (string)$desc,
+                        (string)$plugin,
+                        intval($plugin_id)
+                    );
                 }
             }
         }
@@ -377,21 +398,30 @@ Class BillingAPI
     {
         $desc = $this->db->safesql( $desc );
 
-        $currency = $plus ? $this->Declension( $plus ) : $this->Declension( $minus );
-        $balance = $this->Convert( $balance );
+        if( $plus )
+        {
+            $sum = $this->Convert(money: $plus, number_format_f: true);
+            $currency = $this->Declension( $plus );
+        }
+        else
+        {
+            $sum = $this->Convert(money: $minus, number_format_f: true);
+            $currency = $this->Declension( $minus );
+        }
+
+        $balanceFormat = $this->Convert( money: $balance, number_format_f: true );
 
         $dataMail = array(
             '{date}' => langdate( "j F Y  G:i", $this->_TIME ),
             '{login}' => $user,
-            '{sum}'=> ( $plus ? "+$plus " . $this->Declension( $plus ) : "-$minus " . $this->Declension( $plus ) ),
+            '{sum}'=> ( $plus ? "+{$sum} {$currency}" : "-{$sum} {$currency}" ),
             '{comment}' => $desc,
-            '{balance}' => $balance . ' ' . $this->Declension( $balance ),
+            '{balance}' => $balanceFormat . ' ' . $this->Declension( $balance ),
         );
 
         # Уведомление об изменении баланса на сайте
-        # .. в лп
         #
-        if( $this->config['mail_balance_pm'] and $this->alert_pm )
+        if( isset($this->config['mail_balance_pm']) and $this->config['mail_balance_pm'] and $this->alert_pm )
         {
             $arrUser = $this->db->super_query( "SELECT user_id, email FROM " . USERPREFIX . "_users WHERE name='" . $user . "'" );
 
@@ -403,7 +433,7 @@ Class BillingAPI
 
         # .. на email
         #
-        if( $this->config['mail_balance_email'] and $this->alert_main )
+        if( isset($this->config['mail_balance_email']) and $this->config['mail_balance_email'] and $this->alert_main )
         {
             if( ! $arrUser['email'] )
             {

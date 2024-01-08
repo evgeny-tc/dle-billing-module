@@ -1,19 +1,19 @@
-<h5>Выша реферальная ссылка</h5>
+<h5 class="blue">Ваша реферальная ссылка</h5>
 
 <p>
-	{link}
+	<pre>{link}</pre>
 </p>
 
 <br>
 
-<h5>Действия рефералов</h5>
+<h5 class="blue">Вознаграждения</h5>
 
 <table class="billing-table">
 	<tr>
-		<td width="20%"><b>Пользователь</b></td>
-        <td width="15%"><b>Дата</b></td>
+		<td><b>Пользователь</b></td>
+        <td><b>Дата</b></td>
         <td><b>Действие</b></td>
-        <td width="20%"><b>Отчисления</b></td>
+        <td><b>Вознаграждение</b></td>
 	</tr>
 
     [history]
@@ -21,7 +21,7 @@
 		<td>{referral.name}</td>
 		<td>{date=j.m.Y}</td>
         <td>{referral.desc}</td>
-        <td>{referral.bonus} {referral.bonus.currency}</td>
+        <td><span style="color: green">+{referral.bonus} {referral.bonus.currency}</span></td>
     </tr>
     [/history]
 
@@ -41,7 +41,7 @@
 
 <br>
 
-<h5>Приглашенные пользователи ({count})</h5>
+<h5 class="blue">Приглашенные пользователи ({count})</h5>
 
 <p>
 	{list}
