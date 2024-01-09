@@ -40,7 +40,7 @@ return new class extends Hooks
 
         # Поиск партнера
 		#
-        $_Partner = $this->api->db->super_query( "SELECT * FROM " . USERPREFIX . "_billing_referrals WHERE ref_login = '{$user}'" );
+        $_Partner = $this->API->db->super_query( "SELECT * FROM " . USERPREFIX . "_billing_referrals WHERE ref_login = '{$user}'" );
 		
 		if( ! $_Partner )
         {
@@ -113,7 +113,7 @@ return new class extends Hooks
 					#
 					if( $pay )
 					{
-						$this->api->PlusMoney( 
+						$this->API->PlusMoney(
 							$_Partner['ref_from'], 
 							floatval($_Bonus),
 							$bonus['desc'],
@@ -124,5 +124,4 @@ return new class extends Hooks
 				}
 			}
 	}
-}
-?>
+};
