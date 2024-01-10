@@ -9,8 +9,6 @@
 
 namespace Billing;
 
-use JetBrains\PhpStorm\NoReturn;
-
 /**
  * Dashboard panel
  */
@@ -441,7 +439,6 @@ Class Dashboard
      * @param string $class_status
      * @return void
      */
-	#[NoReturn]
     public function ThemeMsg(string $title, string $text, string $link = '', string $class_status = 'success', bool $show_progress = true ) : void
 	{
         $return = '';
