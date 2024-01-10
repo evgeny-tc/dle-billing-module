@@ -9,6 +9,8 @@
 
 namespace Billing;
 
+use JetBrains\PhpStorm\NoReturn;
+
 /**
  * Dashboard panel
  */
@@ -431,26 +433,35 @@ Class Dashboard
 		return "<div class=\"panel-footer\"> ". $text ." </div>";
 	}
 
-	/**
-	 * Заглушка страницы
-	 * @param string $title
-	 * @param string $text
-	 * @param string $link
-	 * @param string $class_status
-	 * @return void
-	 */
-	public function ThemeMsg( string $title, string $text, string $link = '', string $class_status = 'success' ) : string
+    /**
+     * Заглушка страницы
+     * @param string $title
+     * @param string $text
+     * @param string $link
+     * @param string $class_status
+     * @return void
+     */
+	#[NoReturn]
+    public function ThemeMsg(string $title, string $text, string $link = '', string $class_status = 'success', bool $show_progress = true ) : void
 	{
+        $return = '';
+        $disabled = '';
+
 		$this->ThemeEchoHeader();
 
 		$linkText = $link && $link != 'javascript:history.back()' ? $this->lang['main_next'] : $this->lang['main_back'];
 
-		$return = <<<HTML
-                    <script>
+        if( $show_progress )
+        {
+            $return = "<script>
                         $( document ).ready(function() {
                             BillingJS.progressBtn($('.btn-progress'));
                         });
-                    </script>
+                    </script>";
+            $disabled = 'onclick="return false;" disabled="1"';
+        }
+
+		$return .= <<<HTML
 						<div class="content">
 							<div class="alert alert-{$class_status} alert-styled-left alert-arrow-left alert-component message_box">
 								<h4>{$title}</h4>
@@ -463,7 +474,7 @@ Class Dashboard
 								</div>
 								<div class="panel-footer">
 									<div class="text-center">
-										<a class="btn btn-sm bg-teal btn-raised position-left legitRipple btn-progress" href="{$link}" onclick="return false;" disabled="1">{$linkText}</a>
+										<a class="btn btn-sm bg-teal btn-raised position-left legitRipple btn-progress" href="{$link}" {$disabled}>{$linkText}</a>
 									</div>
 								</div>
 							</div>

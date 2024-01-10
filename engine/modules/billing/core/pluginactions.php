@@ -63,7 +63,8 @@ Class PluginActions
                 $this->Dashboard->lang['need_install'],
                 $this->Dashboard->PanelPlugin(path: 'plugins/' . $this->Dashboard->controller, styles: '' ) . '<a href="?mod=billing&c=' . $this->Dashboard->controller . '&m=install&user_hash=' . $this->Dashboard->hash . '" class="btn bg-teal btn-sm btn-raised position-left legitRipple">' . $this->Dashboard->lang['plugins_table_status']['install'] . '</a>',
                 'javascript:history.back()',
-                'warning'
+                'warning',
+                false
             );
 
             return;
