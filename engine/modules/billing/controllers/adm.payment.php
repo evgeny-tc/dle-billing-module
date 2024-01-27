@@ -32,8 +32,9 @@ Class ADMIN
             $this->Dashboard->SaveConfig( "payment." . $Name, $SaveData );
 
             $this->Dashboard->ThemeMsg(
-                $this->Dashboard->lang['ok'],
-                $this->Dashboard->lang['paysys_save_ok']
+                title: $this->Dashboard->lang['ok'],
+                text: $this->Dashboard->lang['paysys_save_ok'],
+                show_progress: true
             );
         }
 

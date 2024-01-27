@@ -188,7 +188,7 @@ Class ADMIN
 			}
 
 			$this->Dashboard->SaveConfig("config", $_POST['save_con'] );
-			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
+			$this->Dashboard->ThemeMsg( title: $this->Dashboard->lang['ok'], text: $this->Dashboard->lang['save_settings'], show_progress: true );
 		}
 
 		$this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_1'] );

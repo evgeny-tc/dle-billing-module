@@ -439,7 +439,7 @@ Class Dashboard
      * @param string $class_status
      * @return void
      */
-    public function ThemeMsg(string $title, string $text, string $link = '', string $class_status = 'success', bool $show_progress = true ) : void
+    public function ThemeMsg(string $title, string $text, string $link = '', string $class_status = 'success', bool $show_progress = false ) : void
 	{
         $return = '';
         $disabled = '';
