@@ -53,12 +53,16 @@ return new class extends Handler
 
     public function desc(array $info = []) : array
     {
-        global $user_group;
+        global $user_group, $_TIME;
+
+        $time_limit = $info['params']['time_limit']
+            ? $info['params']['time_limit'] + $info['params']['days'] * 86400
+            : $_TIME + $info['params']['days'] * 86400;
 
         return [
             sprintf(
                 $this->_Lang['log'],
-                $user_group[$info['params']['group_id']]['group_name'] ) . ( $info['params']['type'] ? sprintf( $this->_Lang['time'], $info['params']['days'], langdate('d.m.Y G:i', $info['params']['time_limit']) ) : $this->_Lang['fulltime'] ),
+                $user_group[$info['params']['group_id']]['group_name'] ) . ( $info['params']['type'] ? sprintf( $this->_Lang['time'], $info['params']['days'], langdate('d.m.Y G:i', $time_limit) ) : $this->_Lang['fulltime'] ),
             $info['params']['post_id']
         ];
     }
