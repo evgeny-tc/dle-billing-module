@@ -324,7 +324,17 @@ Class USER
 
                         if( $resultPay and $this->RegisterPay( $Invoice, $this->DevTools->member_id['name'] ) )
                         {
-                            return $this->DevTools->Show( $this->DevTools->ThemeLoad( 'pay/success' ) );
+                            if( $_GET['modal'] )
+                            {
+                                $this->DevTools->ThemeSetElement( '[modal]', '' );
+                                $this->DevTools->ThemeSetElement( "[/modal]", '' );
+                            }
+                            else
+                                $this->DevTools->ThemeSetElementBlock( 'modal', '' );
+
+                            return $this->DevTools->Show(
+                                $this->DevTools->ThemeLoad( 'pay/success' )
+                            );
                         }
 
                         return $this->DevTools->Show( $this->DevTools->ThemeLoad( 'pay/fail' ) );
