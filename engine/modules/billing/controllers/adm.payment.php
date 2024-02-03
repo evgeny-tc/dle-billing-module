@@ -89,7 +89,7 @@ Class ADMIN
         $this->Dashboard->ThemeAddStr(
             $this->Dashboard->lang['payment_convert_text'],
             $this->Dashboard->lang['payment_convert_text_desc'],
-            $this->Dashboard->API->Convert( 1 ) . "&nbsp;" . $this->Dashboard->API->Declension( 1 ) . " = <input autocomplete=\"off\" name=\"save_con[convert]\" class=\"form-control\" step=\"0.01\" type=\"number\" value=\"" . $Payment['convert'] ."\"  style=\"width: 90px\" required> <span class='payment_currency_name'></span>"
+            $this->Dashboard->API->Convert( 1 ) . "&nbsp;" . $this->Dashboard->API->Declension( 1 ) . " = <input autocomplete=\"off\" name=\"save_con[convert]\" class=\"form-control\" type=\"number\" value=\"" . $Payment['convert'] ."\"  style=\"width: 90px\" required> <span class='payment_currency_name'></span>"
         );
 
         $tabs[] = array(
