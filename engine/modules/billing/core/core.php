@@ -222,23 +222,23 @@ trait Core
     }
 
     /**
-     * Фото пользователя
-     * @param string $foto
+     * Аватар пользователя
+     * @param string|null $avatar
      * @return string
      */
-    public function Foto( string $foto ) : string
+    public function Foto( ?string $avatar = '' ) : string
     {
-        if ( count(explode("@", $foto)) == 2 )
+        if ( count(explode("@", $avatar)) == 2 )
         {
-            return 'https://www.gravatar.com/avatar/' . md5(trim($foto)) . '?s=150';
+            return 'https://www.gravatar.com/avatar/' . md5(trim($avatar)) . '?s=150';
         }
-        else if( $foto and ( file_exists( ROOT_DIR . "/uploads/fotos/" . $foto )) )
+        else if( $avatar and ( file_exists( ROOT_DIR . "/uploads/fotos/" . $avatar )) )
         {
-            return '/uploads/fotos/' . $foto;
+            return '/uploads/fotos/' . $avatar;
         }
-        elseif( $foto )
+        elseif( $avatar )
         {
-            return $foto;
+            return $avatar;
         }
 
         return "/templates/{$this->dle['skin']}/dleimages/noavatar.png";
