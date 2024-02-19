@@ -7,9 +7,12 @@
  * @copyright     Copyright (c) 2012-2024
  */
 
-namespace Billing;
+namespace Billing\Admin\Controller;
 
-Class ADMIN extends PluginActions
+use \Billing\Dashboard;
+use \Billing\PluginActions;
+
+Class Payhide extends PluginActions
 {
     const PLUGIN = 'payhide';
     const HELP_URL = 'https://dle-billing.ru/doc/plugins/payhide/';

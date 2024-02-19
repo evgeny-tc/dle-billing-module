@@ -7,9 +7,11 @@
  * @copyright     Copyright (c) 2012-2024
  */
 
-namespace Billing;
+namespace Billing\User\Controller;
 
-Class USER
+use \Billing\DevTools;
+
+Class Pay
 {
     public DevTools $DevTools;
 
@@ -114,7 +116,7 @@ Class USER
     /**
      * Квитанция, переход к оплате
      * @param array $GET
-     * @return mixed|string
+     * @return string
      * @throws \Exception
      */
     public function waiting( array $GET = [] ) : string
@@ -554,7 +556,7 @@ Class USER
 
     /**
      * Вывод сообщения для ПС
-     * @param IPayment $payment
+     * @param IPayment $Payment
      * @param string|null $text
      * @return mixed
      */

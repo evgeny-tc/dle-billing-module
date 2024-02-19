@@ -25,6 +25,7 @@ return array
 	/* Cabinet */
 	'cabinet_off' => "Личный кабинет отключен",
 	'cabinet_controller_error' => "Файл плагина user.%s не найден!",
+	'cabinet_controller_class_error' => "Класс плагина user.%s не найден!",
 	'cabinet_metod_error' => "Метод плагина user.%s->%s не найден!",
 	'cabinet_theme_error' => "Невозможно загрузить шаблон ",
     'main_now' => "Сегодня в ",

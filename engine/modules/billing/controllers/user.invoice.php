@@ -7,9 +7,11 @@
  * @copyright     Copyright (c) 2012-2024
  */
 
-namespace Billing;
+namespace Billing\User\Controller;
 
-Class USER
+use \Billing\DevTools;
+
+Class Invoice
 {
     public DevTools $DevTools;
 

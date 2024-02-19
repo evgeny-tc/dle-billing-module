@@ -22,6 +22,9 @@ Class Dashboard
     private function __clone()    {}
     private function __wakeup()   {}
 
+    /**
+     * @throws \Exception
+     */
     public static function Start()
 	{
         if ( empty(self::$instance) )
@@ -187,24 +190,39 @@ Class Dashboard
 		}
 		else
 		{
-			throw new \Exception($this->lang['main_error_controller']);
+			throw new \Exception($this->lang['main_error_controller_file']);
 		}
 
-		$Admin = new ADMIN;
+        $classControllerName = ucfirst($this->controller);
 
-		if( in_array($this->action, get_class_methods($Admin) ) )
+        if( class_exists("\\Billing\\Admin\\Controller\\$classControllerName") )
+        {
+            $Controller = new ("\\Billing\\Admin\\Controller\\$classControllerName");
+        }
+        # todo: для совместимости
+        #
+        else if( class_exists('\\Billing\\ADMIN') )
+        {
+            $Controller = new ADMIN;
+        }
+        else
+        {
+            throw new \Exception($this->lang['main_error_controller']);
+        }
+
+		if( in_array($this->action, get_class_methods($Controller) ) )
 		{
-            if( property_exists($Admin, 'Dashboard') )
+            if( property_exists($Controller, 'Dashboard') )
             {
-                $Admin->Dashboard = $this;
+                $Controller->Dashboard = $this;
             }
 
-			echo $Admin->{$this->action}( $arrParams );
+			echo $Controller->{$this->action}( $arrParams );
+
+            return;
 		}
-		else
-		{
-			throw new \Exception($this->lang['main_error_metod']);
-		}
+
+        throw new \Exception($this->lang['main_error_metod']);
 	}
 
 	/**
@@ -549,12 +567,14 @@ HTML;
 		return $answer;
 	}
 
-	/**
-	 * Build table
-	 * @param string $id
-	 * @param string $other_tr
-	 * @return string|void
-	 */
+    /**
+     * Build table
+     * @param string $id
+     * @param string $other_tr
+     * @param int|bool $row_key
+     * @param string $added_table_class
+     * @return string
+     */
     public function ThemeParserTable( string $id = '', string $other_tr = '', int|bool $row_key = false, string $added_table_class = '' ) : string
     {
         if( ! $this->list_table_num ) return '';
@@ -614,21 +634,21 @@ HTML;
 		);
 	}
 
-	/**
-	 * User-panel
-	 * @param string $login
-	 * @return string
-	 */
-	public function ThemeInfoUser( string $login ) : string
+    /**
+     * User-panel
+     * @param string $login_orig
+     * @return string
+     */
+	public function ThemeInfoUser( string $login_orig ) : string
 	{
-        $login = urlencode( $login );
+        $login = urlencode( $login_orig );
 
 		return "<div class='btn-group'>
 					<a href='{$this->dle['http_home_url']}user/{$login}/' target='_blank'>
 					    <i class='fa fa-user' style='margin-left: 10px; margin-right: 5px; vertical-align: middle'></i>
 					</a>
 					<a href='#' target='#_blank' data-toggle='dropdown' data-original-title='{$this->lang['history_user']}' class='status-info tip'>
-					    <b>{$login}</b>
+					    <b>{$login_orig}</b>
 					</a>
 					<ul class='dropdown-menu text-left'>
 						<li>

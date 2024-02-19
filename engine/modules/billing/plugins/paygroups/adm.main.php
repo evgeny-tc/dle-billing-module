@@ -7,9 +7,12 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-namespace Billing;
+namespace Billing\Admin\Controller;
 
-Class ADMIN extends PluginActions
+use \Billing\Dashboard;
+use \Billing\PluginActions;
+
+Class Paygroups extends PluginActions
 {
     const PLUGIN = 'paygroups';
     const HELP_URL = 'https://dle-billing.ru/doc/plugins/paygroups/';

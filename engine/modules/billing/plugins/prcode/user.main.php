@@ -7,9 +7,11 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-namespace Billing;
+namespace Billing\User\Controller;
 
-Class USER
+use \Billing\DevTools;
+
+Class Prcode
 {
     const PLUGIN = 'prcode';
 

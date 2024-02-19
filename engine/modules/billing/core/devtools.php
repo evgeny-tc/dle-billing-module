@@ -129,6 +129,7 @@ Class DevTools
             }
         }
 
+        //todo: api 2.0
         $this->LQuery 	= new Database( $db, $this->config['fname'], $_TIME );
         $this->API 		= new API( $db, $member_id, $this->config, $_TIME );
 
@@ -185,7 +186,22 @@ Class DevTools
             throw new \Exception(sprintf($this->lang['cabinet_controller_error'], $this->get_plugin));
         }
 
-        $Cabinet = new USER;
+        $classControllerName = ucfirst($RealURL);
+
+        if( class_exists("\\Billing\\User\\Controller\\$classControllerName") )
+        {
+            $Cabinet = new ("\\Billing\\User\\Controller\\$classControllerName");
+        }
+        # todo: для совместимости
+        #
+        else if( class_exists('\\Billing\\USER') )
+        {
+            $Cabinet = new USER;
+        }
+        else
+        {
+            throw new \Exception(sprintf($this->lang['cabinet_controller_class_error'], $this->get_plugin));
+        }
 
         if( in_array($this->get_method, get_class_methods($Cabinet) ) )
         {

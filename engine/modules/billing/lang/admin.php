@@ -228,7 +228,8 @@ return array
 	'main_report' => "Сообщить об ошибке",
 	'main_log' => "Режим тестирования",
 	'main_report_close' => "Больше не показывать",
-	'main_error_controller' => "Файл плагина не найден",
+	'main_error_controller_file' => "Файл плагина не найден",
+	'main_error_controller' => "Класс плагина не найден",
 	'main_error_metod' => "Функция плагина не найден",
 
 	# main

@@ -7,12 +7,19 @@
  * @copyright     Copyright (c) 2012-2024
  */
 
-namespace Billing;
+namespace Billing\User\Controller;
 
-Class USER
+use \Billing\DevTools;
+
+Class Log
 {
     public DevTools $DevTools;
 
+    /**
+     * @param array $GET
+     * @return string
+     * @throws \Exception
+     */
     public function main( array $GET = [] )
     {
         # Проверка авторизации

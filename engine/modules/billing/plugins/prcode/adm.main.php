@@ -7,9 +7,12 @@
  * @copyright     Copyright (c) 2012-2024
  */
 
-namespace Billing;
+namespace Billing\Admin\Controller;
 
-Class ADMIN extends PluginActions
+use \Billing\Dashboard;
+use \Billing\PluginActions;
+
+Class Prcode extends PluginActions
 {
     const PLUGIN = 'prcode';
     const HELP_URL = 'https://dle-billing.ru/doc/plugins/prcode/';

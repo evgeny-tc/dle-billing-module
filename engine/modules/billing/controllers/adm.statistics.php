@@ -7,9 +7,11 @@
  * @copyright     Copyright (c) 2012-2024
  */
 
-namespace Billing;
+namespace Billing\Admin\Controller;
 
-Class ADMIN
+use \Billing\Dashboard;
+
+Class Statistics
 {
     public Dashboard $Dashboard;
 

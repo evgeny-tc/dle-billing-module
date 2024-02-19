@@ -62,10 +62,11 @@ Class Database
 
     /**
      * Use coupon
-     * @param string $coupon
+     * @param array $coupon
+     * @param array $invoice
      * @return mixed
      */
-    public function useCoupon(array $coupon, array $invoice = [])
+    public function useCoupon(array $coupon, array $invoice = []): mixed
     {
         if( isset( $invoice['invoice_id'] ) )
         {
@@ -90,12 +91,13 @@ Class Database
     }
 
     /**
-	 * Users list
-	 * @param $limit
-	 * @return array
-	 */
-	public function DbSearchUsers( $limit = 100 )
-	{
+     * Список пользователь
+     * todo: ?
+     * @param int|null $limit
+     * @return array
+     */
+	public function DbSearchUsers( ?int $limit = 100 ): array
+    {
 		$limit = intval( $limit );
 
 		$answer = array();
@@ -112,8 +114,8 @@ Class Database
 	 * @param $search_str
 	 * @return mixed
 	 */
-	public function DbSearchUserByName( string $search_str )
-	{
+	public function DbSearchUserByName( string $search_str ): mixed
+    {
 		return $this->db->super_query( "SELECT * FROM " . USERPREFIX . "_users
 											WHERE name = '" . $this->db->safesql( $search_str ) . "' or
 											      email = '" . $this->db->safesql( $search_str ) . "'" );
