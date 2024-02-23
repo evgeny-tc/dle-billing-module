@@ -58,7 +58,7 @@ try
     #
     if( empty($Data['hidden_params[dle_login_hash]']) or $Data['hidden_params[dle_login_hash]'] != $dle_login_hash )
     {
-        billing_error( $dle_login_hash );
+        billing_error( $_Lang['errors']['hash_params'] );
     }
 
     if( empty($Data['hidden_params[theme]']) or ! file_exists(ROOT_DIR . '/templates/' . $config['skin'] . '/billing/plugins/forms/' . $Data['hidden_params[theme]'] . '/info.ini') )
