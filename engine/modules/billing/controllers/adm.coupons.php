@@ -10,6 +10,7 @@
 namespace Billing\Admin\Controller;
 
 use \Billing\Dashboard;
+use \Billing\Paging;
 
 Class Coupons
 {
@@ -147,29 +148,21 @@ Class Coupons
 
         if( $NumData)
         {
-            $TabFirst .= $this->Dashboard->ThemePadded( '
-				<div class="pull-left" style="margin:7px; vertical-align: middle">
-					<ul class="pagination pagination-sm">' .
-                            $this->Dashboard->API->Pagination(
-                                $NumData,
-                                $GET['page'],
-                                "?mod=billing&c=coupons&p=page/{p}",
-                                "<li><a href=\"{page_num_link}\">{page_num}</a></li>",
-                                "<li class=\"active\"><span>{page_num}</span></li>",
-                                $PerPage
-                            ) . '
-						</ul>
-					</ul>
-				</div>
-
-				<span style="float: right"><input class="btn" style="vertical-align: middle" name="bnt_remove_select" type="submit" value="' . $this->Dashboard->lang['coupons']['list']['delete'] . '"></span>
-
+            $TabFirst .= $this->Dashboard->ThemePadded(
+                (new Paging())->setRows($NumData)
+                    ->setCurrentPage($GET['page'])
+                    ->setUrl('?mod=billing&c=coupons&p=page/{p}')
+                    ->setPerPage($PerPage)
+                    ->parse().
+                '<span style="float: right">
+                    <input class="btn" style="vertical-align: middle" name="bnt_remove_select" type="submit" value="' . $this->Dashboard->lang['coupons']['list']['delete'] . '">
+                </span>
 				<input type="hidden" name="user_hash" value="' . $this->Dashboard->hash . '" />',
-                'box-footer', 'right' );
+            );
         }
         else
         {
-            $TabFirst .= $this->Dashboard->ThemePadded( $this->Dashboard->lang['history_no'], '' );
+            $TabFirst .= $this->Dashboard->ThemePadded( $this->Dashboard->lang['history_no'] );
         }
 
         $tabs[] = [
