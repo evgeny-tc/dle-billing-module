@@ -11,6 +11,7 @@ namespace Billing\Admin\Controller;
 
 use \Billing\Dashboard;
 use \Billing\PluginActions;
+use \Billing\Paging;
 
 Class Refund extends PluginActions
 {
@@ -96,7 +97,7 @@ Class Refund extends PluginActions
                 '<th>'.$this->Dashboard->lang['history_date'].'</th>',
                 '<th>'.$this->Dashboard->lang['history_user'].'</th>',
                 '<th>'.$this->Dashboard->lang['status'].'</th>',
-                '<th><center><input type="checkbox" value="" name="remove_list[]" onclick="BillingJS.checkAll(this)" /></center></th>'
+                '<th><span class="settingsb"><input type="checkbox" class="icheck" value="" name="remove_list[]" onclick="BillingJS.checkAll(this)" /></span></th>'
             ]
         );
 
@@ -172,7 +173,7 @@ Class Refund extends PluginActions
 				$this->Dashboard->ThemeChangeTime( $Value['refund_date']),
 				$this->Dashboard->ThemeInfoUser( $Value['refund_user'] ),
                 $refund_status,
-				'<center><input name="remove_list[]" value="'.$Value['refund_id'].'" type="checkbox"></center>'
+                '<span class="settingsb">' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['refund_id']) . '</span>'
 			));
 		}
 
@@ -194,27 +195,23 @@ HTML;
 
 		if( $NumData )
 		{
-			$ContentList .= $this->Dashboard->ThemePadded( '
-						<ul class="pagination pagination-sm">' .
-							$this->Dashboard->API->Pagination(
-								$NumData,
-								$Get['page'],
-								"?mod=billing&c=refund&p=user/{$Get['user']}/page/{p}",
-								"<li><a href=\"{page_num_link}\">{page_num}</a></li>",
-								"<li class=\"active\"><span>{page_num}</span></li>",
-								$PerPage
-							) . '</ul>
-						<div class="table-bottom-select" style="float: right">
+			$ContentList .= $this->Dashboard->ThemePadded(
+                (new Paging())->setRows($NumData)
+                    ->setCurrentPage($Get['page'])
+                    ->setUrl("?mod=billing&c=refund&p=user/{$Get['user']}/page/{p}")
+                    ->setPerPage($PerPage)
+                    ->parse(),
+                '<div class="table-bottom-select" style="float: right">
 								<select name="act" class="uniform">
 									<option disabled>' . $this->Dashboard->lang['refund_change'] . '</option>
-									<option value="back">' . $this->Dashboard->lang['refund_act_no'] . '</option>
+									<option value="back">&nbsp;&nbsp;' . $this->Dashboard->lang['refund_act_no'] . '</option>
 									<option disabled>' . $this->Dashboard->lang['refund_change_status'] . '</option>
-									<option value="ok">' . $this->Dashboard->lang['refund_act_ok'] . '</option>
-									<option value="wait">' . $this->Dashboard->lang['refund_wait'] . '</option>
-									<option value="remove">' . $this->Dashboard->lang['remove'] . '</option>
+									<option value="ok">&nbsp;&nbsp;' . $this->Dashboard->lang['refund_act_ok'] . '</option>
+									<option value="wait">&nbsp;&nbsp;' . $this->Dashboard->lang['refund_wait'] . '</option>
+									<option value="remove">&nbsp;&nbsp;' . $this->Dashboard->lang['remove'] . '</option>
 								</select>
-							' . $this->Dashboard->MakeButton("act_do", $this->Dashboard->lang['act'], "gold") . '</div>',
-							'box-footer', 'right' );
+							' . $this->Dashboard->MakeButton("act_do", $this->Dashboard->lang['act'], "gold") . '</div>'
+			);
 		}
 		else
 		{

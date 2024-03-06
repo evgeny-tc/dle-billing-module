@@ -382,7 +382,7 @@ Class Dashboard
 	 * @param bool $class
 	 * @return string
 	 */
-	public function MakeCheckBox(string $name, $selected, string $value = '1', bool $class = true ) : string
+	public function MakeCheckBox(string $name, mixed $selected = false, string $value = '1', bool $class = true ) : string
 	{
 		$selected = $selected ? "checked" : '';
 		$class = $class ? "icheck" : '';
@@ -439,14 +439,17 @@ Class Dashboard
 		return "<input data-rel=\"" . $date . "\" type=\"text\" name=\"" . $name . "\" id=\"" . $name . "\" value=\"" . $value . "\" class=\"form-control\" " . $style . ">";
 	}
 
-	/**
-	 * Retutn panel footer
-	 * @param string $text
-	 * @return string
-	 */
-	public function ThemePadded( string $text ) : string
+    /**
+     * Footer part
+     * @param string $text
+     * @param string|null $right_text
+     * @return string
+     */
+	public function ThemePadded( string $text, ?string $right_text = '' ) : string
 	{
-		return "<div class=\"panel-footer\"> ". $text ." </div>";
+        $right_text = $right_text ? '<div style="float: right; margin: 7px">' . $right_text . '</div>' : '';
+
+		return "<div class=\"panel-footer\"> ". $text . $right_text ." </div>";
 	}
 
     /**

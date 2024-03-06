@@ -100,7 +100,7 @@ Class Coupons
                 '<td>' . $this->Dashboard->lang['coupons']['list']['value'] . '</td>',
                 '<td>' . $this->Dashboard->lang['coupons']['list']['time'] . '</td>',
                 '<td>' . $this->Dashboard->lang['coupons']['list']['use'] . '</td>',
-                '<td width="2%"><center><input type="checkbox" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></center></td>'
+                '<td width="2%"><span class="settingsb"><input type="checkbox" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></span></td>'
             ]
         );
 
@@ -139,7 +139,7 @@ Class Coupons
                         ? static::dateStatus($Value['coupon_time_end'])
                         : '',
                     $Value['coupon_use'] ? $this->Dashboard->ThemeInfoUser( $Value['coupon_use'] ) : '',
-                    "<center><input name=\"massact_list[]\" value=\"".$Value['coupon_id']."\" type=\"checkbox\"></center>"
+                    '<span class="settingsb">' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['coupon_id']) . '</span>'
                 ]
             );
         }
@@ -153,11 +153,8 @@ Class Coupons
                     ->setCurrentPage($GET['page'])
                     ->setUrl('?mod=billing&c=coupons&p=page/{p}')
                     ->setPerPage($PerPage)
-                    ->parse().
-                '<span style="float: right">
-                    <input class="btn" style="vertical-align: middle" name="bnt_remove_select" type="submit" value="' . $this->Dashboard->lang['coupons']['list']['delete'] . '">
-                </span>
-				<input type="hidden" name="user_hash" value="' . $this->Dashboard->hash . '" />',
+                    ->parse(),
+                $this->Dashboard->MakeButton('bnt_remove_select', $this->Dashboard->lang['remove'], 'bg-danger')
             );
         }
         else

@@ -11,6 +11,7 @@ namespace Billing\Admin\Controller;
 
 use \Billing\Dashboard;
 use \Billing\PluginActions;
+use \Billing\Paging;
 
 Class Referrals extends PluginActions
 {
@@ -105,19 +106,13 @@ Class Referrals extends PluginActions
 
 		if( $ResultCount['count'])
 		{
-			$TabFirst .= $this->Dashboard->ThemePadded( '
-				<div class="pull-left" style="margin:7px; vertical-align: middle">
-					<ul class="pagination pagination-sm">' .
-						$this->Dashboard->API->Pagination(
-							$ResultCount['count'],
-							$GET['page'],
-							"?mod=billing&c=referrals&p=page/{p}",
-							" <li><a href=\"{page_num_link}\">{page_num}</a></li>",
-							"<li class=\"active\"><span>{page_num}</span></li>",
-							$PerPage
-						) . '</ul>
-					</ul>
-				</div>', 'box-footer', 'right' );
+			$TabFirst .= $this->Dashboard->ThemePadded(
+                (new Paging())->setRows($ResultCount['count'])
+                    ->setCurrentPage($GET['page'])
+                    ->setUrl('?mod=billing&c=referrals&p=page/{p}')
+                    ->setPerPage($PerPage)
+                    ->parse()
+            );
 		}
 		else
 		{

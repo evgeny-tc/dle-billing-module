@@ -59,6 +59,8 @@ function BillingJSAdmin( hash )
 				}
 			}
 		}
+
+		$.uniform.update();
 	};
 
 	/**

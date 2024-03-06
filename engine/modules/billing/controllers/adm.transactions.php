@@ -10,6 +10,7 @@
 namespace Billing\Admin\Controller;
 
 use \Billing\Dashboard;
+use \Billing\Paging;
 
 Class Transactions
 {
@@ -112,7 +113,7 @@ Class Transactions
                 '<th>'.$this->Dashboard->lang['history_user'].'</th>',
                 '<th>'.$this->Dashboard->lang['history_balance'].'</th>',
                 '<th>'.$this->Dashboard->lang['history_comment'].'</th>',
-                '<th class="th_checkbox"><input type="checkbox" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></th>',
+                '<th class="th_checkbox"><input type="checkbox" value="" class="icheck" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></th>',
             ]
         );
 
@@ -131,18 +132,18 @@ Class Transactions
                     '<div class="th_description">
                         <a href="#" onClick="BillingJS.openDialog( \'#log_' . $Value['history_id'] . '\' ); return false">' . (strip_tags($Value['history_text']) ?: '---') . '</a>
                     </div>',
-                    "<span class='settingsb'>" . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['history_id'], false) . '</span>
-					<div id="log_' . $Value['history_id'] . '" title="' . $this->Dashboard->lang['history_transaction'] . $Value['history_id'] . '" style="display:none">
-						<b>' . $this->Dashboard->lang['history_transaction_text'] . '</b>
-						<br />
-						' . $Value['history_text'] . '
-						<br /><br />
-						<p>
-							<b>' . $this->Dashboard->lang['history_code'] . ':</b>
-							<br />
-							' . $Value['history_plugin'] . ' / ' . $Value['history_plugin_id'] . '
-						</p>
-					</div>'
+                    '<span class="settingsb">' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['history_id']) . '</span>
+                        <div id="log_' . $Value['history_id'] . '" title="' . $this->Dashboard->lang['history_transaction'] . $Value['history_id'] . '" style="display:none">
+                            <b>' . $this->Dashboard->lang['history_transaction_text'] . '</b>
+                            <br />
+                            ' . $Value['history_text'] . '
+                            <br /><br />
+                            <p>
+                                <b>' . $this->Dashboard->lang['history_code'] . ':</b>
+                                <br />
+                                ' . $Value['history_plugin'] . ' / ' . $Value['history_plugin_id'] . '
+                            </p>
+                        </div>'
                 ]
             );
 		}
@@ -156,19 +157,12 @@ Class Transactions
 		else
 		{
 			$ContentList .= $this->Dashboard->ThemePadded(
-				"<ul class=\"pagination pagination-sm\">" .
-								$this->Dashboard->API->Pagination(
-									$NumData,
-									$Get['page'],
-									"?mod=billing&c=transactions&p=" . ( $Get['user'] ? "user/{$Get['user']}/" : "" ) . "page/{p}",
-									"<li><a href=\"{page_num_link}\">{page_num}</a></li>",
-									"<li class=\"active\"><span>{page_num}</span></li>",
-									$PerPage
-								) .
-				"</ul>
-                    <div style=\"float: right\">
-                        " . $this->Dashboard->MakeButton('mass_remove', $this->Dashboard->lang['remove'], 'bg-danger') . "
-					</div>"
+                (new Paging())->setRows($NumData)
+                    ->setCurrentPage($Get['page'])
+                    ->setUrl("?mod=billing&c=transactions&p=" . ( $Get['user'] ? "user/{$Get['user']}/" : "" ) . "page/{p}")
+                    ->setPerPage($PerPage)
+                    ->parse(),
+                $this->Dashboard->MakeButton('mass_remove', $this->Dashboard->lang['remove'], 'bg-danger')
 			);
 		}
 

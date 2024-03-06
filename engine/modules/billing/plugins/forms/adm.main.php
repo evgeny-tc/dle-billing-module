@@ -11,6 +11,7 @@ namespace Billing\Admin\Controller;
 
 use \Billing\Dashboard;
 use \Billing\PluginActions;
+use \Billing\Paging;
 
 Class Forms extends PluginActions
 {
@@ -259,23 +260,14 @@ position: relative;
 </style>
 HTML;
 
-        $Content .= $this->Dashboard->ThemePadded( '
-				<div class="pull-left">
-					<ul class="pagination pagination-sm">' .
-                        $this->Dashboard->API->Pagination(
-                            $ResultCount['count'],
-                            $page,
-                            $PHP_SELF . "?mod=billing&c=forms&p=key/{$key}/page/{p}",
-                            "<li><a href=\"{page_num_link}\">{page_num}</a></li>",
-                            "<li class=\"active\"><span>{page_num}</span></li>",
-                            $PerPage
-                        ) . '</ul>
-                                </ul>
-                            </div>
-				<div class="pull-right">
-					<button class="btn bg-danger btn-sm btn-raised" name="act_do" type="submit"><i class="fa fa-trash-o position-left"></i>'.$this->Dashboard->lang['remove'].'</button>
-				</div>
-				<input type="hidden" name="user_hash" value="' . $this->Dashboard->hash . '" />', 'box-footer', 'right' );
+        $Content .= $this->Dashboard->ThemePadded(
+            (new Paging())->setRows($ResultCount['count'])
+                ->setCurrentPage($page)
+                ->setUrl("?mod=billing&c=forms&p=key/{$key}/page/{p}")
+                ->setPerPage($PerPage)
+                ->parse(),
+            $this->Dashboard->MakeButton('act_do', $this->Dashboard->lang['remove'], 'bg-danger')
+        );
 
         return $Content;
     }

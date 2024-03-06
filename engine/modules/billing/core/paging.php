@@ -92,7 +92,7 @@ Class Paging
      */
     public function setCurrentPage(?int $page) : self
     {
-        $this->CURRENT_PAGE = intval($page) ?? 1;
+        $this->CURRENT_PAGE = $page > 0 ? $page : 1;
 
         return $this;
     }
@@ -135,74 +135,76 @@ Class Paging
 
         if( $pages == 1 )
         {
-            return sprintf($this->THEME_LINK, '#', 1);
+            $_return[] = sprintf($this->THEME_LINK, '#', 1);
         }
-
-        $min = false;
-
-        if( $this->CURRENT_PAGE > 1 )
+        else
         {
-            $_return[] = sprintf(
-                $this->THEME_LINK,
-                str_replace('{p}', ($this->CURRENT_PAGE-1), $this->URL),
-                '&laquo;'
-            );
-        }
+            $min = false;
 
-        for( $j = 1; $j <= $pages; $j ++ )
-        {
-            if( $j < ( $this->CURRENT_PAGE - 4 ) )
+            if( $this->CURRENT_PAGE > 1 )
             {
-                if( ! $min )
-                {
-                    $j++;
-                    $min = true;
+                $_return[] = sprintf(
+                    $this->THEME_LINK,
+                    str_replace('{p}', ($this->CURRENT_PAGE-1), $this->URL),
+                    '&laquo;'
+                );
+            }
 
-                    $_return[] = sprintf(
-                        $this->THEME_LINK,
-                        str_replace('{p}', 1, $this->URL),
-                        "1.."
-                    );
+            for( $j = 1; $j <= $pages; $j ++ )
+            {
+                if( $j < ( $this->CURRENT_PAGE - 4 ) )
+                {
+                    if( ! $min )
+                    {
+                        $j++;
+                        $min = true;
+
+                        $_return[] = sprintf(
+                            $this->THEME_LINK,
+                            str_replace('{p}', 1, $this->URL),
+                            "1.."
+                        );
+                    }
+
+                    continue;
                 }
 
-                continue;
+                if( $j > ( $this->CURRENT_PAGE + 5 ) )
+                {
+                    $_return[] = sprintf(
+                        $this->THEME_LINK,
+                        str_replace('{p}', $pages, $this->URL),
+                        "..{$pages}"
+                    );
+
+                    break;
+                }
+
+                if( $this->CURRENT_PAGE != $j )
+                {
+                    $_return[] = sprintf(
+                        $this->THEME_LINK,
+                        str_replace('{p}', $j, $this->URL),
+                        $j
+                    );
+                }
+                else
+                {
+                    $_return[] = sprintf(
+                        $this->THEME_LINK_ACTIVE,
+                        $j
+                    );
+                }
             }
 
-            if( $j > ( $this->CURRENT_PAGE + 5 ) )
+            if( $this->CURRENT_PAGE < $pages )
             {
                 $_return[] = sprintf(
                     $this->THEME_LINK,
-                    str_replace('{p}', $pages, $this->URL),
-                    "..{$pages}"
-                );
-
-                break;
-            }
-
-            if( $this->CURRENT_PAGE != $j )
-            {
-                $_return[] = sprintf(
-                    $this->THEME_LINK,
-                    str_replace('{p}', $j, $this->URL),
-                    $j
+                    str_replace('{p}', ($this->CURRENT_PAGE + 1), $this->URL),
+                    "&raquo;"
                 );
             }
-            else
-            {
-                $_return[] = sprintf(
-                    $this->THEME_LINK_ACTIVE,
-                    $j
-                );
-            }
-        }
-
-        if( $this->CURRENT_PAGE < $pages )
-        {
-            $_return[] = sprintf(
-                $this->THEME_LINK,
-                str_replace('{p}', ($this->CURRENT_PAGE + 1), $this->URL),
-                "&raquo;"
-            );
         }
 
         return sprintf($this->THEME_BLOCK, implode($_return));

@@ -11,6 +11,7 @@ namespace Billing\Admin\Controller;
 
 use \Billing\Dashboard;
 use \Billing\PluginActions;
+use \Billing\Paging;
 
 Class Payhide extends PluginActions
 {
@@ -114,7 +115,7 @@ Class Payhide extends PluginActions
 				$Value['autor'] ? $this->Dashboard->ThemeInfoUser( $Value['autor'] ) : '',
 				$Value['payhide_price'] . ' ' . $this->Dashboard->API->Declension( $Value['payhide_price'] ),
 				$Value['payhide_time'] ? ( ( $Value['payhide_time']>=$this->Dashboard->_TIME ) ? "<font color='green'>".$this->pluginLang['timeTo'].langdate( "j F Y  G:i", $Value['payhide_time'])."</font>": "<font color='red'>".$this->pluginLang['timeTo'].langdate( "j F Y  G:i", $Value['payhide_time'])."</font>" ) : $this->pluginLang['timeFull'],
-				"<center><input name=\"massact_list[]\" value=\"".$Value['payhide_id']."\" class=\"icheck\" type=\"checkbox\"></center>"
+				'<span class="settingsb">' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['payhide_id']) . '</span>'
 			));
 		}
 
@@ -122,24 +123,14 @@ Class Payhide extends PluginActions
 
 		if( $ResultCount['count'])
 		{
-			$Content .= $this->Dashboard->ThemePadded( '
-				<div class="pull-left">
-					<ul class="pagination pagination-sm">' .
-						$this->Dashboard->API->Pagination(
-							$ResultCount['count'],
-							$GET['page'],
-							$PHP_SELF . "?mod=billing&c=payhide&p=page/{p}",
-							"<li><a href=\"{page_num_link}\">{page_num}</a></li>",
-							"<li class=\"active\"><span>{page_num}</span></li>",
-							$PerPage
-						) . '</ul>
-					</ul>
-				</div>
-
-				<div class="pull-right">
-					<button class="btn bg-danger btn-sm btn-raised" name="act_do" type="submit"><i class="fa fa-trash-o position-left"></i>'.$this->Dashboard->lang['remove'].'</button>
-				</div>
-				<input type="hidden" name="user_hash" value="' . $this->Dashboard->hash . '" />', 'box-footer', 'right' );
+			$Content .= $this->Dashboard->ThemePadded(
+                (new Paging())->setRows($ResultCount['count'])
+                    ->setCurrentPage($GET['page'])
+                    ->setUrl('?mod=billing&c=payhide&p=page/{p}')
+                    ->setPerPage($PerPage)
+                    ->parse(),
+                $this->Dashboard->MakeButton('act_do', $this->Dashboard->lang['remove'], 'bg-danger')
+            );
 		}
 		else
 		{

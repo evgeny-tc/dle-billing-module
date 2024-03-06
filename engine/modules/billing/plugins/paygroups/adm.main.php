@@ -28,7 +28,7 @@ Class Paygroups extends PluginActions
 
         global $user_group;
 
-        $pluginLang = DevTools::getLang(static::PLUGIN);
+        $pluginLang = Dashboard::getLang(static::PLUGIN);
 
 		# Сохранить настройки плагина
 		#

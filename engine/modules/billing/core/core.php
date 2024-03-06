@@ -142,7 +142,7 @@ trait Core
     }
 
     /**
-     * Get full url
+     * Ссылка на пост
      * @param array $row
      * @return string
      */
@@ -162,18 +162,14 @@ trait Core
                     {
                         return $config['http_home_url'] . $cats_url . "/" . $row['id'] . "-" . $row['alt_name'] . ".html";
                     }
-                    else
-                        return $config['http_home_url'] . $row['id'] . "-" . $row['alt_name'] . ".html";
-                }
-                else
-                {
+
                     return $config['http_home_url'] . $row['id'] . "-" . $row['alt_name'] . ".html";
                 }
+
+                return $config['http_home_url'] . $row['id'] . "-" . $row['alt_name'] . ".html";
             }
-            else
-            {
-                return $config['http_home_url'] . date( 'Y/m/d/', $row['date'] ) . $row['alt_name'] . ".html";
-            }
+
+            return $config['http_home_url'] . date( 'Y/m/d/', $row['date'] ) . $row['alt_name'] . ".html";
         }
 
         return $config['http_home_url'] . "index.php?newsid=" . $row['id'];

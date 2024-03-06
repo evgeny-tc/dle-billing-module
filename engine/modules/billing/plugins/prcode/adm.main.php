@@ -11,6 +11,7 @@ namespace Billing\Admin\Controller;
 
 use \Billing\Dashboard;
 use \Billing\PluginActions;
+use \Billing\Paging;
 
 Class Prcode extends PluginActions
 {
@@ -93,9 +94,7 @@ Class Prcode extends PluginActions
 
 				$_prCode = substr_replace($_prCode, $this->generate(), 0, 1);
 
-				$this->Dashboard->LQuery->db->query( "INSERT INTO " . USERPREFIX . "_billing_prcodes
-														(prcode_tag, prcode_sum) values
-														('" . $_prCode . "', '" . $_Sum . "')" );
+				$this->Dashboard->LQuery->db->query( "INSERT INTO " . USERPREFIX . "_billing_prcodes (prcode_tag, prcode_sum) values ('" . $_prCode . "', '" . $_Sum . "')" );
 
 
 				$_Answer .= '<tr><td>' . $_prCode . '</td><td>' . $_Sum . ' ' . $_Declension . '</td></tr>';
@@ -112,7 +111,7 @@ Class Prcode extends PluginActions
 			'<td>' . $this->_Lang['ap_sum'] . '</td>',
 			'<td>' . $this->_Lang['ap_active'] . '</td>',
 			'<td>' . $this->_Lang['ap_time_active'] . '</td>',
-			'<td width="2%"><center><input type="checkbox" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></center></td>'
+			'<td width="2%"><center><input type="checkbox" class="icheck" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></center></td>'
 		));
 
 		$PerPage = $this->Dashboard->config['paging'];
@@ -133,38 +132,30 @@ Class Prcode extends PluginActions
 
 		while ( $Value = $this->Dashboard->LQuery->db->get_row() )
 		{
-			$this->Dashboard->ThemeAddTR( array(
-				$Value['prcode_id'],
-				$Value['prcode_active_user'] ? '<span style="text-decoration:line-through">' . $Value['prcode_tag'] . '</span>' : $Value['prcode_tag'],
-				$Value['prcode_sum'] . ' ' . $this->Dashboard->API->Declension( $Value['prcode_sum'] ),
-				$Value['prcode_active_user'] ? $this->Dashboard->ThemeInfoUser( $Value['prcode_active_user'] ) : '',
-				$Value['prcode_active_user'] ? $this->Dashboard->ThemeChangeTime( $Value['prcode_active_date'] ) : '',
-				"<center><input name=\"massact_list[]\" value=\"".$Value['prcode_id']."\" type=\"checkbox\"></center>"
-			) );
+			$this->Dashboard->ThemeAddTR(
+                [
+                    $Value['prcode_id'],
+                    $Value['prcode_active_user'] ? '<span style="text-decoration:line-through">' . $Value['prcode_tag'] . '</span>' : $Value['prcode_tag'],
+                    $Value['prcode_sum'] . ' ' . $this->Dashboard->API->Declension( $Value['prcode_sum'] ),
+                    $Value['prcode_active_user'] ? $this->Dashboard->ThemeInfoUser( $Value['prcode_active_user'] ) : '',
+                    $Value['prcode_active_user'] ? $this->Dashboard->ThemeChangeTime( $Value['prcode_active_date'] ) : '',
+                    '<span class="settingsb">' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['prcode_id']) . '</span>'
+                ]
+            );
 		}
 
 		$TabFirst = $this->Dashboard->ThemeParserTable();
 
 		if( $NumData)
 		{
-			$TabFirst .= $this->Dashboard->ThemePadded( '
-				<div class="pull-left" style="margin:7px; vertical-align: middle">
-					<ul class="pagination pagination-sm">' .
-						$this->Dashboard->API->Pagination(
-							$NumData,
-							$GET['page'],
-							$PHP_SELF . "?mod=billing&c=prcode&p=page/{p}",
-							"<li><a href=\"{page_num_link}\">{page_num}</a></li>",
-							"<li class=\"active\"><span>{page_num}</span></li>",
-							$PerPage ) . '
-						</ul>
-					</ul>
-				</div>
-
-				<span style="float: right"><input class="btn" style="vertical-align: middle" name="bnt_remove_select" type="submit" value="' . $this->_Lang['ap_remove_selected'] . '"></span>
-				
-				<input type="hidden" name="user_hash" value="' . $this->Dashboard->hash . '" />',
-				'box-footer', 'right' );
+			$TabFirst .= $this->Dashboard->ThemePadded(
+                (new Paging())->setRows($NumData)
+                    ->setCurrentPage($GET['page'])
+                    ->setUrl('?mod=billing&c=prcode&p=page/{p}')
+                    ->setPerPage($PerPage)
+                    ->parse(),
+                $this->Dashboard->MakeButton('bnt_remove_select', $this->_Lang['ap_remove_selected'], 'bg-danger')
+             );
 		}
 		else
 		{

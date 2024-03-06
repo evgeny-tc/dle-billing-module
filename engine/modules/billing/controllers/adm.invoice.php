@@ -10,11 +10,17 @@
 namespace Billing\Admin\Controller;
 
 use \Billing\Dashboard;
+use \Billing\Paging;
 
 Class Invoice
 {
     public Dashboard $Dashboard;
 
+    /**
+     * Main page
+     * @param array $Get
+     * @return string
+     */
     public function main( array $Get = [] ) : string
 	{
 		$listPayments = $this->Dashboard->Payments();
@@ -198,7 +204,7 @@ Class Invoice
                 '<th>'.$this->Dashboard->lang['invoice_str_ps'].'</th>',
                 '<th>'.$this->Dashboard->lang['history_user'].'</th>',
                 '<th>'.$this->Dashboard->lang['invoice_str_status'].'</th>',
-                '<th class="th_checkbox"><input type="checkbox" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></th>'
+                '<th class="th_checkbox"><input class="icheck" type="checkbox" value="" name="massact_list[]" onclick="BillingJS.checkAll(this);" /></th>'
             ]
         );
 
@@ -217,9 +223,7 @@ Class Invoice
                         ? '<span class="label bt_lable_green" onClick="BillingJS.openDialog( \'#invoice_' . $Value['invoice_id'] . '\' ); return false">' . $this->Dashboard->ThemeChangeTime( $Value['invoice_date_pay'] ) . '</span>'
                         : '<span class="label bt_lable_blue" onClick="BillingJS.openDialog( \'#invoice_' . $Value['invoice_id'] . '\' ); return false">' . $this->Dashboard->lang['refund_wait'] . '</span>' ) .
                     '</span>',
-                    '<span class="settingsb">' .
-                        $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['invoice_id'], false) .
-                    '</span>
+                    '<span class="settingsb">' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['invoice_id']) . '</span>
                         <div id="invoice_' . $Value['invoice_id'] . '" title="' . $this->Dashboard->lang['history_search_oper'] . $Value['invoice_id'] . '" style="display:none">
                                 <p>
                                     <b>' . $this->Dashboard->lang['072_payer_info'] . '</b>
@@ -242,29 +246,24 @@ Class Invoice
 
 		if( $NumData )
 		{
-			$ContentList .= $this->Dashboard->ThemePadded( '
-					<ul class="pagination pagination-sm">
-							' . $this->Dashboard->API->Pagination(
-                                    $NumData,
-                                    $Get['page'],
-                                    "?mod=billing&c=invoice&p=" . ( $Get['user'] ? "user/{$Get['user']}/" : "" ) . "page/{p}",
-                                    "<li><a href=\"{page_num_link}\">{page_num}</a></li>",
-                                    "<li class=\"active\"><span>{page_num}</span></li>",
-                                    $PerPage
-                                ) . '
-						</ul>
-					    <div style="float: right">
-						 <select name="act" class="uniform" style="padding-right: 10px">
+			$ContentList .= $this->Dashboard->ThemePadded(
+                (new Paging())->setRows($NumData)
+                    ->setCurrentPage($Get['page'])
+                    ->setUrl("?mod=billing&c=invoice&p=" . ( $Get['user'] ? "user/{$Get['user']}/" : "" ) . "page/{p}")
+                    ->setPerPage($PerPage)
+                    ->parse(),
+                    '<select name="act" class="uniform" style="padding-right: 10px">
                                 <option value="ok">' . $this->Dashboard->lang['invoice_edit_1'] . '</option>
                                 <option value="no">' . $this->Dashboard->lang['invoice_edit_2'] . '</option>
                                 <option value="ok_pay">' . $this->Dashboard->lang['invoice_edit_3'] . '</option>
                                 <option value="remove">' . $this->Dashboard->lang['remove'] . '</option>
                             </select>
-						' . $this->Dashboard->MakeButton("act_do", $this->Dashboard->lang['act'], "gold") . '</div>' );
+						' . $this->Dashboard->MakeButton("act_do", $this->Dashboard->lang['act'], "gold")
+            );
 		}
 		else
 		{
-			$ContentList .= $this->Dashboard->ThemePadded( $this->Dashboard->lang['history_no'], '' );
+			$ContentList .= $this->Dashboard->ThemePadded( $this->Dashboard->lang['history_no'] );
 		}
 
 		$tabs[] = array(
