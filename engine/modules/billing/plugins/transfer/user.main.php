@@ -10,6 +10,7 @@
 namespace Billing\User\Controller;
 
 use \Billing\DevTools;
+use \Billing\Paging;
 
 Class Transfer
 {
@@ -186,8 +187,18 @@ Class Transfer
 			$TplPaginationLink = $this->DevTools->ThemePregMatch( $Content, '~\[page_link\](.*?)\[/page_link\]~is' );
 			$TplPaginationThis = $this->DevTools->ThemePregMatch( $Content, '~\[page_this\](.*?)\[/page_this\]~is' );
 
-			$this->DevTools->ThemePregReplace( "page_link", $TplPagination, $this->DevTools->API->Pagination( $NumData, $GET['page'], "/{$this->DevTools->config['page']}.html/{$this->DevTools->get_plugin}/{$this->DevTools->get_method}/page/{p}", $TplPaginationLink, $TplPaginationThis ) );
-			$this->DevTools->ThemePregReplace( "page_this", $TplPagination );
+			$this->DevTools->ThemePregReplace(
+                "page_link",
+                $TplPagination,
+                (new Paging())->setRows($NumData)
+                    ->setCurrentPage($GET['page'])
+                    ->setThemeLink( $TplPaginationLink, $TplPaginationThis)
+                    ->setUrl("/{$this->DevTools->config['page']}.html/{$this->DevTools->get_plugin}/{$this->DevTools->get_method}/page/{p}")
+                    ->setPerPage($this->DevTools->config['paging'])
+                    ->parse()
+            );
+
+            $this->DevTools->ThemePregReplace( "page_this", $TplPagination );
 
 			$this->DevTools->ThemeSetElementBlock( "paging", $TplPagination );
 		}

@@ -10,6 +10,7 @@
 namespace Billing\User\Controller;
 
 use \Billing\DevTools;
+use \Billing\Paging;
 
 Class Log
 {
@@ -50,7 +51,7 @@ Class Log
         {
             $TimeLine = $TplLine;
 
-            $params = array(
+            $params = [
                 '{date=' . $TplLineDate . '}' => $this->DevTools->ThemeChangeTime( $Value['history_date'], $TplLineDate ),
                 '{comment}' => $Value['history_text'],
                 '{plugin}' => $Value['history_plugin'],
@@ -58,7 +59,7 @@ Class Log
                 '{balance}' => $Value['history_balance'] . ' ' . $this->DevTools->API->Declension( $Value['history_balance'] ),
                 '{sum}' => $Value['history_plus'] > 0	? "<font color=\"green\">+{$Value['history_plus']} {$Value['history_currency']}</font>"
                     : "<font color=\"red\">-{$Value['history_minus']} {$Value['history_currency']}</font>"
-            );
+            ];
 
             $TimeLine = str_replace(array_keys($params), array_values($params), $TimeLine);
 
@@ -74,11 +75,12 @@ Class Log
             $this->DevTools->ThemePregReplace(
                 "page_link",
                 $TplPagination,
-                $this->DevTools->API->Pagination(
-                    $NumData, $GET['page'],
-                    "/{$this->DevTools->config['page']}.html/{$this->DevTools->get_plugin}/{$this->DevTools->get_method}/page/{p}",
-                    $TplPaginationLink, $TplPaginationThis
-                )
+                (new Paging())->setRows($NumData)
+                    ->setCurrentPage($GET['page'])
+                    ->setThemeLink( $TplPaginationLink, $TplPaginationThis)
+                    ->setUrl("/{$this->DevTools->config['page']}.html/{$this->DevTools->get_plugin}/{$this->DevTools->get_method}/page/{p}")
+                    ->setPerPage($this->DevTools->config['paging'])
+                    ->parse()
             );
 
             $this->DevTools->ThemePregReplace( "page_this", $TplPagination );

@@ -2,7 +2,7 @@
  * DLE Billing
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
- * @author        dle-billing.ru <evgeny.tc@gmail.com>
+ * @author        dle-billing.ru
  * @copyright     Copyright (c) 2012-2024
  */
 
@@ -14,11 +14,11 @@ function BillingJS( hash )
 	{
 		$('#billing-modal').remove();
 
-		params['width'] = params['width'] ?? 700;
+		params['width'] = params['width'] ?? 800;
 		params['height'] = params['height'] ?? 395;
 	
 		$("body").append(`<div id='billing-modal' title='${title}' style='padding: 0; display:none; '>
-			 <iframe src="${url}" width="100%%" height="100%" style="border: none" align="left">
+			 <iframe id='billing-modal-iframe' src="${url}" width="100%%" height="100%" style="border: none" align="left">
 				Ваш браузер не поддерживает плавающие фреймы! <a href="${url}" target="_blank">Открыть ссылку в новом окне</a>
 			 </iframe>
 		</div>`);
@@ -31,8 +31,21 @@ function BillingJS( hash )
 				resizable: false,
 				width: params['width'] ,
 				height: params['height']
-			});
+			}
+		);
 	};
+
+	this.closeIframe = function(update = true)
+	{
+		$("#billing-modal").close();
+
+		if( update )
+		{
+			ShowLoading('');
+
+			location.reload();
+		}
+	},
 
 	this.ajax = function(plugin, params)
 	{

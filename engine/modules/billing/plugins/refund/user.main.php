@@ -10,6 +10,7 @@
 namespace Billing\User\Controller;
 
 use \Billing\DevTools;
+use \Billing\Paging;
 
 Class Refund
 {
@@ -82,6 +83,7 @@ Class Refund
             #
             if( $this->pluginСonfig['email'] )
             {
+                # todo: api alert
                 include_once \DLEPlugins::Check( ENGINE_DIR . '/classes/mail.class.php' );
 
                 $mail = new \dle_mail( $this->DevTools->dle, true );
@@ -145,15 +147,15 @@ Class Refund
             else
                 $refund_status = $this->DevTools->lang['refund_wait'];
 
-			$params = array(
-				'{date=' . $TplLineDate . '}' => $this->DevTools->ThemeChangeTime( $Value['refund_date'], $TplLineDate ),
-				'{refund.requisites}' => $Value['refund_requisites'],
-				'{refund.commission}' => $Value['refund_commission'],
-				'{refund.commission.currency}' => $this->DevTools->API->Declension( $Value['refund_commission'] ),
-				'{refund.sum}' => $Value['refund_summa'],
-				'{refund.sum.currency}' => $this->DevTools->API->Declension( $Value['refund_summa'] ),
-				'{refund.status}' => $refund_status
-			);
+			$params = [
+                '{date=' . $TplLineDate . '}' => $this->DevTools->ThemeChangeTime( $Value['refund_date'], $TplLineDate ),
+                '{refund.requisites}' => $Value['refund_requisites'],
+                '{refund.commission}' => $Value['refund_commission'],
+                '{refund.commission.currency}' => $this->DevTools->API->Declension( $Value['refund_commission'] ),
+                '{refund.sum}' => $Value['refund_summa'],
+                '{refund.sum.currency}' => $this->DevTools->API->Declension( $Value['refund_summa'] ),
+                '{refund.status}' => $refund_status
+            ];
 
 			$TimeLine = str_replace(array_keys($params), array_values($params), $TimeLine);
 
@@ -166,13 +168,15 @@ Class Refund
 			$TplPaginationLink = $this->DevTools->ThemePregMatch( $Content, '~\[page_link\](.*?)\[/page_link\]~is' );
 			$TplPaginationThis = $this->DevTools->ThemePregMatch( $Content, '~\[page_this\](.*?)\[/page_this\]~is' );
 
-			$this->DevTools->ThemePregReplace( "page_link", $TplPagination,
-				$this->DevTools->API->Pagination(
-					$NumData, $GET['page'],
-					"/{$this->DevTools->config['page']}.html/{$this->DevTools->get_plugin}/{$this->DevTools->get_method}/page/{p}",
-					$TplPaginationLink,
-					$TplPaginationThis
-				)
+			$this->DevTools->ThemePregReplace(
+                "page_link",
+                $TplPagination,
+                (new Paging())->setRows($NumData)
+                    ->setCurrentPage($GET['page'])
+                    ->setThemeLink( $TplPaginationLink, $TplPaginationThis)
+                    ->setUrl("/{$this->DevTools->config['page']}.html/{$this->DevTools->get_plugin}/{$this->DevTools->get_method}/page/{p}")
+                    ->setPerPage($this->DevTools->config['paging'])
+                    ->parse()
 			);
 
 			$this->DevTools->ThemePregReplace( "page_this", $TplPagination );

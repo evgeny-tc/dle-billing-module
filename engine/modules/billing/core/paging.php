@@ -116,10 +116,20 @@ Class Paging
     public function setThemeLink(?string $link, ?string $active_link) : self
     {
         if( $link )
+        {
+            # todo: для совместимости
+            $link = str_replace(['{page_num}', '{page_num_link}'], '%s', $link);
+
             $this->THEME_LINK = $link;
+        }
 
         if( $active_link )
-            $this->THEME_LINK_ACTIVE = $link;
+        {
+            # todo: для совместимости
+            $active_link = str_replace('{page_num}', '%s', $active_link);
+
+            $this->THEME_LINK_ACTIVE = $active_link;
+        }
 
         return $this;
     }

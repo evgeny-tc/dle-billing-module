@@ -35,7 +35,7 @@
 
 [paging]
 	<div class="billing-pagination">
-		[page_link]<a href="{page_num_link}">{page_num}</a>[/page_link]
-		[page_this] <strong>{page_num}</strong> [/page_this]
+		[page_link]<a href="%s">%s</a>[/page_link]
+		[page_this] <strong>%s</strong> [/page_this]
 	</div>
 [/paging]

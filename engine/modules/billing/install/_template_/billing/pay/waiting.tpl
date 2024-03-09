@@ -1,6 +1,10 @@
 <form action="" method="post">
 	<input type="hidden" name="billingHash" value="{hash}" />
 
+	<!-- Оформление из шаблона -->
+	<link href="/templates/Default/css/engine.css" rel="stylesheet" type="text/css">
+	<link href="/templates/Default/css/styles.css" rel="stylesheet" type="text/css">
+
 	<div class="billing-pay-grid">
 		<div>
 			<div class="billing-pay-fields">

@@ -10,6 +10,7 @@
 namespace Billing\User\Controller;
 
 use \Billing\DevTools;
+use \Billing\Paging;
 
 Class Invoice
 {
@@ -112,11 +113,12 @@ Class Invoice
             $this->DevTools->ThemePregReplace(
                 "page_link",
                 $TplPagination,
-                $this->DevTools->API->Pagination(
-                    $NumData, $GET['page'],
-                    "/{$this->DevTools->config['page']}.html/{$this->DevTools->get_plugin}/{$this->DevTools->get_method}/page/{p}",
-                    $TplPaginationLink, $TplPaginationThis
-                )
+                (new Paging())->setRows($NumData)
+                    ->setCurrentPage($GET['page'])
+                    ->setThemeLink( $TplPaginationLink, $TplPaginationThis)
+                    ->setUrl("/{$this->DevTools->config['page']}.html/{$this->DevTools->get_plugin}/{$this->DevTools->get_method}/page/{p}")
+                    ->setPerPage($this->DevTools->config['paging'])
+                    ->parse()
             );
 
             $this->DevTools->ThemePregReplace( "page_this", $TplPagination );
