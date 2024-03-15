@@ -738,6 +738,8 @@ HTML;
 	 */
 	public function ThemeEchoHeader( string $section_name = '' ) : void
 	{
+        ob_start();
+
 		$JSmenu = '';
 
 		$Topmenu = ['?mod=billing&c=main' => $this->lang['desc']];

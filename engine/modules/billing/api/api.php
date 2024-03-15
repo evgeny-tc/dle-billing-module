@@ -38,7 +38,10 @@ Class Api
         return self::$instance;
     }
 
-    
+    public static function Convert()
+    {
+
+    }
 
 //	public function setSettingsAlert(array $new_data)
 //	{
