@@ -19,7 +19,7 @@ Class Alert
      * Сущность пользователя из _users
      * @var array
      */
-    private array $User;
+    private array $User = [];
 
     /**
      * Контакты пользователя
@@ -50,11 +50,11 @@ Class Alert
         {
             $this->UserConnect['id'] = $userId;
         }
-        if( $userId )
+        if( $name )
         {
             $this->UserConnect['name'] = $name;
         }
-        if( $userId )
+        if( $email )
         {
             $this->UserConnect['email'] = $email;
         }
@@ -104,9 +104,9 @@ Class Alert
 
         preg_match('~\[title\](.*?)\[/title\]~is', $template, $Title);
 
-        if( isset($Title[1]) )
+        if( $Title[1] )
         {
-            $this->message_body = $Title[1];
+            $this->message_title = $Title[1];
         }
 
         $this->message_body = preg_replace("'\\[title\\].*?\\[/title\\]'si", '', $template);
@@ -145,9 +145,16 @@ Class Alert
      */
     public function email(?bool $check_user = true) : self
     {
-        $getUser = $this->getUser();
+        $getUser = false;
 
-        if( ! $getUser['email'] and $check_user or ! $this->UserConnect['email'] )
+        if( $check_user )
+        {
+            $getUser = $this->getUser();
+
+            $this->UserConnect['email'] = $getUser['email'];
+        }
+
+        if( ! $this->UserConnect['email'] )
         {
             throw new \Exception('Error: email not get');
         }
@@ -171,24 +178,39 @@ Class Alert
      */
     public function getUser() : array
     {
-        if( ! isset($this->User) and count($this->UserConnect) )
+        if( ! $this->User and count($this->UserConnect) )
         {
-              if( $this->UserConnect['id'] )
-              {
-                  $this->User = $this->global['db']->super_query( "SELECT user_id, email FROM " . USERPREFIX . "_users WHERE user_id = '" . intval($this->UserConnect['id']) . "'" );
-              }
-              else if( $this->UserConnect['name'] )
-              {
-                  $this->User = $this->global['db']->super_query( "SELECT user_id, email FROM " . USERPREFIX . "_users WHERE name = '" . $this->global['db']->safesql($this->UserConnect['name']) . "'" );
-              }
-              else if( $this->UserConnect['email'] )
-              {
-                  $this->User = $this->global['db']->super_query( "SELECT user_id, email FROM " . USERPREFIX . "_users WHERE email = '" . $this->global['db']->safesql($this->UserConnect['email']) . "'" );
-              }
+            $resultSearch = false;
+
+            if( $this->UserConnect['id'] )
+            {
+                  $resultSearch = $this->global['db']->super_query( "SELECT user_id, email FROM " . USERPREFIX . "_users WHERE user_id = '" . $this->global['db']->safesql($this->UserConnect['id']) . "'" );
+            }
+            else if( $this->UserConnect['name'] )
+            {
+                  $resultSearch = $this->global['db']->super_query( "SELECT user_id, email FROM " . USERPREFIX . "_users WHERE name = '" . $this->global['db']->safesql($this->UserConnect['name']) . "'" );
+            }
+            else if( $this->UserConnect['email'] )
+            {
+                  $resultSearch = $this->global['db']->super_query( "SELECT user_id, email FROM " . USERPREFIX . "_users WHERE email = '" . $this->global['db']->safesql($this->UserConnect['email']) . "'" );
+            }
+
+            if( $resultSearch )
+            {
+                $this->User = $resultSearch;
+            }
         }
 
         return $this->User;
     }
 }
 
-# new Alert(userId: 2)->email();
+/*
+try
+{
+    (new Billing\Alert(userId: 2))->loadTemplate('new')->buildTemplate(['{login}' => 'Имя'])->email();
+}
+catch(Exception $e)
+{
+    echo "<b>{$e->getMessage()}</b>";
+}*/
