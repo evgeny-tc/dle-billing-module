@@ -122,10 +122,10 @@ Class Dashboard
     protected string $action = '';
 
     /**
-     * Main loader
+     * Главный загрузчик
      * @throws \Exception
      */
-	private function Loader()
+	private function Loader() : void
 	{
 		global $config, $member_id, $_TIME, $db, $dle_login_hash, $selected_language;
 
@@ -226,7 +226,7 @@ Class Dashboard
 	}
 
 	/**
-	 * Tabs
+	 * Вкладки
 	 * @param array $tabs
 	 * @param string $footer
 	 * @return string
@@ -276,21 +276,21 @@ Class Dashboard
 	}
 
 	/**
-	 * Build menu
+	 * Собрать меню
 	 * @param array $sectins
 	 * @param bool $status
 	 * @return string
 	 */
-	public function Menu( array|null $sectins = [], bool $status = false ) : string
+	public function Menu( array|null $sections = [], bool $status = false ) : string
 	{
-		if( ! is_array( $sectins ) or ! count( $sectins ) ) return '<div style="text-align: center; padding: 40px">' . $this->lang['null'] . '</div>';
+		if( ! is_array( $sections ) or ! count( $sections ) ) return '<div style="text-align: center; padding: 40px">' . $this->lang['null'] . '</div>';
 
 		$answer = '<div class="list-bordered">';
 		$num = 0;
 
-		for( $i = 0; $i < count($sectins); $i++ )
+		for( $i = 0; $i < count($sections); $i++ )
 		{
-			if( empty($sectins[$i]['title']) ) continue;
+			if( empty($sections[$i]['title']) ) continue;
 
 			$num ++;
 
@@ -299,17 +299,17 @@ Class Dashboard
 				 $answer .= '<div class="row">';
 			}
 
-			$answer .= '<div class="col-sm-6 media-list media-list-linked" ' . ( $status && $sectins[$i]['on'] != '1' ? 'style="opacity: 0.5"': '' ) . '>
-						  <a class="media-link" href="'. $sectins[$i]['link'] .'">
-							<div class="media-left"><img src="'. $sectins[$i]['icon'] .'" onError="this.src=\'engine/skins/billing/icons/plugin.png\'" class="img-lg section_icon"></div>
+			$answer .= '<div class="col-sm-6 media-list media-list-linked" ' . ( $status && $sections[$i]['on'] != '1' ? 'style="opacity: 0.5"': '' ) . '>
+						  <a class="media-link" href="'. $sections[$i]['link'] .'">
+							<div class="media-left"><img src="'. $sections[$i]['icon'] .'" onError="this.src=\'engine/skins/billing/icons/plugin.png\'" class="img-lg section_icon"></div>
 							<div class="media-body">
-								<h6 class="media-heading  text-semibold">'. $sectins[$i]['title'] .'</h6>
-								<span class="text-muted text-size-small">'. $sectins[$i]['desc'] .'</span>
+								<h6 class="media-heading  text-semibold">'. $sections[$i]['title'] .'</h6>
+								<span class="text-muted text-size-small">'. $sections[$i]['desc'] .'</span>
 							</div>
 						  </a>
 						</div>';
 
-			if( $num % 2 == 0 or $num == count($sectins))
+			if( $num % 2 == 0 or $num == count($sections))
 			{
 				 $answer .= '</div>';
 			}
@@ -319,7 +319,7 @@ Class Dashboard
 	}
 
     /**
-     * Panel plugin info
+     * Плашка инфо о плагине
      * @param string $path
      * @param string|null $link
      * @param string|null $styles
@@ -374,14 +374,14 @@ Class Dashboard
 		return $output;
 	}
 
-	/**
-	 * Build checkbox
-	 * @param string $name
-	 * @param bool $selected
-	 * @param $value
-	 * @param bool $class
-	 * @return string
-	 */
+    /**
+     * Build checkbox
+     * @param string $name
+     * @param bool $selected
+     * @param string $value
+     * @param bool $class
+     * @return string
+     */
 	public function MakeCheckBox(string $name, mixed $selected = false, string $value = '1', bool $class = true ) : string
 	{
 		$selected = $selected ? "checked" : '';
@@ -504,33 +504,30 @@ HTML;
 	}
 
 	/**
-	 * Save config file
+	 * Сохранить config
 	 * @param string $file
 	 * @param array $array
 	 * @return void
 	 */
 	public function SaveConfig( string $file, array $array )  : void
 	{
-		$array = is_array( $array ) ? $array : array( $array );
-
 		$handler = fopen( MODULE_DATA . '/' . $file . '.php', "w" );
 
-		fwrite( $handler, "<?PHP \n\n" );
-        fwrite( $handler, "#Edit from " . $_SERVER['REQUEST_URI'] . " " . langdate('d.m.Y H:i:s', $this->_TIME) . " \n\n" );
+		fwrite( $handler, "<?php \n\n" );
         fwrite( $handler, "return array \n" );
         fwrite( $handler, "( \n" );
 
 		foreach ( $array as $name => $value )
 		{
-				$value = str_replace( "{", "&#123;", $value );
-				$value = str_replace( "}", "&#125;", $value );
-				$value = str_replace( "$", "&#036;", $value );
-				$value = str_replace( '"', '&quot;', $value );
+			$value = str_replace( "{", "&#123;", $value );
+			$value = str_replace( "}", "&#125;", $value );
+			$value = str_replace( "$", "&#036;", $value );
+			$value = str_replace( '"', '&quot;', $value );
 
-				$name = str_replace( "$", "&#036;", $name );
-				$name = str_replace( "{", "&#123;", $name );
-				$name = str_replace( "}", "&#125;", $name );
-				$name = str_replace( '"', '&quot;', $name );
+			$name = str_replace( "$", "&#036;", $name );
+			$name = str_replace( "{", "&#123;", $name );
+			$name = str_replace( "}", "&#125;", $name );
+			$name = str_replace( '"', '&quot;', $name );
 
 			fwrite( $handler, "'{$name}' => \"{$value}\",\n\n" );
 		}
