@@ -16,12 +16,6 @@ namespace Billing;
 Class Alert
 {
     /**
-     * Сущность пользователя из _users
-     * @var array
-     */
-    private array $User = [];
-
-    /**
      * Контакты пользователя
      * @var array
      */
@@ -37,31 +31,60 @@ Class Alert
      */
     private string $message_body = '';
 
+    /**
+     * @var mixed
+     */
+    private mixed $lastResult;
+
+    /**
+     * dle
+     * @var array
+     */
     private array $global = [];
 
-    public function __construct(?int $userId = 0, ?string $name = '', ?string $email = '')
+    /**
+     * @throws \Exception
+     */
+    public function __construct(?int $userId = 0, ?string $name = '', ?string $email = '', ?int $group_id = 0)
     {
-        global $config, $db;
+        global $config, $db, $_TIME;
 
         $this->global['dle_config'] = $config;
         $this->global['db'] = $db;
+        $this->global['time'] = $_TIME;
+
+        if( ! class_exists('\dle_mail') )
+        {
+            include_once \DLEPlugins::Check( ENGINE_DIR . '/classes/mail.class.php' );
+        }
+
+        if( file_exists(ENGINE_DIR . '/data/billing/config.php') )
+        {
+            $this->global['billing'] = include ENGINE_DIR . '/data/billing/config.php';
+        }
+
+        $this->global['dle_mail'] = new \dle_mail( $config, true );
 
         if( $userId )
         {
             $this->UserConnect['id'] = $userId;
         }
-        if( $name )
+        else if( $name )
         {
             $this->UserConnect['name'] = $name;
         }
-        if( $email )
+        else if( $email )
         {
             $this->UserConnect['email'] = $email;
+        }
+        else if( $group_id )
+        {
+            $this->UserConnect['group_id'] = $group_id;
         }
 
         if( ! count($this->UserConnect) )
         {
-            throw new \Exception('Error: UserConnect');
+            throw new \Exception('UserConnect');
         }
     }
 
@@ -90,7 +113,7 @@ Class Alert
     }
 
     /**
-     * Загрузить содеримое уведомления из файла
+     * Загрузить содержимое уведомления из файла
      * @param string $filename
      * @return $this
      * @throws \Exception
@@ -99,7 +122,7 @@ Class Alert
     {
         if( ! $template = file_get_contents( ROOT_DIR . '/templates/' . $this->global['dle_config']['skin'] . '/billing/mail/' . $filename . '.tpl') )
         {
-            throw new \Exception('Error: load template');
+            throw new \Exception('Load template');
         }
 
         preg_match('~\[title\](.*?)\[/title\]~is', $template, $Title);
@@ -110,6 +133,16 @@ Class Alert
         }
 
         $this->message_body = preg_replace("'\\[title\\].*?\\[/title\\]'si", '', $template);
+
+        if( ! $this->message_title  )
+        {
+            throw new \Exception('Message title');
+        }
+
+        if( ! $this->message_body  )
+        {
+            throw new \Exception('Message body');
+        }
 
         return $this;
     }
@@ -123,94 +156,117 @@ Class Alert
     {
         if( $data )
         {
-            $this->message_body = str_replace(
-                array_keys($data),
-                array_values($data),
-                $this->message_body
-            );
-            $this->message_body = str_replace(
-                array_keys($data),
-                array_values($data),
-                $this->message_body
-            );
+            foreach ($data as $key => $value)
+            {
+                $key = htmlspecialchars($key);
+                $value = htmlspecialchars($value);
+
+                $this->message_body = str_replace(
+                    $key,
+                    $value,
+                    $this->message_body
+                );
+                $this->message_body = str_replace(
+                    $key,
+                    $value,
+                    $this->message_body
+                );
+            }
         }
+
+        return $this;
+    }
+
+    /**
+     * Личные сообщения на сайте
+     * @throws \Exception
+     */
+    public function pm(?string $from = '', ?int $time = 0) : self
+    {
+        $from = $from ? $this->global['db']->safesql( $from ) : $this->global['billing']['admin'];
+        $time = $time ?: $this->global['time'];
+
+        $this->lastResult = [];
+
+        $this->global['db']->query("START TRANSACTION;");
+
+        foreach( $this->getUsersQuery() as $user )
+        {
+            $this->global['db']->query( "INSERT INTO " . PREFIX . "_pm
+											(subj, text, user, user_from, date, pm_read, folder) VALUES
+											('{$this->message_title}', '{$this->message_body}', '{$user['user_id']}', '{$from}', '{$time}', '0', 'inbox')" );
+
+            $this->lastResult[$user['user_id']] = $this->global['db']->insert_id();
+
+            $this->global['db']->query( "UPDATE " . USERPREFIX . "_users SET pm_unread = pm_unread + 1, pm_all = pm_all+1 WHERE user_id = '{$user['user_id']}'" );
+        }
+
+        $this->global['db']->query("COMMIT");
 
         return $this;
     }
 
     /**
      * Отправить email
-     * @param bool|null $check_user
      * @return Alert
      */
-    public function email(?bool $check_user = true) : self
+    public function email() : self
     {
-        $getUser = false;
+        $this->lastResult = [];
 
-        if( $check_user )
+        foreach( $this->getUsersQuery() as $user )
         {
-            $getUser = $this->getUser();
-
-            $this->UserConnect['email'] = $getUser['email'];
+            $this->lastResult[] = $this->global['dle_mail']->send(
+                $user['email'],
+                $this->message_title,
+                $this->message_body
+            );
         }
-
-        if( ! $this->UserConnect['email'] )
-        {
-            throw new \Exception('Error: email not get');
-        }
-
-        if( ! $this->message_body or ! $this->message_title )
-        {
-            throw new \Exception('Error: data message');
-        }
-
-        echo "Send:<br>";
-        echo "{$this->message_title}:<br>";
-        echo "{$this->message_body}:<br>";
-        echo "----<br>{$getUser['email']}:<br>";
 
         return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getResult() : mixed
+    {
+        return $this->lastResult;
     }
 
     /**
      * Найти пользователя
      * @return array
      */
-    public function getUser() : array
+    protected function getUsersQuery() : array
     {
-        if( ! $this->User and count($this->UserConnect) )
-        {
-            $resultSearch = false;
+        $_return = [];
 
-            if( $this->UserConnect['id'] )
+        if( count($this->UserConnect) )
+        {
+            if( $this->UserConnect['name'] )
             {
-                  $resultSearch = $this->global['db']->super_query( "SELECT user_id, email FROM " . USERPREFIX . "_users WHERE user_id = '" . $this->global['db']->safesql($this->UserConnect['id']) . "'" );
-            }
-            else if( $this->UserConnect['name'] )
-            {
-                  $resultSearch = $this->global['db']->super_query( "SELECT user_id, email FROM " . USERPREFIX . "_users WHERE name = '" . $this->global['db']->safesql($this->UserConnect['name']) . "'" );
+                $this->global['db']->query( "SELECT user_id, email FROM " . USERPREFIX . "_users WHERE name = '" . $this->global['db']->safesql($this->UserConnect['name']) . "'" );
             }
             else if( $this->UserConnect['email'] )
             {
-                  $resultSearch = $this->global['db']->super_query( "SELECT user_id, email FROM " . USERPREFIX . "_users WHERE email = '" . $this->global['db']->safesql($this->UserConnect['email']) . "'" );
+                $this->global['db']->query( "SELECT user_id, email FROM " . USERPREFIX . "_users WHERE email = '" . $this->global['db']->safesql($this->UserConnect['email']) . "'" );
+            }
+            else if( $this->UserConnect['group_id'] )
+            {
+                $this->global['db']->query( "SELECT user_id, email FROM " . USERPREFIX . "_users WHERE user_group = '" . intval($this->UserConnect['group_id']) . "'" );
+            }
+            else
+            {
+                $this->global['db']->query( "SELECT user_id, email FROM " . USERPREFIX . "_users WHERE user_id = '" . intval($this->UserConnect['id']) . "'" );
             }
 
-            if( $resultSearch )
+            while($user = $this->global['db']->get_row())
             {
-                $this->User = $resultSearch;
+                $_return[] = $user;
             }
         }
 
-        return $this->User;
+        return $_return;
     }
 }
-
-/*
-try
-{
-    (new Billing\Alert(userId: 2))->loadTemplate('new')->buildTemplate(['{login}' => 'Имя'])->email();
-}
-catch(Exception $e)
-{
-    echo "<b>{$e->getMessage()}</b>";
-}*/
