@@ -7,9 +7,13 @@
  * @copyright     Copyright (c) 2012-2024
  */
 
-namespace Billing\Module;
+namespace Billing\Api;
 
-Class Api
+/**
+ * API Баланс пользователя
+ * @api
+ */
+Class Balance
 {
 	private static self $instance;
 

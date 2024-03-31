@@ -7,11 +7,11 @@
  * @copyright     Copyright (c) 2012-2024
  */
 
-namespace Billing;
+namespace Billing\Api;
 
 /**
  * Отправка уведомление (пм и email)
- * @dev
+ * @api
  */
 Class Alert
 {
@@ -180,6 +180,8 @@ Class Alert
     /**
      * Личные сообщения на сайте
      * @throws \Exception
+     *
+     * @api
      */
     public function pm(?string $from = '', ?int $time = 0) : self
     {

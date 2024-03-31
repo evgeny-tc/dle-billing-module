@@ -118,7 +118,14 @@ Class Dashboard
 	protected int $str_table_num = 0;
 	protected array $str_table = [];
 
+    /**
+     * @var string
+     */
     public string $controller = '';
+
+    /**
+     * @var string
+     */
     protected string $action = '';
 
     /**
