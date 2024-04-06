@@ -9,6 +9,9 @@
 
 namespace Billing;
 
+/**
+ * @deprecated не поддерживается
+ */
 Class LiqPay implements IPayment
 {
 	public string $doc = 'https://dle-billing.ru/doc/payments/liqpay/';

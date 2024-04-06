@@ -9,9 +9,16 @@
 
 spl_autoload_register(function ($class)
 {
-    $class = str_replace('Billing\\', '', $class);
-
-    $file = MODULE_PATH . '/core/' . preg_replace("/[^a-zA-Z\s]/", "", trim( mb_strtolower($class) ) ) .'.php';
+    if( str_contains($class, 'Billing\\Api\\') )
+    {
+        $class = str_replace('Billing\\Api\\', '', $class);
+        $file = MODULE_PATH . '/api/' . preg_replace("/[^a-zA-Z\s]/", "", trim( mb_strtolower($class) ) ) .'.php';
+    }
+    else
+    {
+        $class = str_replace('Billing\\', '', $class);
+        $file = MODULE_PATH . '/core/' . preg_replace("/[^a-zA-Z\s]/", "", trim( mb_strtolower($class) ) ) .'.php';
+    }
 
     if (file_exists($file))
     {

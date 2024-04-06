@@ -12,6 +12,7 @@ namespace Billing;
 /**
  * API 1.0
  * TODO: update
+ * @deprecated
  */
 Class API
 {

@@ -37,5 +37,8 @@ try
 }
 catch (\Exception $e)
 {
+    # todo: ThemeEchoHeader
+    ob_end_clean();
+
     msg( "error", $lang['xfield_xerr2'], $e->getMessage(), "javascript:history.go(-1)" );
 }
