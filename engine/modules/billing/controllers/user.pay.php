@@ -10,6 +10,7 @@
 namespace Billing\User\Controller;
 
 use \Billing\DevTools;
+use \Billing\IPayment;
 
 Class Pay
 {
