@@ -138,7 +138,7 @@ Class Dashboard
 
 		$this->lang 	= file_exists(MODULE_PATH . '/lang/' . $selected_language . '/admin.php') ? include MODULE_PATH . '/lang/' . $selected_language . '/admin.php' : include MODULE_PATH . '/lang/admin.php';
 
-		$this->config 	= static::getConfig('');
+		$this->config 	= static::getConfig();
 
         //TODO: models
 		$this->LQuery 	= new Database(

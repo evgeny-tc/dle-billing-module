@@ -97,10 +97,10 @@ trait Core
 
     /**
      * Get plugin config file
-     * @param string $plugin
+     * @param string|null $plugin
      * @return array
      */
-    public static function getConfig(string $plugin) : array
+    public static function getConfig(?string $plugin = '') : array
     {
         if( $plugin !== '' )
         {
