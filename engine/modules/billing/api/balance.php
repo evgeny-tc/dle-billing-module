@@ -9,6 +9,8 @@
 
 namespace Billing\Api;
 
+use \Billing\BalanceException;
+
 /**
  * API Баланс пользователя
  * @api
@@ -23,6 +25,11 @@ Class Balance
 
     private static array $global = [];
 
+    /**
+     * @param array|null $params
+     * @return static
+     * @throws \BalanceException
+     */
     public static function Init(?array $params = []) : self
 	{
         if ( empty(self::$instance) )
@@ -33,7 +40,7 @@ Class Balance
 
             if( ! $params )
             {
-                $params = file_exists( ENGINE_DIR . '/data/billing/config.php' ) ? require ENGINE_DIR . '/data/billing/config.php' : throw new \Exception('Unable to load config file');
+                $params = file_exists( ENGINE_DIR . '/data/billing/config.php' ) ? require ENGINE_DIR . '/data/billing/config.php' : throw new \BalanceException('Unable to load config file');
             }
 
             self::$global = [
@@ -46,6 +53,155 @@ Class Balance
         }
 
         return self::$instance;
+    }
+
+    /**
+     * DB start transaction
+     * @return $this
+     */
+    public function Transaction() : self
+    {
+        self::$global['DB']->query('START TRANSACTION');
+
+        return $this;
+    }
+
+    /**
+     * DB commit transaction
+     * @return void
+     */
+    public function Commit() : void
+    {
+        self::$global['DB']->query('COMMIT');
+    }
+
+    /**
+     * DB cancel transaction
+     * @return void
+     */
+    public function Rollback() : void
+    {
+        self::$global['DB']->query('ROLLBACK');
+    }
+
+    /**
+     * Списать
+     * @param int $userId
+     * @param string $userLogin
+     * @param float $sum
+     * @return $this
+     * @throws BalanceException
+     */
+    public function From(int $userId = 0, string $userLogin = '', float $sum = 0) : self
+    {
+        $getUser = $this->getUser($userId, $userLogin);
+
+        self::$global['DB']->query( "UPDATE " . USERPREFIX . "_users SET " . self::getBalanceField() . " = " . self::getBalanceField() . " - {$sum} WHERE user_id='{$getUser['user_id']}'");
+
+        return $this;
+    }
+
+    /**
+     * Начислить
+     * @param int $userId
+     * @param string $userLogin
+     * @param float $sum
+     * @return $this
+     * @throws BalanceException
+     */
+    public function To(int $userId = 0, string $userLogin = '', float $sum = 0) : self
+    {
+        $getUser = $this->getUser($userId, $userLogin);
+
+        self::$global['DB']->query( "UPDATE " . USERPREFIX . "_users SET " . self::getBalanceField() . " = " . self::getBalanceField() . " + {$sum} WHERE user_id='{$getUser['user_id']}'");
+
+        return $this;
+    }
+
+    /**
+     * Запись в журнал
+     * @param int $userId
+     * @param string $userLogin
+     * @param string $comment
+     * @param int $plugin_id
+     * @param string $plugin_name
+     * @return $this
+     * @throws BalanceException
+     */
+    public function Comment(int $userId = 0, string $userLogin = '', float $plus = 0, float $minus = 0, string $comment = '', int $plugin_id = 0, string $plugin_name = 'api') : self
+    {
+        $getUser = $this->getUser($userId, $userLogin);
+
+        $plugin_name = self::$global['DB']->safesql($plugin_name);
+
+        self::$global['DB']->query( "INSERT INTO " . PREFIX . "_billing_history
+							(history_plugin, history_plugin_id, history_user_name, history_plus, history_minus, history_balance, history_currency, history_text, history_date) values
+							('{$plugin_name}', '{$plugin_id}', '{$getUser['name']}', '{$plus}', '{$minus}', '{$getUser[self::getBalanceField()]}', '{$this->Declension( $plus ?: $minus )}', '{$comment}', '" . self::$global['TIME'] . "')" );
+
+        return $this;
+    }
+
+    /**
+     * Отправить событие в плагины
+     * @return $this
+     */
+    public function Events() : self
+    {
+        //todo: hooks
+
+        return $this;
+    }
+
+    /**
+     * Проверить достаточно ли средств
+     * @param int $userId
+     * @param string $userLogin
+     * @param float $sum
+     * @return $this
+     * @throws BalanceException
+     */
+    public function Check(int $userId = 0, string $userLogin = '', float $sum = 0) : self
+    {
+        if( $this->getUser($userId, $userLogin)[self::getBalanceField()] < $sum )
+        {
+            throw new BalanceException('balance.check');
+        }
+
+        return $this;
+    }
+
+    protected static array $buffer = [];
+
+    /**
+     * Найти пользователя
+     * @param int $userId
+     * @param string $userLogin
+     * @return array
+     * @throws BalanceException
+     */
+    protected function getUser(int $userId = 0, string $userLogin = '') : array
+    {
+        if( self::$buffer[md5($userId.$userLogin)] )
+        {
+            return self::$buffer[md5($userId.$userLogin)];
+        }
+
+        if( $userId )
+        {
+            self::$global['DB']->query( "SELECT user_id, name, email, " . self::getBalanceField() . " FROM " . USERPREFIX . "_users WHERE user_id = '{$userId}'" );
+        }
+
+        if( $userLogin )
+        {
+            self::$global['DB']->query( "SELECT user_id, name, email, " . self::getBalanceField() . " FROM " . USERPREFIX . "_users WHERE user_id = '" . self::$global['DB']->safesql( $userLogin ) . "'" );
+        }
+
+        if( ! $user = self::$global['DB']->get_row())
+        {
+            throw new BalanceException('user.not_found');
+        }
+
+        return self::$buffer[md5($userId.$userLogin)] = $user;
     }
 
     /**
@@ -88,5 +244,13 @@ Class Balance
         $cases = array (2, 0, 1, 1, 1, 2);
 
         return $titles[ ($value % 100 > 4 && $value % 100 < 20) ? 2 : $cases[min($value % 10, 5)] ];
+    }
+
+    /**
+     * @return string
+     */
+    protected static function getBalanceField() : string
+    {
+        return self::$global['BILLING']['fname'];
     }
 }
