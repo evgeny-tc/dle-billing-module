@@ -2,6 +2,9 @@
 
 return array
 (
+    /* 0.9.6 */
+    'push_title' => "Баланс пополнен",
+
     'coupon_use_error' => "Ошибка применения купона",
     'coupon_use_ok' => "<font color='green'>Купон применен</font>",
     'coupon_use_notfound' => "<font color='red'>Купон не найден</font>",
