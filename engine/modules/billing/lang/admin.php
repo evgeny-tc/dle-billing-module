@@ -283,8 +283,11 @@ return array
 	'settings_field_desc' => "Название столбца в таблице " . PREFIX . "_users,  в которой хранится баланс пользователя",
 	'settings_start' => "Главная страница ЛК:",
 	'settings_start_desc' => "Главная страница личного кабинета: плагин/метод/параметр/значение<br />Например: log/main/page/1",
-	'settings_format' => "Формат цен:",
-	'settings_format_desc' => "В каком формате представлять цены и суммы на сайте",
+	'settings_format' => "Сумма:",
+	'settings_format_desc' => "В каком виде отображать суммы",
+
+    'settings_hide_menu' => "Скрыть пункты меню:",
+    'settings_hide_menu_desc' => "Скрыть в боковом меню остальные пункты cms, за исключением ссылки на модуль",
 
 	'settings_catalog' => "Каталог плагинов:",
 	'settings_catalog_desc' => "URL сервера каталога плагинов",

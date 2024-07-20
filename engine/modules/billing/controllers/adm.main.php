@@ -208,6 +208,12 @@ Class Main
 		);
 
 		$this->Dashboard->ThemeAddStr(
+			$this->Dashboard->lang['settings_hide_menu'],
+			$this->Dashboard->lang['settings_hide_menu_desc'],
+			$this->Dashboard->MakeICheck("save_con[hide_menu]", $this->Dashboard->config['hide_menu'])
+		);
+
+		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['settings_format'],
 			$this->Dashboard->lang['settings_format_desc'],
 			$this->Dashboard->GetSelect( array("float" => "0.00", "int" => "0"), "save_con[format]", $this->Dashboard->config['format'] )
@@ -219,11 +225,11 @@ Class Main
 			"<input name=\"save_con[currency]\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . $this->Dashboard->config['currency'] ."\" style=\"width: 50%\">"
 		);
 
-		$tabs[] = array(
-				'id' => 'main',
-				'title' => $this->Dashboard->lang['main_settings_1'],
-				'content' => $this->Dashboard->ThemeParserStr()
-		);
+		$tabs[] = [
+            'id' => 'main',
+            'title' => $this->Dashboard->lang['main_settings_1'],
+            'content' => $this->Dashboard->ThemeParserStr()
+        ];
 
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['settings_admin'],
@@ -279,11 +285,11 @@ Class Main
 			"<input name=\"save_con[paging]\" class=\"form-control\" type=\"text\" value=\"" . $this->Dashboard->config['paging'] ."\" style=\"width: 20%\">"
 		);
 
-		$tabs[] = array(
-				'id' => 'more',
-				'title' => $this->Dashboard->lang['main_settings_2'],
-				'content' => $this->Dashboard->ThemeParserStr()
-		);
+		$tabs[] = [
+            'id' => 'more',
+            'title' => $this->Dashboard->lang['main_settings_2'],
+            'content' => $this->Dashboard->ThemeParserStr()
+        ];
 
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['settings_test'],
@@ -306,34 +312,34 @@ Class Main
 		$this->Dashboard->ThemeAddTR( $this->Dashboard->lang['mail_table'] );
 
 		$this->Dashboard->ThemeAddTR(
-			array(
-				$this->Dashboard->lang['mail_pay_ok'],
-				"<div style=\"text-align: center; margin-top: 5px\">" . $this->Dashboard->MakeICheck("save_con[mail_payok_pm]", $this->Dashboard->config['mail_payok_pm'] ) . "</div>",
-				"<div style=\"text-align: center; margin-top: 5px\">" . $this->Dashboard->MakeICheck("save_con[mail_payok_email]", $this->Dashboard->config['mail_payok_email'] ) . "</div>"
-			)
+			[
+                $this->Dashboard->lang['mail_pay_ok'],
+                "<div style=\"text-align: center; margin-top: 5px\">" . $this->Dashboard->MakeICheck("save_con[mail_payok_pm]", $this->Dashboard->config['mail_payok_pm'] ) . "</div>",
+                "<div style=\"text-align: center; margin-top: 5px\">" . $this->Dashboard->MakeICheck("save_con[mail_payok_email]", $this->Dashboard->config['mail_payok_email'] ) . "</div>"
+            ]
 		);
 
 		$this->Dashboard->ThemeAddTR(
-			array(
-				$this->Dashboard->lang['mail_pay_new'],
-				"<div style=\"text-align: center; margin-top: 5px\">" . $this->Dashboard->MakeICheck("save_con[mail_paynew_pm]", $this->Dashboard->config['mail_paynew_pm'] ) . "</div>",
-				"<div style=\"text-align: center; margin-top: 5px\">" . $this->Dashboard->MakeICheck("save_con[mail_paynew_email]", $this->Dashboard->config['mail_paynew_email'] ) . "</div>"
-			)
+			[
+                $this->Dashboard->lang['mail_pay_new'],
+                "<div style=\"text-align: center; margin-top: 5px\">" . $this->Dashboard->MakeICheck("save_con[mail_paynew_pm]", $this->Dashboard->config['mail_paynew_pm'] ) . "</div>",
+                "<div style=\"text-align: center; margin-top: 5px\">" . $this->Dashboard->MakeICheck("save_con[mail_paynew_email]", $this->Dashboard->config['mail_paynew_email'] ) . "</div>"
+            ]
 		);
 
 		$this->Dashboard->ThemeAddTR(
-			array(
-				$this->Dashboard->lang['mail_balance'],
-				"<div style=\"text-align: center; margin-top: 5px\">" . $this->Dashboard->MakeICheck("save_con[mail_balance_pm]", $this->Dashboard->config['mail_balance_pm'] ) . "</div>",
-				"<div style=\"text-align: center; margin-top: 5px\">" . $this->Dashboard->MakeICheck("save_con[mail_balance_email]", $this->Dashboard->config['mail_balance_email'] ) . "</div>"
-			)
+			[
+                $this->Dashboard->lang['mail_balance'],
+                "<div style=\"text-align: center; margin-top: 5px\">" . $this->Dashboard->MakeICheck("save_con[mail_balance_pm]", $this->Dashboard->config['mail_balance_pm'] ) . "</div>",
+                "<div style=\"text-align: center; margin-top: 5px\">" . $this->Dashboard->MakeICheck("save_con[mail_balance_email]", $this->Dashboard->config['mail_balance_email'] ) . "</div>"
+            ]
 		);
 
-		$tabs[] = array(
-				'id' => 'mail',
-				'title' => $this->Dashboard->lang['main_mail'],
-				'content' => $this->Dashboard->ThemeParserTable()
-		);
+		$tabs[] = [
+            'id' => 'mail',
+            'title' => $this->Dashboard->lang['main_mail'],
+            'content' => $this->Dashboard->ThemeParserTable()
+        ];
 
 		# Замена ссылок
 		#
@@ -365,11 +371,11 @@ Class Main
 					  <input id="url-count" type="hidden" value="' . $_NumURL . '">
 					  <div style="clear: both; padding: 0 10px 10px; position: relative; margin-top: -40px">' . $this->Dashboard->lang['url_help'] . '</div>';
 
-		$tabs[] = array(
-				'id' => 'url',
-				'title' => $this->Dashboard->lang['url'],
-				'content' => $ChangeURL
-		);
+		$tabs[] = [
+            'id' => 'url',
+            'title' => $this->Dashboard->lang['url'],
+            'content' => $ChangeURL
+        ];
 
         $this->Dashboard->ThemeAddStr(
             $this->Dashboard->lang['settings_status'],
@@ -377,11 +383,11 @@ Class Main
             $this->Dashboard->MakeCheckBox("save_con[coupons]",  $this->Dashboard->config['coupons'])
         );
 
-        $tabs[] = array(
+        $tabs[] = [
             'id' => 'coupons',
             'title' => $this->Dashboard->lang['coupons']['menu']['name'],
             'content' => $this->Dashboard->ThemeParserStr()
-        );
+        ];
 
 		$Content = $this->Dashboard->PanelTabs( $tabs, $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton( "save", $this->Dashboard->lang['save'], "green" ) ) );
 

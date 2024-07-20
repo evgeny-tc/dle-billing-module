@@ -776,9 +776,13 @@ HTML;
 
         $JSmenu = "$('li .active').after('{$JSmenu}');
 					$('.curmod > ul').css('display', 'block');
-					$('a[title=\"Просмотр сайта\"]').attr('href', '/{$this->config['page']}.html');
-					$('.navigation-main > li').filter(':not(:nth-child(2),:first-child,:last-child)').hide();
+					$('a[title=\"Просмотр сайта\"]').attr('href', '/{$this->config['page']}.html');			
 					$('.curmod').addClass('active');";
+
+        if( $this->config['hide_menu'] )
+        {
+            $JSmenu .= "$('.navigation-main > li').filter(':not(:nth-child(2),:first-child,:last-child)').hide();";
+        }
 
 		echoheader( "<div style=\"line-height: 1.2384616;\">
 						<span class=\"text-semibold\">{$this->lang['title']}</span> <br />
