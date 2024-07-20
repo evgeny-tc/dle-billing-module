@@ -1,6 +1,6 @@
 ## DLE-Billing
 
-![Version](https://img.shields.io/badge/version-0.9.5-blue.svg?style=flat-square "version")
+![Version](https://img.shields.io/badge/version-0.9.5.1-blue.svg?style=flat-square "version")
 ![DLE](https://img.shields.io/badge/DLE-13.0+-green.svg?style=flat-square "DLE")
 ![PHP](https://img.shields.io/badge/PHP-8+-blue.svg?style=flat-square "PHP")
 ![jQuery](https://img.shields.io/badge/jQuery-3.0+-yellow.svg?style=flat-square "jQuery")
