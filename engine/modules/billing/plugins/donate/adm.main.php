@@ -103,48 +103,42 @@ Class Donate extends PluginActions
 		$this->Dashboard->ThemeAddStr(
 			$_Lang['create_login'],
 			$_Lang['create_login_desc'],
-			'<input id="create_login" onkeyup="donateCreate()" class="form-control" style="width: 100%" value="' . $this->Dashboard->member_id['name'] . '" type="text">'
+			'<input id="create_login" onkeyup="DLE_Billing_Donate.Build()" class="form-control" style="width: 100%" value="' . $this->Dashboard->member_id['name'] . '" type="text">'
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$_Lang['create_code'],
 			$_Lang['create_code_desc'],
-			'<input id="create_code" onkeyup="donateCreate()" class="form-control" style="width: 100%" type="text">'
+			'<input id="create_code" onkeyup="DLE_Billing_Donate.Build()" class="form-control" style="width: 100%" type="text">'
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$_Lang['create_all'],
 			$_Lang['create_all_desc'],
-			'<input id="create_all" onkeyup="donateCreate()" class="form-control" style="width: 40%" type="text"> ' . $this->Dashboard->API->Declension( 5 )
+			'<input id="create_all" onkeyup="DLE_Billing_Donate.Build()" class="form-control" style="width: 40%" type="text"> ' . $this->Dashboard->API->Declension( 5 )
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$_Lang['create_theme_panel'],
 			$_Lang['create_theme_panel_desc'],
-			'/templates/' . $this->Dashboard->dle['skin'] . '/billing/plugins/donate/<input id="create_theme_panel" onkeyup="donateCreate()" class="form-control" style="width: 30%" type="text" value="panel">.tpl'
+			'/templates/' . $this->Dashboard->dle['skin'] . '/billing/plugins/donate/<input id="create_theme_panel" onkeyup="DLE_Billing_Donate.Build()" class="form-control" style="width: 30%" type="text" value="panel">.tpl'
 		);
 
 		$ContentCreate = $this->Dashboard->ThemeParserStr() . $this->Dashboard->ThemePadded(
-			'<input class="btn bg-slate-600 btn-sm btn-raised position-left legitRipple" style="margin:7px;" onClick="donateShow()" type="button" value="' . $_Lang['next'] . '">'
+			'<input class="btn bg-slate-600 btn-sm btn-raised position-left legitRipple" style="margin:7px;" onClick="DLE_Billing_Donate.Show(); return false;" type="button" value="' . $_Lang['next'] . '">'
 		);
 
-		$tabs[] = array(
-				'id' => 'create',
-				'title' => $_Lang['create'],
-				'content' => $ContentCreate
-		);
+		$tabs[] = [
+            'id' => 'create',
+            'title' => $_Lang['create'],
+            'content' => $ContentCreate
+        ];
 
 		$Content = $this->Dashboard->PanelPlugin('plugins/donate', 'https://dle-billing.ru/doc/plugins/donate/' );
 
-		$Content .= '<script>
-						let donate_lang_created = "' . $_Lang['js_ok'] . '";
-						let donate_lang_text = "' . $_Lang['js_text'] . '";
-						let donate_lang_text_3 = "' . $_Lang['js_text_3'] . '";
-						let donate_lang_text_4 = "' . $_Lang['js_text_4'] . '";
-						let donate_lang_close = "' . $_Lang['js_close'] . '";
-						let donate_lang_link = "' . $_Lang['js_link'] . '";
-					</script>
-					<script type="text/javascript" src="engine/skins/billing/donate.js"></script>';
+		$Content .= '<script type="text/javascript" src="engine/skins/billing/donate.js"></script>
+                     <script>DLE_Billing_Donate.MODAL_BODY = `' . $_Lang['js_template'] . '`;
+                             DLE_Billing_Donate.MODAL_TITLE = `' . $_Lang['create'] . '`;</script>';
 
 		$Content .= $this->Dashboard->PanelTabs( $tabs );
 		$Content .= $this->Dashboard->ThemeEchoFoother();
@@ -152,6 +146,9 @@ Class Donate extends PluginActions
 		return $Content;
 	}
 
+    /**
+     * @return void
+     */
     public function install() : void
     {
         $this->Dashboard->CheckHash();
