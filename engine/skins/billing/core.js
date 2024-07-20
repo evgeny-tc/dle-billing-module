@@ -67,18 +67,19 @@ function BillingJSAdmin( hash )
 	 * Открыть модальное/диалог. окно по ID
 	 * @param id
 	 */
-	this.openDialog = function( id )
+	this.openDialog = function( id, params = {} )
 	{
 		$(id).dialog(
 			{
 				autoOpen: true,
 				show: 'fade',
-				width: 480,
-				dialogClass: "modalfixed"
+				width: params?.width ?? 480,
+				dialogClass: 'modalfixed'
 			}
 		);
 
 		$('.modalfixed.ui-dialog').css({position:"fixed"});
+
 		$(id).dialog( "option", "position", ['0','0'] );
 	}
 
@@ -87,6 +88,10 @@ function BillingJSAdmin( hash )
 	 */
 	this.users = [];
 
+	/**
+	 *
+	 * @param name
+	 */
 	this.usersAdd = function( name )
 	{
 		if( this.users.in_array(name) )
