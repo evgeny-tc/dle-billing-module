@@ -47,9 +47,9 @@ interface IPayment
      * Проверяет принятые от платежной системы данные
      * В случае успешной проверки - возвращает (bool) true, иначе - (string)сообщение об ошибке
      * @param array $result
-     * @param array $config_payment
+     * @param array $config_payment_payment
      * @param array $invoice
      * @return string|bool
      */
-    public function check_out( array $result, array $config_payment, array $invoice ) : string|bool;
+    public function check_out(array $result, array $config_payment_payment, array $invoice ) : string|bool;
 }

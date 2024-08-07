@@ -250,15 +250,15 @@ HTML;
 		return 'OK'.$data["InvId"];
 	}
 
-	public function check_out( array $data, array $config, array $invoice ) : string|bool
+	public function check_out(array $result, array $config_payment, array $invoice ) : string|bool
 	{
-		$out_summ = $data['OutSum'];
-		$inv_id = $data["InvId"];
-		$crc = $data["SignatureValue"];
+		$out_summ = $result['OutSum'];
+		$inv_id = $result["InvId"];
+		$crc = $result["SignatureValue"];
 
 		$crc = strtoupper($crc);
 
-		$my_crc = strtoupper(md5("$out_summ:$inv_id:$config[pass2]"));
+		$my_crc = strtoupper(md5("$out_summ:$inv_id:$config_payment[pass2]"));
 
 		if ($my_crc != $crc)
 		{

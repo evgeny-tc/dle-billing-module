@@ -47,6 +47,11 @@ Class Payment
             $this->Dashboard->ThemeMsg( $this->Dashboard->lang['error'], $this->Dashboard->lang['paysys_fail_error'] );
         }
 
+        if( property_exists($classPayment, 'Dashboard') )
+        {
+            $classPayment->Dashboard = $this->Dashboard;
+        }
+
         # Текущие настройки модуля
         #
         $Payments = $this->Dashboard->Payments();
@@ -117,11 +122,11 @@ Class Payment
             $this->Dashboard->ThemeAddStr( $Form[0], $Form[1], $Form[2] );
         }
 
-        $tabs[] = array(
+        $tabs[] = [
             'id' => 'integration',
             'title' => $this->Dashboard->lang['payment_convert_in'],
             'content' => $this->Dashboard->ThemeParserStr()
-        );
+        ];
 
         $Content .= $this->Dashboard->PanelTabs(
             $tabs,

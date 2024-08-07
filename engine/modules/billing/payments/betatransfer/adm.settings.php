@@ -96,7 +96,7 @@ Class Betatransfer implements IPayment
         return 'OK' . $result['orderId'];
     }
 
-    public function check_out( array $result, array $config_payment, array $invoice ) : string|bool
+    public function check_out(array $result, array $config_payment_payment, array $invoice ) : string|bool
     {
         $sign = $result['sign'] ?? null;
         $amount = $result['amount'] ?? null;
@@ -105,7 +105,7 @@ Class Betatransfer implements IPayment
         $knownSign = $this->sign_data([
             $amount,
             $orderId
-        ], $config_payment['secret_api_key']);
+        ], $config_payment_payment['secret_api_key']);
 
         if ($sign == $knownSign)
         {

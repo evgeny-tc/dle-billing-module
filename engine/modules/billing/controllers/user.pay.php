@@ -41,10 +41,12 @@ Class Pay
         {
             $this->DevTools->CheckHash( $_POST['billingHash'] );
 
-            $this->DevTools->LQuery->DbWhere( array(
-                "invoice_user_name = '{s}' " => $this->DevTools->member_id['name'],
-                "invoice_date_pay = '0' " => 1
-            ));
+            $this->DevTools->LQuery->DbWhere(
+                [
+                    "invoice_user_name = '{s}' " => $this->DevTools->member_id['name'],
+                    "invoice_date_pay = '0' " => 1
+                ]
+            );
 
             if( $this->DevTools->config['invoice_max_num'] and $this->DevTools->LQuery->DbGetInvoiceNum() >= $this->DevTools->config['invoice_max_num'] )
             {
@@ -63,12 +65,12 @@ Class Pay
                 sum_pay: $_ConvertSum
             );
 
-            $dataMail = array(
+            $dataMail = [
                 '{id}' => $_InvoiceID,
                 '{login}' => $this->DevTools->member_id['name'],
                 '{sum_get}' => $_ConvertSum . ' ' . $this->DevTools->API->Declension( $_ConvertSum ),
-                '{link}' => $this->DevTools->dle['http_home_url'] . $this->DevTools->config['page'] . '.html/pay/waiting/id/' . $_InvoiceID,
-            );
+                '{link}' => $this->DevTools->dle['http_home_url'] . $this->DevTools->config['page'] . '.html/pay/waiting/id/' . $_InvoiceID
+            ];
 
             if( $this->DevTools->config['mail_paynew_pm'] )
             {
@@ -123,8 +125,6 @@ Class Pay
     public function waiting( array $GET = [] ) : string
     {
         $GET['id'] = intval($GET['id']);
-
-        $Content = '';
 
         $InfoPay = [];
 
@@ -297,14 +297,14 @@ Class Pay
                     $Invoice['invoice_pay'] = $this->DevTools->API->Convert($Invoice['invoice_get'] * $_Payment['convert'], $_Payment['format']);
                 }
 
-                # есть обработчик
+                # Есть обработчик
                 #
                 if( isset($Handler) )
                 {
                     $Handler->prepay_check($Invoice, $InfoPay);
                 }
 
-                # оплата с баланса
+                # Оплата с баланса
                 #
                 if( $from_balance and $_POST['billingPayment'] == 'balance' )
                 {
@@ -390,6 +390,11 @@ Class Pay
                         );
                     }
 
+                    if( property_exists($Payment, 'DevTools') )
+                    {
+                        $Payment->DevTools = $this->DevTools;
+                    }
+
                     $payForm .= $Payment->Form(
                             $GET['id'],
                             $this->PaymentsArray[$Invoice['invoice_paysys']]['config'],
@@ -400,7 +405,7 @@ Class Pay
 
                     if( $_GET['modal'] )
                     {
-                        echo $this->DevTools->Show( str_replace('<form', '<form target="_blank"', $payForm) );;
+                        echo $this->DevTools->Show( str_replace('<form', '<form target="_blank"', $payForm) );
                         exit;
                     }
 
@@ -609,14 +614,14 @@ Class Pay
 
     /**
      * Remove params
-     * @param $DATA
+     * @param array $data
      * @return mixed
      */
     private function ClearData( array $data ) : array
     {
         foreach( $data as $key => $val )
         {
-            if( in_array( $key, array( 'do', 'page', 'seourl', 'route', 'key' ) ) ) unset( $data[$key] );
+            if( in_array( $key, ['do', 'page', 'seourl', 'route', 'key'] ) ) unset( $data[$key] );
         }
 
         return $data;

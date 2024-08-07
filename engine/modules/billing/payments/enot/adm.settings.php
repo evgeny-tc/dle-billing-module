@@ -103,12 +103,12 @@ Class Enot implements IPayment
 	}
 
     /**
-     * @param array $data
-     * @param array $config
+     * @param array $result
+     * @param array $config_payment
      * @param array $invoice
      * @return string|bool
      */
-    public function check_out( array $data, array $config, array $invoice ) : string|bool
+    public function check_out(array $result, array $config_payment, array $invoice ) : string|bool
     {
         $getHeaders = $this->getHeader();
         $getBody = file_get_contents('php://input');
@@ -116,7 +116,7 @@ Class Enot implements IPayment
         if( ! $this->checkSignature(
             $getBody,
             $getHeaders['x-api-sha256-signature'],
-            $config['secret_key2']
+            $config_payment['secret_key2']
         ) )
         {
             return static::$LANG_MESSAGE['hash'];

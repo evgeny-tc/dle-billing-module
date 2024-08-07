@@ -109,17 +109,17 @@ Class PayAnyWay implements IPayment
 		return 'SUCCESS';
 	}
 
-    public function check_out( array $data, array $config, array $invoice ) : string|bool
+    public function check_out(array $result, array $config_payment, array $invoice ) : string|bool
 	{
 		$amount = number_format($invoice['invoice_pay'], 2, '.', '');
-		$mnt_id = $config["login"];
+		$mnt_id = $config_payment["login"];
 		$mnt_transaction_id = $invoice['invoice_id'];
-		$mnt_operation_id = $data["MNT_OPERATION_ID"];
-		$mnt_currency_code = $config["currency"];
-		$mnt_subscriber_id = $data["MNT_SUBSCRIBER_ID"];
-		$mnt_test_mode = $config["test_mode"];
-		$mnt_signature = strtoupper($data["MNT_SIGNATURE"]);
-		$signature = strtoupper(md5($mnt_id.$mnt_transaction_id.$mnt_operation_id.$amount.$mnt_currency_code.$mnt_subscriber_id.$mnt_test_mode.$config["secret"]));
+		$mnt_operation_id = $result["MNT_OPERATION_ID"];
+		$mnt_currency_code = $config_payment["currency"];
+		$mnt_subscriber_id = $result["MNT_SUBSCRIBER_ID"];
+		$mnt_test_mode = $config_payment["test_mode"];
+		$mnt_signature = strtoupper($result["MNT_SIGNATURE"]);
+		$signature = strtoupper(md5($mnt_id.$mnt_transaction_id.$mnt_operation_id.$amount.$mnt_currency_code.$mnt_subscriber_id.$mnt_test_mode.$config_payment["secret"]));
 
 		if ($mnt_signature != $signature)
         {

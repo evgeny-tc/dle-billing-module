@@ -88,7 +88,7 @@ Class AnyPay implements IPayment
 		return 'OK' . $result['pay_id'];
 	}
 	
-	public function check_out( array $result, array $config_payment, array $invoice ) : string|bool
+	public function check_out(array $result, array $config_payment_payment, array $invoice ) : string|bool
 	{
         $status = 'paid';
 
@@ -102,9 +102,9 @@ Class AnyPay implements IPayment
             $result['currency'],
             $result['amount'],
             $result['pay_id'],
-            $config_payment['id'],
+            $config_payment_payment['id'],
             $status,
-            $config_payment['secret_key']
+            $config_payment_payment['secret_key']
         );
 
         $sign = hash('sha256', implode(":", $arr_sign));

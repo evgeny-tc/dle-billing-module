@@ -97,16 +97,16 @@ Class YooMoney implements IPayment
 		return "HTTP 202 OK";
 	}
 
-	public function check_out( array $data, array $config, array $invoice ) : string|bool
+	public function check_out(array $result, array $config_payment, array $invoice ) : string|bool
 	{
-		$hash = sha1($data['notification_type'].'&'.$data['operation_id'].'&'.$data['amount'].'&'.$data['currency'].'&'.$data['datetime'].'&'.$data['sender'].'&'.$data['codepro'].'&'.$config['key'].'&'.$data['label']);
+		$hash = sha1($result['notification_type'].'&'.$result['operation_id'].'&'.$result['amount'].'&'.$result['currency'].'&'.$result['datetime'].'&'.$result['sender'].'&'.$result['codepro'].'&'.$config_payment['key'].'&'.$result['label']);
 
-		if( $data['withdraw_amount'] != $invoice['invoice_pay'] )
+		if( $result['withdraw_amount'] != $invoice['invoice_pay'] )
 		{
-			return "Error sum " . $data['amount'];
+			return "Error sum " . $result['amount'];
 		}
 
-		if($hash !== $data['sha1_hash'])
+		if($hash !== $result['sha1_hash'])
 		{
 			return "Error hash";
 		}

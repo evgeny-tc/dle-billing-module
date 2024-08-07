@@ -101,14 +101,14 @@ Class Tegro implements IPayment
 		return "HTTP 202 OK";
 	}
 
-	public function check_out( array $result, array $config_payment, array $invoice ) : string|bool
+	public function check_out(array $result, array $config_payment_payment, array $invoice ) : string|bool
 	{
         unset($result['sign']);
 
         ksort($result);
 
         $str = http_build_query($result);
-        $sign = md5($str . $config_payment['secret']);
+        $sign = md5($str . $config_payment_payment['secret']);
 
 		if( $sign != $result['sign'] )
 		{

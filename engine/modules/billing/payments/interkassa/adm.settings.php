@@ -61,17 +61,17 @@ Class Interkassa implements IPayment
 		return '200';
 	}
 
-	public function check_out( array $data, array $config, array $invoice ) : string|bool
+	public function check_out(array $result, array $config_payment, array $invoice ) : string|bool
 	{
-		$save_secret = $data['ik_sign'];
+		$save_secret = $result['ik_sign'];
 
-		unset($data['ik_sign']);
+		unset($result['ik_sign']);
 
-		ksort($data, SORT_STRING);
+		ksort($result, SORT_STRING);
 
-		$data[] = trim($config['secret']);
+		$result[] = trim($config_payment['secret']);
 
-		$signString = implode(':', $data);
+		$signString = implode(':', $result);
 		$sign = base64_encode(md5($signString, true));
 
 		if( $save_secret !== $sign )

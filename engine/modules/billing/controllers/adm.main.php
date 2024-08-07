@@ -216,7 +216,7 @@ Class Main
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['settings_format'],
 			$this->Dashboard->lang['settings_format_desc'],
-			$this->Dashboard->GetSelect( array("float" => "0.00", "int" => "0"), "save_con[format]", $this->Dashboard->config['format'] )
+			$this->Dashboard->GetSelect( ["float" => "0.00", "int" => "0"], "save_con[format]", $this->Dashboard->config['format'] )
 		);
 
 		$this->Dashboard->ThemeAddStr(

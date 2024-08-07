@@ -115,7 +115,7 @@ Class Finpay implements IPayment
 		return $result['invoice_id'] . '|success';
 	}
 
-    public function check_out( array $data, array $config, array $invoice ) : string|bool
+    public function check_out(array $result, array $config_payment, array $invoice ) : string|bool
 	{
 		$ip = $_SERVER['REMOTE_ADDR'];
 
@@ -123,7 +123,7 @@ Class Finpay implements IPayment
 		if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
 		if (isset($_SERVER['HTTP_X_REAL_IP'])) $ip = $_SERVER['HTTP_X_REAL_IP'];
 		
-		if($data['amount'] < $invoice['invoice_pay'])
+		if($result['amount'] < $invoice['invoice_pay'])
         {
 			die("wrong amount");
 		}

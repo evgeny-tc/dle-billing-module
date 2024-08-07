@@ -130,11 +130,16 @@ trait Core
 
         if( file_exists( MODULE_PATH . '/payments/' . $payment . "/adm.settings.php" ) )
         {
-            require_once MODULE_PATH . '/payments/' . $payment . "/adm.settings.php";
+            $returnClass = require_once MODULE_PATH . '/payments/' . $payment . "/adm.settings.php";
 
             if( isset($Paysys) and $Paysys instanceof IPayment)
             {
                 return $Paysys;
+            }
+
+            if( $returnClass instanceof IPayment)
+            {
+                return $returnClass;
             }
         }
 

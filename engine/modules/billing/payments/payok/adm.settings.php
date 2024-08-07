@@ -85,20 +85,20 @@ Class Payok implements IPayment
 		return 'OK'.$result["payment_id"];
 	}
 
-	public function check_out( array $data, array $config, array $invoice ) : string|bool
+	public function check_out(array $result, array $config_payment, array $invoice ) : string|bool
 	{
         $array = [
-            $config['secret'],
-            $data['desc'],
-            $data['currency'],
-            $data['shop'],
-            $data['payment_id'],
-            $data['amount']
+            $config_payment['secret'],
+            $result['desc'],
+            $result['currency'],
+            $result['shop'],
+            $result['payment_id'],
+            $result['amount']
         ];
 
         $sign = md5 ( implode ( '|', $array ) );
 
-        IF ( $sign != $data[ 'sign' ] )
+        IF ( $sign != $result[ 'sign' ] )
         {
             return 'Подпись не совпадает';
         }
