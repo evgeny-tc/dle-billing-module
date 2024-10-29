@@ -18,7 +18,7 @@ trait Core
     private static array $Lang = [];
 
     /**
-     * Check installer
+     * Проверить установку
      * @param callable $callback
      * @return void
      */
@@ -147,6 +147,71 @@ trait Core
     }
 
     /**
+     * Оплатить квитанцию
+     * @param array $Invoice
+     * @param string|null $payerRequisites
+     * @return bool
+     * @throws BalanceException
+     */
+    public function invoiceRegisterPay( array $Invoice, ?string $payerRequisites = '' ) : bool
+    {
+        $this->Payments();
+
+        if( ! isset( $Invoice ) )
+        {
+            throw new BalanceException($this->lang['register_pay_unknown_invoice']);
+        }
+
+        if( $Invoice['invoice_date_pay'] )
+        {
+            throw new BalanceException($this->lang['register_pay_payed_invoice']);
+        }
+
+        Query::Init()->updateInvoice(
+            id: $Invoice['invoice_id'],
+            invoice_paysys: $Invoice['invoice_paysys'],
+            invoice_date_pay: $this->_TIME,
+            invoice_payer_requisites: $payerRequisites
+        );
+
+        # есть обработчик
+        #
+        if( $Invoice['invoice_handler'] )
+        {
+            list($pluginHandler, $fileHandler) = self::exInvoiceHandler($Invoice['invoice_handler']);
+
+            if( $Handler = self::getHandler($pluginHandler, $fileHandler) )
+            {
+                $Handler->pay($Invoice);
+            }
+
+            return true;
+        }
+
+        # зачислить
+        #
+        $mailComment = sprintf(
+            $this->lang['pay_msgOk'],
+            $this->Payments[$Invoice['invoice_paysys']]['title'] ?: $this->lang['register_pay_unknown_title'],
+            $Invoice['invoice_pay'],
+            $this->Payments[$Invoice['invoice_paysys']]['config']['currency'] ?: $this->lang['register_pay_unknown_currency'],
+        );
+
+        \Billing\Api\Balance::Init()->Comment(
+            userLogin: $Invoice['invoice_user_name'],
+            plus: $Invoice['invoice_get'],
+            comment: $mailComment,
+            pm: (bool)$this->config['mail_payok_pm'],
+            email: (bool)$this->config['mail_payok_email']
+        )->To(
+            userLogin: $Invoice['invoice_user_name'],
+            sum: $Invoice['invoice_get']
+        );
+
+        return true;
+    }
+
+    /**
      * Ссылка на пост
      * @param array $row
      * @return string
@@ -207,12 +272,12 @@ trait Core
     }
 
     /**
-     * Проверить hash строку
+     * csfr
      * @param string $hash
      * @return void
      * @throws Exception
      */
-    public function CheckHash(string $hash = '')
+    public function CheckHash(string $hash = '') : void
     {
         $hash = $hash ?: $_REQUEST['user_hash'];
 
@@ -223,7 +288,7 @@ trait Core
     }
 
     /**
-     * Аватар пользователя
+     * Ссылка на фото пользователя
      * @param string|null $avatar
      * @return string
      */
@@ -272,7 +337,7 @@ trait Core
     }
 
     /**
-     * Plugins
+     * Плагины
      * @return array
      */
     public function Plugins() : array
@@ -290,17 +355,13 @@ trait Core
             $Plugins[mb_strtolower($name)]['config'] = file_exists( MODULE_DATA . '/plugin.' . mb_strtolower($name) . '.php' ) ? include MODULE_DATA . '/plugin.' . mb_strtolower($name) . '.php' : array();
         }
 
-        uasort($Plugins, function ($a, $b) {
-            $b["config"]['status'] = $b["config"]['status'] ?? 0;
-            $a["config"]['status'] = $a["config"]['status'] ?? 0;
-            return strcmp($b["config"]['status'], $a["config"]['status']);
-        });
+        $Plugins = $this->sortArr($Plugins);
 
         return $this->Plugins = $Plugins;
     }
 
     /**
-     * Payments list
+     * Платежные системы
      * @return array
      */
     public function Payments() : array
@@ -308,6 +369,7 @@ trait Core
         if( $this->Payments ) return $this->Payments;
 
         $Payments = [];
+
         $List = opendir( MODULE_PATH . '/payments/' );
 
         while ( $name = readdir($List) )
@@ -323,17 +385,13 @@ trait Core
             }
         }
 
-        uasort($Payments, function ($a, $b) {
-            $b["config"]['status'] = $b["config"]['status'] ?? 0;
-            $a["config"]['status'] = $a["config"]['status'] ?? 0;
-            return strcmp($b["config"]['status'], $a["config"]['status']);
-        });
+        $Payments = $this->sortArr($Payments);
 
         return $this->Payments = $Payments;
     }
 
     /**
-     * Usergroups in select
+     * Select по группам пользователей
      * @param $id
      * @param $none
      * @return string
@@ -421,5 +479,19 @@ trait Core
         }
 
         return $buffer;
+    }
+
+    /**
+     * @param array $Plugins
+     * @return array
+     */
+    public function sortArr(array $Plugins): array
+    {
+        uasort($Plugins, function ($a, $b) {
+            $b["config"]['status'] = $b["config"]['status'] ?? 0;
+            $a["config"]['status'] = $a["config"]['status'] ?? 0;
+            return strcmp($b["config"]['status'], $a["config"]['status']);
+        });
+        return $Plugins;
     }
 }

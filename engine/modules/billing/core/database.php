@@ -9,6 +9,9 @@
 
 namespace Billing;
 
+/**
+ * @deprecated old
+ */
 Class Database
 {
 	/**

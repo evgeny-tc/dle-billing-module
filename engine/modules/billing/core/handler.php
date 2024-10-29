@@ -14,10 +14,9 @@ abstract class Handler
     /**
      * Процесс оплаты заказа, выполняется перед списанием средств, но после всех проверок
      * @param array $Invoice
-     * @param API $API
      * @return bool
      */
-    abstract function pay(array $Invoice, API $API) : bool;
+    abstract function pay(array $Invoice) : bool;
 
     /**
      * Возвращает массив с описанием платежа для истории движения средств
@@ -30,7 +29,7 @@ abstract class Handler
      * Проверяет дополнительные поля (может изменять их) перед платежом
      * @param array $invoice
      * @param array|bool $info
-     * @return mixed
+     * @return void
      */
     abstract function prepay_check( array $invoice, array|bool &$info ) : void;
 

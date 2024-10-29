@@ -7,6 +7,8 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
+use JetBrains\PhpStorm\NoReturn;
+
 if(!defined('DATALIFEENGINE')) {
     die( "Hacking attempt!" );
 }
@@ -24,20 +26,27 @@ if( ! $_REQUEST['hash'] or $_REQUEST['hash'] != $dle_login_hash )
     billing_error('Check stop!');
 }
 
-$Plugin = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( mb_strtolower( $_REQUEST['plugin'] ) ) );
-
-if( $Plugin
-    and file_exists( ENGINE_DIR . "/modules/billing/plugins/{$Plugin}/ajax.php" ) )
+if( $Plugin = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( mb_strtolower( $_REQUEST['plugin'] ) ) ) )
 {
-    include_once ENGINE_DIR . "/modules/billing/plugins/{$Plugin}/ajax.php";
+    if( file_exists( ENGINE_DIR . "/modules/billing/controllers/ajax.{$Plugin}.php" ) )
+    {
+        include_once ENGINE_DIR . "/modules/billing/controllers/ajax.{$Plugin}.php";
 
-    die();
+        die();
+    }
+
+    if( file_exists( ENGINE_DIR . "/modules/billing/plugins/{$Plugin}/ajax.php" ) )
+    {
+        include_once ENGINE_DIR . "/modules/billing/plugins/{$Plugin}/ajax.php";
+
+        die();
+    }
 }
 
 billing_error('Plugin not found!');
 
 #[NoReturn]
-function billing_error(string $message = '')
+function billing_error(string $message = '') : void
 {
     echo json_encode([
         'status' => "error",
@@ -48,7 +57,7 @@ function billing_error(string $message = '')
 }
 
 #[NoReturn]
-function billing_ok(array $data = [])
+function billing_ok(array $data = []) : void
 {
     echo json_encode([
         'status' => 'ok',
