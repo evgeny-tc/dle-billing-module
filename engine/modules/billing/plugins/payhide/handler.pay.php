@@ -20,8 +20,10 @@ return new class extends Handler
         $this->_Config = DevTools::getConfig('payhide');
     }
 
-    public function pay(array $Invoice, API $API) : bool
+    public function pay(array $Invoice) : bool
     {
+        global $db, $_TIME;
+
         $InfoPay = unserialize($Invoice['invoice_payer_info']);
 
         $InfoPay['params']['pagelink'] = base64_decode($InfoPay['params']['pagelink']);
@@ -30,26 +32,31 @@ return new class extends Handler
         #
         if( $InfoPay['params']['post_autor'] and $this->_Config['percent'])
         {
-            $Partner = $API->Convert( ( $Invoice['invoice_get'] / 100 ) * $this->_Config['percent'] );
+            $moneyToPartner = \Billing\Api\Balance::Init()->Convert(
+                ( $Invoice['invoice_get'] / 100 ) * $this->_Config['percent']
+            );
 
-            $API->PlusMoney(
-                $InfoPay['params']['post_autor'],
-                $Partner,
-                sprintf( $this->_Lang['balance_log'], $InfoPay['params']['pagelink'], urlencode( $Invoice['invoice_user_name'] ), $Invoice['invoice_user_name'] ),
-                'payhide',
-                $InfoPay['params']['post_id']
+            \Billing\Api\Balance::Init()->Comment(
+                userLogin: $InfoPay['params']['post_autor'],
+                plus: $moneyToPartner,
+                comment: sprintf( $this->_Lang['balance_log'], $InfoPay['params']['pagelink'], urlencode( $Invoice['invoice_user_name'] ), $Invoice['invoice_user_name'] ),
+                plugin_id: $InfoPay['params']['post_id'],
+                plugin_name: 'payhide'
+            )->To(
+                userLogin: $InfoPay['params']['post_autor'],
+                sum: $moneyToPartner
             );
         }
 
-        $API->db->query( "INSERT INTO " . USERPREFIX . "_billing_payhide
+        $db->query( "INSERT INTO " . USERPREFIX . "_billing_payhide
 												(payhide_user, payhide_pagelink, payhide_price, payhide_date, payhide_tag, payhide_post_id, payhide_time)
 												values ('" . $Invoice['invoice_user_name'] . "',
-														'" . $InfoPay['params']['title'] . '|' . $InfoPay['params']['pagelink'] . "',
+														'" . $db->safesql($InfoPay['params']['title']) . '|' . $db->safesql($InfoPay['params']['pagelink']) . "',
 														'" . $Invoice['invoice_pay'] . "',
-														'" . $API->_TIME . "',
-														'" . $InfoPay['params']['tag'] . "',
-														'" . $InfoPay['params']['post_id'] . "',
-														'" . $InfoPay['params']['endtime'] . "')" );
+														'{$_TIME}',
+														'" . $db->safesql($InfoPay['params']['tag']) . "',
+														'" . intval($InfoPay['params']['post_id']) . "',
+														'" . intval($InfoPay['params']['endtime']) . "')" );
 
         return true;
     }

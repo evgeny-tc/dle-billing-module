@@ -11,7 +11,7 @@ namespace Billing;
 
 return new class extends Handler
 {
-    public function pay(array $Invoice, API $API) : bool
+    public function pay(array $Invoice) : bool
     {
         global $db;
 

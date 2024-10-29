@@ -20,7 +20,7 @@ return new class extends Handler
         $this->_Config = DevTools::getConfig('donate');
     }
     
-    public function pay(array $Invoice, Api $API) : bool
+    public function pay(array $Invoice) : bool
     {
         $InfoPay = unserialize($Invoice['invoice_payer_info']);
 
@@ -31,22 +31,17 @@ return new class extends Handler
             $Invoice['invoice_get'] -= ($Invoice['invoice_get'] / 100) * $this->_Config['percent'];
         }
 
-        if( ! $this->_Config['alert_pm'] )
-        {
-            $API->alert_pm = false;
-        }
-
-        if( ! $this->_Config['alert_email'] )
-        {
-            $API->alert_main = false;
-        }
-
-        $API->PlusMoney(
-            $InfoPay['params']['login'],
-            $Invoice['invoice_get'],
-            sprintf( $this->_Lang['pay'], '<a href="/user/' . urlencode( $Invoice['invoice_user_name'] ) . '">' . $Invoice['invoice_user_name'] . '</a>', $InfoPay['params']['comment'] ),
-            'donate',
-            $InfoPay['params']['grouping'],
+        \Billing\Api\Balance::Init()->Comment(
+            userLogin: $InfoPay['params']['login'],
+            plus: $Invoice['invoice_get'],
+            comment: sprintf( $this->_Lang['pay'], '<a href="/user/' . urlencode( $Invoice['invoice_user_name'] ) . '">' . $Invoice['invoice_user_name'] . '</a>', $InfoPay['params']['comment'] ),
+            plugin_id: $InfoPay['params']['grouping'],
+            plugin_name: 'donate',
+            pm: (bool)$this->_Config['alert_pm'],
+            email: (bool)$this->_Config['alert_email']
+        )->To(
+            userLogin: $InfoPay['params']['login'],
+            sum: $Invoice['invoice_get']
         );
 
         return true;

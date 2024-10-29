@@ -122,32 +122,64 @@ Class Balance
      * Запись в журнал
      * @param int $userId
      * @param string $userLogin
+     * @param float $plus
+     * @param float $minus
      * @param string $comment
      * @param int $plugin_id
      * @param string $plugin_name
+     * @param bool $pm
+     * @param bool $email
      * @return $this
      * @throws BalanceException
+     * @throws \Exception
      */
-    public function Comment(int $userId = 0, string $userLogin = '', float $plus = 0, float $minus = 0, string $comment = '', int $plugin_id = 0, string $plugin_name = 'api') : self
+    public function Comment(int $userId = 0, string $userLogin = '', float $plus = 0, float $minus = 0, string $comment = '', int $plugin_id = 0, string $plugin_name = 'api', bool $pm = false, bool $email = false) : self
     {
         $getUser = $this->getUser($userId, $userLogin);
+        $currency = $this->Declension( $plus ?: $minus );
 
         $plugin_name = self::$global['DB']->safesql($plugin_name);
 
         self::$global['DB']->query( "INSERT INTO " . PREFIX . "_billing_history
 							(history_plugin, history_plugin_id, history_user_name, history_plus, history_minus, history_balance, history_currency, history_text, history_date) values
-							('{$plugin_name}', '{$plugin_id}', '{$getUser['name']}', '{$plus}', '{$minus}', '{$getUser[self::getBalanceField()]}', '{$this->Declension( $plus ?: $minus )}', '{$comment}', '" . self::$global['TIME'] . "')" );
+							('{$plugin_name}', '{$plugin_id}', '{$getUser['name']}', '{$plus}', '{$minus}', '{$getUser[self::getBalanceField()]}', '{$currency}', '{$comment}', '" . self::$global['TIME'] . "')" );
+
+        $buildAlert = (new Alert(userId: $userId, name: $userLogin))->loadTemplate('balance')->buildTemplate(
+            [
+                '{date}' => langdate( "j F Y  G:i", $this->_TIME ),
+                '{login}' => $getUser['name'],
+                '{sum}'=> ( $plus ? "+{$plus} {$currency}" : "-{$plus} {$currency}" ),
+                '{comment}' => $comment,
+                '{balance}' => \Billing\Api\Balance::Init()->Convert(value: $getUser [self::getBalanceField()], separator_space: true, declension: true)
+            ]
+        );
+
+        if( $pm )
+        {
+            $buildAlert->pm();
+        }
+
+        if( $email )
+        {
+            $buildAlert->email();
+        }
 
         return $this;
     }
 
     /**
+     * Макс. глубина вложений
+     */
+    const MAX_HOOK = 5;
+
+    /**
      * Отправить событие в плагины
      * @return $this
      */
-    public function Events() : self
+    public function sendEvent() : self
     {
         //todo: hooks
+
 
         return $this;
     }
@@ -193,12 +225,12 @@ Class Balance
 
         if( $userLogin )
         {
-            self::$global['DB']->query( "SELECT user_id, name, email, " . self::getBalanceField() . " FROM " . USERPREFIX . "_users WHERE user_id = '" . self::$global['DB']->safesql( $userLogin ) . "'" );
+            self::$global['DB']->query( "SELECT user_id, name, email, " . self::getBalanceField() . " FROM " . USERPREFIX . "_users WHERE name = '" . self::$global['DB']->safesql( $userLogin ) . "'" );
         }
 
         if( ! $user = self::$global['DB']->get_row())
         {
-            throw new BalanceException('user.not_found');
+            throw new BalanceException('user.not_found:' . $userId . $userLogin);
         }
 
         return self::$buffer[md5($userId.$userLogin)] = $user;
@@ -206,11 +238,12 @@ Class Balance
 
     /**
      * @param float|null $value
-     * @param string|null $format
      * @param bool|null $separator_space
+     * @param string|null $format
+     * @param bool|null $declension
      * @return float|string
      */
-    public function Convert(?float $value = 0, ?bool $separator_space = false, ?string $format = '') : float|string
+    public function Convert(?float $value = 0, ?bool $separator_space = false, ?string $format = '', ?bool $declension = false) : float|string
     {
         $format = $format ?: self::$global['BILLING']['format'];
 
@@ -224,7 +257,9 @@ Class Balance
             $decimal,
             $decimal_separator,
             $separator
-        );
+        )
+            .
+            ( $declension ? ' ' . $this->Declension($value) : '' );
     }
 
     /**

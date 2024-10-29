@@ -20,9 +20,9 @@ return new class extends Handler
         $this->_Config = DevTools::getConfig('fixednews');
     }
 
-    public function pay(array $Invoice, Api $API) : bool
+    public function pay(array $Invoice) : bool
     {
-        global $db;
+        global $db, $_TIME;
 
         $InfoPay = unserialize($Invoice['invoice_payer_info']);
 
@@ -42,15 +42,15 @@ return new class extends Handler
 
         if( $_PostLog )
         {
-            $time_limit = $_PostLog['expires'] <= $API->_TIME
-                ? $API->_TIME + $days * 86400
+            $time_limit = $_PostLog['expires'] <= $_TIME
+                ? $_TIME + $days * 86400
                 : $_PostLog['expires'] + $days * 86400;
 
             $db->query( "UPDATE " . PREFIX . "_post_log SET expires='{$time_limit}' WHERE id='{$_PostLog['id']}'" );
         }
         else
         {
-            $time_limit = $API->_TIME + $days * 86400;
+            $time_limit = $_TIME + $days * 86400;
 
             $db->query( "INSERT INTO " . USERPREFIX . "_post_log (news_id, expires, action) values ('" . $post_id . "', '" . $time_limit . "', '4')" );
         }

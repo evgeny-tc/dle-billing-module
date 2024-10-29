@@ -20,7 +20,7 @@ return new class extends Handler
         $this->_Config = DevTools::getConfig('fixednews');
     }
 
-    public function pay(array $Invoice, Api $API) : bool
+    public function pay(array $Invoice) : bool
     {
         global $db;
 
