@@ -13,11 +13,11 @@ const MODULE_DATA = ENGINE_DIR . "/data/billing";
 
 try
 {
+    # Конфиги модуля
+    #
     $_Config = Billing\DevTools::getConfig('fixednews');
     $_Lang = Billing\DevTools::getLang('fixednews');
     $_ConfigBilling = Billing\DevTools::getConfig('');
-
-    require_once MODULE_PATH . '/OutAPI.php';
 
     $cat_info = get_vars( "category" );
 
@@ -33,10 +33,10 @@ try
         {
             $cat_info[$row['id']] = array ();
 
-            foreach ( $row as $key => $value ) {
+            foreach ( $row as $key => $value )
+            {
                 $cat_info[$row['id']][$key] = stripslashes( $value );
             }
-
         }
 
         set_vars( "category", $cat_info );
@@ -44,8 +44,13 @@ try
         $db->free();
     }
 
+    # Параметры вызова
+    #
     $post_id = intval( $_POST['params']['post_id'] );
     $pay_day = intval( $_POST['params']['days'] );
+
+    $_Post = false;
+    $_arrPostCategory = [];
 
     if( $post_id )
     {
@@ -53,11 +58,16 @@ try
 
         if( $_Post['category'] )
         {
-            $categorys = explode(',', $_Post['category']);
-            $_PostCategory = @end($categorys);
+            $_arrPostCategory = explode(',', $_Post['category']);
         }
     }
+    else
+    {
+        billing_error( $_Lang['error']['post_not_found'] );
+    }
 
+    # Не авторизован
+    #
     if( ! $is_logged )
     {
         billing_error( $_Lang['error']['login'] );
@@ -75,8 +85,11 @@ try
         billing_error( $_Lang['error']['post_not_found']);
     }
 
+    //todo: old
     $LQuery 	= new Billing\Database( $db, $_ConfigBilling['fname'], $_TIME );
 
+    # Действие
+    #
     switch ($_POST['params']['type'])
     {
         case 'up':

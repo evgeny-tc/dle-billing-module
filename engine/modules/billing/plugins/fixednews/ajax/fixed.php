@@ -15,9 +15,24 @@ if( !defined('BILLING_MODULE') ) {
 
 # Цена для группы / категории не указана
 #
-if( ! $groupPrices = $_Config["{$member_id['user_group']}_{$_PostCategory}"] )
+$groupPrices = '';
+$_PostCategory = 0;
+
+foreach ($_arrPostCategory as $_Cat)
 {
-    billing_error( "{$member_id['user_group']}_{$_PostCategory}" );
+    $_Cat = intval($_Cat);
+
+    if( $groupPrices = $_Config["{$member_id['user_group']}_{$_Cat}"] )
+    {
+        $_PostCategory = $_Cat;
+
+        break;
+    }
+}
+
+if( ! $groupPrices )
+{
+    billing_error( $_Lang['error']['settings'] );
 }
 
 $arGroupPrice = explode("\n", $groupPrices);
@@ -54,29 +69,36 @@ if( $_POST['params']['pay'] and $pay_day )
     {
         # начать оплату
         #
-        $invoice_id = $LQuery->DbCreatInvoice(
-            '',
-            $member_id['name'],
-            $_Price,
-            $_Price,
-            [
-                'billing' => [
-                    'from_balance' => 1
+        try
+        {
+            $invoice_id = \Billing\Api\Balance::Init()->createInvoice(
+                userLogin: $member_id['name'],
+                sum_get: $_Price,
+                payer_info: [
+                    'billing' => [
+                        'from_balance' => 1
+                    ],
+                    'params' => [
+                        'post_id' => $post_id,
+                        'post_title' => $_Post['title'],
+                        'days' => $pay_day
+                    ]
                 ],
-                'params' => [
-                    'post_id' => $post_id,
-                    'post_title' => $_Post['title'],
-                    'days' => $pay_day
-                ]
-            ],
-            'fixednews:payfixed'
-        );
+                handler: 'fixednews:payfixed'
+            );
+        }
+        catch (\Billing\BalanceException $e)
+        {
+            billing_error( $e->getMessage() );
+        }
 
-        billing_ok([
-            'invoice_id' => $invoice_id,
-            'url' => "/{$_ConfigBilling['page']}.html/pay/waiting/id/{$invoice_id}",
-            'html' => sprintf($_Lang['html_pay_wait'], "/{$_ConfigBilling['page']}.html/pay/waiting/id/{$invoice_id}")
-        ]);
+        billing_ok(
+            [
+                'invoice_id' => $invoice_id,
+                'url' => "/{$_ConfigBilling['page']}.html/pay/waiting/id/{$invoice_id}",
+                'html' => sprintf($_Lang['html_pay_wait'], "/{$_ConfigBilling['page']}.html/pay/waiting/id/{$invoice_id}")
+            ]
+        );
     }
 }
 
@@ -123,8 +145,8 @@ foreach( $arGroupPrice as $price_str )
     }
 
     $_tpl_select_buffer = str_replace('{days}', $price_ex[0], $_tpl_select_buffer);
-    $_tpl_select_buffer = str_replace('{price}', $BillingAPI->Convert( $price_ex[2] ), $_tpl_select_buffer);
-    $_tpl_select_buffer = str_replace('{currency}', $BillingAPI->Declension( $price_ex[2] ), $_tpl_select_buffer);
+    $_tpl_select_buffer = str_replace('{price}', \Billing\Api\Balance::Init()->Convert( $price_ex[2] ), $_tpl_select_buffer);
+    $_tpl_select_buffer = str_replace('{currency}', \Billing\Api\Balance::Init()->Declension( $price_ex[2] ), $_tpl_select_buffer);
     $_tpl_select_buffer = str_replace('{title}', $price_ex[1], $_tpl_select_buffer);
 
     $selects .= $_tpl_select_buffer;

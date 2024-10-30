@@ -55,14 +55,14 @@ try
     #
     if( $_Config['max'] and $get_sum > $_Config['max'] )
     {
-        billing_error( sprintf($_Lang['ajax_er3'], $BillingAPI->Convert( $_Config['max'] ), $BillingAPI->Declension( $_Config['max'] )) );
+        billing_error( sprintf($_Lang['ajax_er3'], \Billing\Api\Balance::Init()->Convert( $_Config['max'] ), \Billing\Api\Balance::Init()->Declension( $_Config['max'] )) );
     }
 
     # Мин. сумма
     #
     if( $get_sum < $_Config['min'] )
     {
-        billing_error( sprintf($_Lang['ajax_er4'], $BillingAPI->Convert( $_Config['min'] ), $BillingAPI->Declension( $_Config['min'] )) );
+        billing_error( sprintf($_Lang['ajax_er4'], \Billing\Api\Balance::Init()->Convert( $_Config['min'] ), \Billing\Api\Balance::Init()->Declension( $_Config['min'] )) );
     }
 
     # Макс. символов 128
@@ -70,6 +70,7 @@ try
     $get_comment = $db->safesql( strip_tags($get_comment) );
     $get_comment = substr($get_comment, 0, 128);
 
+    //todo: old
     $LQuery 	= new Billing\Database( $db, $_ConfigBilling['fname'], $_TIME );
 
     # Создать квитанцию

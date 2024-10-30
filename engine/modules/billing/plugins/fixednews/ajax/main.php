@@ -15,12 +15,25 @@ if( !defined('BILLING_MODULE') ) {
 
 # Цена для группы / категории не указана
 #
-if( ! $_Price = $_Config["main_{$member_id['user_group']}_{$_PostCategory}"] )
+$_Price = 0;
+$_PostCategory = 0;
+
+foreach ($_arrPostCategory as $_Cat)
+{
+    $_Cat = intval($_Cat);
+
+    if( $_Price = $_Config["main_{$member_id['user_group']}_{$_Cat}"] )
+    {
+        $_PostCategory = $_Cat;
+
+        break;
+    }
+}
+
+if( ! $_Price )
 {
     billing_error( $_Lang['error']['off'] );
 }
-
-$arGroupPrice = explode("\n", $groupPrices);
 
 $tpl = new \dle_template();
 $tpl->dir = TEMPLATE_DIR;
@@ -31,12 +44,10 @@ if( $_POST['params']['pay'] )
 {
     # начать оплату
     #
-    $invoice_id = $LQuery->DbCreatInvoice(
-        '',
-        $member_id['name'],
-        $_Price,
-        $_Price,
-        [
+    $invoice_id = \Billing\Api\Balance::Init()->createInvoice(
+        userLogin: $member_id['name'],
+        sum_get: $_Price,
+        payer_info: [
             'billing' => [
                 'from_balance' => 1
             ],
@@ -45,14 +56,16 @@ if( $_POST['params']['pay'] )
                 'post_title' => $_Post['title']
             ]
         ],
-        'fixednews:paymain'
+        handler: 'fixednews:paymain'
     );
 
-    billing_ok([
-        'invoice_id' => $invoice_id,
-        'url' => "/{$_ConfigBilling['page']}.html/pay/waiting/id/{$invoice_id}",
-        'html' => sprintf($_Lang['html_pay_wait'], "/{$_ConfigBilling['page']}.html/pay/waiting/id/{$invoice_id}")
-    ]);
+    billing_ok(
+        [
+            'invoice_id' => $invoice_id,
+            'url' => "/{$_ConfigBilling['page']}.html/pay/waiting/id/{$invoice_id}",
+            'html' => sprintf($_Lang['html_pay_wait'], "/{$_ConfigBilling['page']}.html/pay/waiting/id/{$invoice_id}")
+        ]
+    );
 }
 
 $tpl->load_template( '/billing/plugins/fixednews/main.tpl' );
@@ -67,8 +80,8 @@ $tpl->set( '{post.title}', $_Post['title'] );
 $tpl->set( '{post.category}', $cat_info[$_PostCategory]['name'] );
 $tpl->set( '{post.autor}', '<a href="/user/' . urlencode( $_Post['autor'] ) . '" target="_blank">' . $_Post['autor'] . '</a>' );
 
-$tpl->set( '{pay.sum}', $BillingAPI->Convert( $_Price ) );
-$tpl->set( '{pay.sum.currency}', $BillingAPI->Declension( $_Price ) );
+$tpl->set( '{pay.sum}', \Billing\Api\Balance::Init()->Convert( $_Price ) );
+$tpl->set( '{pay.sum.currency}', \Billing\Api\Balance::Init()->Declension( $_Price ) );
 
 $tpl->compile( 'content' );
 $tpl->clear();
