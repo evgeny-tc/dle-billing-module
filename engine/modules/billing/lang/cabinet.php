@@ -3,7 +3,12 @@
 return array
 (
     /* 0.9.6 */
-    'push_title' => "Баланс пополнен",
+    'push_title' => "Баланс изменен",
+
+    'register_pay_unknown_invoice' => "<i>Квитанция не найдена</i>",
+    'register_pay_payed_invoice' => "<i>Квитанция оплачена</i>",
+    'register_pay_unknown_title' => "<i>неизвестно</i>",
+    'register_pay_unknown_currency' => "у.е.",
 
     'coupon_use_error' => "Ошибка применения купона",
     'coupon_use_ok' => "<font color='green'>Купон применен</font>",

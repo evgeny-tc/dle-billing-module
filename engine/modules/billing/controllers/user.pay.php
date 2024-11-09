@@ -9,6 +9,7 @@
 
 namespace Billing\User\Controller;
 
+use Billing\BalanceException;
 use \Billing\DevTools;
 use \Billing\IPayment;
 
@@ -325,7 +326,7 @@ Class Pay
                             $logData[1]
                         );
 
-                        if( $resultPay and $this->RegisterPay( $Invoice, $this->DevTools->member_id['name'] ) )
+                        if( $resultPay and $this->DevTools->invoiceRegisterPay( $Invoice, $this->DevTools->member_id['name'] ) )
                         {
                             if( $_GET['modal'] )
                             {
@@ -423,6 +424,7 @@ Class Pay
      * Обработчик платежей
      * @param array $GET
      * @return void
+     * @throws BalanceException
      */
     public function handler( array $GET = [] ) : void
     {
@@ -529,7 +531,7 @@ Class Pay
             {
                 $this->logging( 9, '200' );
 
-                if( $this->RegisterPay( $Invoice, $payerRequisites ) )
+                if( $this->DevTools->invoiceRegisterPay( $Invoice, $payerRequisites ) )
                 {
                     $this->logging( 10, $Invoice['invoice_get'] . ' ' . $this->DevTools->API->Declension( $Invoice['invoice_get'] ) );
                     $this->logging( 14 );
@@ -625,80 +627,5 @@ Class Pay
         }
 
         return $data;
-    }
-
-    /**
-     * Изменить статус квитанции, зачислить средства
-     * @param array $Invoice
-     * @param string|null $payerRequisites
-     * @return bool
-     */
-    private function RegisterPay( array $Invoice, ?string $payerRequisites = '' ) : bool
-    {
-        $this->PaymentsArray = $this->DevTools->Payments();
-
-        if( ! isset( $Invoice ) or $Invoice['invoice_date_pay'] )
-        {
-            return true;
-        }
-
-        $this->DevTools->LQuery->DbInvoiceUpdate(
-            invoice_id: $Invoice['invoice_id'],
-            invoice_payment: $Invoice['invoice_paysys'],
-            invoice_pay: $Invoice['invoice_pay'],
-            check_payer_requisites: $payerRequisites
-        );
-
-        # есть обработчик
-        #
-        if( $Invoice['invoice_handler'] )
-        {
-            list($pluginHandler, $fileHandler) = DevTools::exInvoiceHandler($Invoice['invoice_handler']);
-
-            $this->logging( 1, $Invoice['invoice_handler'] );
-
-            if( $Handler = DevTools::getHandler($pluginHandler, $fileHandler) )
-            {
-                $Handler->pay($Invoice, $this->DevTools->API);
-            }
-
-            return true;
-        }
-
-        # .. отправить уведомление
-        #
-        $dataMail = array
-        (
-            '{id}' => $Invoice['invoice_id'],
-            '{sum}' => $Invoice['invoice_pay'] . ' ' . $this->PaymentsArray[$Invoice['invoice_paysys']]['config']['currency'],
-            '{login}' => $Invoice['invoice_user_name'],
-            '{sum_get}' => $Invoice['invoice_get'] . ' ' . $this->DevTools->API->Declension( $Invoice['invoice_get'] ),
-            '{payments}' => $this->PaymentsArray[$Invoice['invoice_paysys']]['title']
-        );
-
-        $SearchUser = $this->DevTools->LQuery->DbSearchUserByName( $Invoice['invoice_user_name'] );
-
-        if( $this->DevTools->config['mail_payok_pm'] )
-        {
-            if( $this->DevTools->API->Alert( "payok", $dataMail, $SearchUser['user_id'] ) )
-            {
-                $this->logging( 15, "yes" );
-            }
-        }
-
-        if( $this->DevTools->config['mail_payok_email'] )
-        {
-            $this->DevTools->API->Alert( "payok", $dataMail, 0, $SearchUser['email'] );
-        }
-
-        $this->DevTools->API->PlusMoney(
-            $SearchUser['name'],
-            $Invoice['invoice_get'],
-            sprintf( $this->DevTools->lang['pay_msgOk'], $this->PaymentsArray[$Invoice['invoice_paysys']]['title'], $Invoice['invoice_pay'], $this->PaymentsArray[$Invoice['invoice_paysys']]['config']['currency'] ),
-            'pay',
-            $Invoice['invoice_id']
-        );
-
-        return true;
     }
 }

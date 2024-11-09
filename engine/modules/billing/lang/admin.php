@@ -4,6 +4,11 @@ return array
 (
 	'hash_error' => "Время ожидания модуля закончилось. Повторите попытку",
 
+    'register_pay_unknown_invoice' => "<i>Квитанция не найдена</i>",
+    'register_pay_payed_invoice' => "<i>Квитанция оплачена</i>",
+    'register_pay_unknown_title' => "<i>неизвестно</i>",
+    'register_pay_unknown_currency' => "у.е.",
+
     'plus_add' => "+ добавить",
 
     'coupons_title' => "Купоны",
@@ -500,7 +505,7 @@ return array
 	'title' => "Баланс пользователя",
 	'title_short' => "Баланс",
 	'main' => "Панель управления",
-	'desc' => "Управление модулем DLE-Billing",
+	'desc' => "DLE-Billing",
 	'more' => "Показать больше",
 	'go_plugin' => "Перейти к плагину ",
 	'no_plugin' => "Плагины не установлены!",

@@ -23,11 +23,13 @@ if( file_exists( ENGINE_DIR . "/data/billing/plugin.forms.php" ) )
 
 if( $_Config['status'] )
 {
-    include ENGINE_DIR . '/modules/billing/OutAPI.php';
-
     try
     {
-        # loaded theme
+        # API
+        #
+        require_once ENGINE_DIR . '/modules/billing/api/balance.php';
+
+        # Загрузить шаблон формы
         #
         if( $_Theme['name'] = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $theme ) ) )
         {
@@ -36,7 +38,9 @@ if( $_Config['status'] )
                 $_Theme['info'] = parse_ini_file( ROOT_DIR . '/templates/' . $config['skin'] . '/billing/plugins/forms/' . $_Theme['name'] . '/info.ini', true );
             }
             else
+            {
                 throw new Exception($_Lang['errors']['ini']);
+            }
 
             if( ! $_Theme['key'] = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $key ) ) )
             {
@@ -116,7 +120,7 @@ HTML;
                 $params = [];
 
                 $params['form_title'] = $db->safesql( urldecode($title) );
-                $params['price'] = $BillingAPI->Convert( $price );
+                $params['price'] = \Billing\Api\Balance::Init()->Convert( $price );
                 $params['pay_desc'] = $db->safesql( urldecode($desc) );
 
                 if( floatval($price) > 0 )
@@ -138,7 +142,7 @@ HTML;
                 $tpl->set( '{uniqid}', $visitUniqid );
                 $tpl->set( '{form_title}', $params['form_title'] );
                 $tpl->set( '{price}', $params['price'] );
-                $tpl->set( '{dec}', $BillingAPI->Declension( $params['price'] ) );
+                $tpl->set( '{dec}', \Billing\Api\Balance::Init()->Declension( $params['price'] ) );
                 $tpl->set( '{pay_desc}', $params['pay_desc'] );
                 $tpl->set( '{theme}', $_Theme['name'] );
                 $tpl->set( '{module.skin}', $config['skin'] );

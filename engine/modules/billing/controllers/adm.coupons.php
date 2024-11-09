@@ -53,7 +53,7 @@ Class Coupons
 
             if( $_Type === 1 )
             {
-                $_Value = $this->Dashboard->API->Convert( $_POST['create']['value'] );
+                $_Value = \Billing\Api\Balance::Init()->Convert($_POST['create']['value']);
             }
             else
             {
@@ -133,7 +133,7 @@ Class Coupons
                     $Value['coupon_id'],
                     $_status ? $Value['coupon_key'] : "<s>{$Value['coupon_key']}</s>",
                     $Value['coupon_type'] == 1
-                        ? $this->Dashboard->API->Convert($Value['coupon_value']) . ' ' . $this->Dashboard->API->Declension( $Value['coupon_value'] )
+                        ? \Billing\Api\Balance::Init()->Convert(value: $Value['coupon_value'], separator_space: true, declension: true)
                         : intval($Value['coupon_value']) . '%',
                     intval($Value['coupon_time_end'])
                         ? static::dateStatus($Value['coupon_time_end'])
@@ -194,7 +194,7 @@ Class Coupons
         $this->Dashboard->ThemeAddStr(
             $this->Dashboard->lang['coupons']['create']['value'],
             $this->Dashboard->lang['coupons']['create']['value_desc'],
-            "<input name=\"create[value]\" class=\"form-control\" type=\"text\" style=\"width: 30%\" value=\"10\"> <span class='create_value' data-type='2' style='display: none'>%</span> <span class='create_value' data-type='1'>" . $this->Dashboard->API->Declension( 10 ) . '</span>'
+            "<input name=\"create[value]\" class=\"form-control\" type=\"text\" style=\"width: 30%\" value=\"10\"> <span class='create_value' data-type='2' style='display: none'>%</span> <span class='create_value' data-type='1'>" . \Billing\Api\Balance::Init()->Convert( 10 ) . '</span>'
         );
 
         $this->Dashboard->ThemeAddStr(

@@ -19,12 +19,20 @@ if( $member_id['name'] and $billingLang = include ENGINE_DIR . '/modules/billing
         $_return_js = [];
 
         $db->query( "SELECT * FROM " . USERPREFIX . "_billing_history
-                        WHERE history_user_name = '{$member_id['name']}' and history_plus > 0 and history_date > {$lastCheck}
+                        WHERE history_user_name = '{$member_id['name']}' and history_date > {$lastCheck}
                        ORDER BY history_id asc LIMIT 3" );
 
         while ( $row = $db->get_row() )
         {
-            $_return_js[] = "DLEPush.info('<b>+" . \Billing\Api\Balance::Init()->Convert($row['history_plus']) . " " . \Billing\Api\Balance::Init()->Declension($row['history_plus'])  . "</b><br><i>{$row['history_text']}</i>', '{$billingLang['push_title']}');";
+            if( $row['history_plus'] > 0 )
+            {
+                $_return_js[] = "DLEPush.info('<b>+" . \Billing\Api\Balance::Init()->Convert(value: $row['history_plus'], declension: true) . "</b><br><i>{$row['history_text']}</i>', '{$billingLang['push_title']}');";
+            }
+
+            if( $row['history_minus'] > 0 )
+            {
+                $_return_js[] = "DLEPush.error('<b>-" . \Billing\Api\Balance::Init()->Convert(value: $row['history_minus'], declension: true)  . "</b><br><i>{$row['history_text']}</i>', '{$billingLang['push_title']}');";
+            }
         }
 
         if( count($_return_js) )

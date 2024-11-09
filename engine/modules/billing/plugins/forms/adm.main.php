@@ -15,13 +15,29 @@ use \Billing\Paging;
 
 Class Forms extends PluginActions
 {
+    /**
+     * Plugin shortage
+     */
     const PLUGIN = 'forms';
 
+    /**
+     * @var array
+     */
 	private array $_Lang = [];
 
+    /**
+     * @var string
+     */
     private string $selKey = '';
+
+    /**
+     * @var array
+     */
     private array $keys = [];
 
+    /**
+     *
+     */
 	function __construct()
 	{
         $this->_Lang = Dashboard::getLang(static::PLUGIN);
@@ -100,6 +116,7 @@ Class Forms extends PluginActions
             $MassList = $_POST['massact_list'];
 
             if( is_array($MassList) )
+            {
                 foreach( $MassList as $id )
                 {
                     $id = intval( $id );
@@ -108,6 +125,7 @@ Class Forms extends PluginActions
 
                     $this->Dashboard->LQuery->db->query( "DELETE FROM " . USERPREFIX . "_billing_forms WHERE form_create_id='$id'" );
                 }
+            }
         }
 
         $PerPage = $this->Dashboard->config['paging'];
@@ -119,19 +137,15 @@ Class Forms extends PluginActions
 																	WHERE form_key = '" . $this->Dashboard->LQuery->db->safesql($key) . "'
 																	ORDER BY form_create_id desc" );
 
-        $this->Dashboard->LQuery->db->query( "SELECT * FROM " . USERPREFIX . "_billing_forms
+        $rows = $this->Dashboard->LQuery->db->super_query( "SELECT * FROM " . USERPREFIX . "_billing_forms
 												LEFT JOIN " . USERPREFIX . "_billing_invoice ON " . USERPREFIX . "_billing_forms.form_payed=" . USERPREFIX . "_billing_invoice.invoice_id
 												WHERE form_key = '" . $this->Dashboard->LQuery->db->safesql($key) . "'
-												ORDER BY form_create_id desc LIMIT {$page}, {$PerPage}" );
+												ORDER BY form_create_id desc LIMIT {$page}, {$PerPage}", true );
 
         if( ! $ResultCount['count'] )
         {
             return $this->Dashboard->ThemePadded( $this->Dashboard->lang['history_no'], '' );
         }
-
-        $rows = [];
-
-        while ( $row = $this->Dashboard->LQuery->db->get_row() ) $rows[] = $row;
 
         $theme = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $rows[0]['form_theme'] ) );
 
@@ -170,7 +184,7 @@ Class Forms extends PluginActions
 
         $this->Dashboard->ThemeAddTR($moreColumns);
 
-        # body
+        # Заявки
         #
         foreach ($rows as $row)
         {
@@ -180,6 +194,8 @@ Class Forms extends PluginActions
                 '<span style="white-space: nowrap">' . $this->Dashboard->ThemeChangeTime( $row['form_create'] ) . '</span>'
             ];
 
+            # Стоимость
+            #
             if( floatval($rows[0]['form_price']) > 0 )
             {
                 if( $row['invoice_date_pay'] )
@@ -192,8 +208,12 @@ Class Forms extends PluginActions
                 }
             }
 
+            # Данные формы
+            #
             $row['form_data'] = unserialize($row['form_data']);
 
+            # Вывести колонки
+            #
             if( isset( $theme_data['columns'] ) and is_array($theme_data['columns']) )
             {
                 foreach ($theme_data['columns']  as $column => $column_name)
@@ -202,6 +222,17 @@ Class Forms extends PluginActions
                 }
             }
 
+            # Доп.названия колонок
+            #
+            $column_names = $theme_data['columns'];
+
+            if( isset( $theme_data['columns_names'] ) and is_array($theme_data['columns']) )
+            {
+                $column_names = array_merge($column_names, $theme_data['columns_names']);
+            }
+
+            #
+            #
             if( $row['form_show'] )
             {
                 $show_data[] = "<a href='#' onclick='billingShowForm({$row['form_create_id']}); return false'><span class='badge badge-info'>{$this->_Lang['table']['open']}</span></a>";
@@ -215,7 +246,7 @@ Class Forms extends PluginActions
                                 <input name=\"massact_list[]\" value=\"".$row['form_create_id']."\" class=\"icheck\" type=\"checkbox\">
                             </center>
                             <div id='dataForm-{$row['form_create_id']}' title='заявка' style='display:none'>
-                               <pre>" . print_r($row['form_data'], 1) . "</pre>
+                                " . self::contentPopup($column_names, $row['form_data']) . "
                             </div>";
 
             $this->Dashboard->ThemeAddTR( $show_data );
@@ -226,14 +257,14 @@ Class Forms extends PluginActions
 <script>
 function billingShowForm(form_create_id, form_key = '')
 {
-    BillingJS.openDialog('#dataForm-' + form_create_id, 700);
+    BillingJS.openDialog('#dataForm-' + form_create_id, {width: 800});
     
-    if( ! $('.showForm[data-id="'+form_create_id+'"]').hasClass('badge-success') )
+    if( ! $(`.showForm[data-id="${form_create_id}"]`).hasClass('badge-success') )
     {
         return;
     }
     
-    let formCounter = parseFloat($('.formCounter[data-key="'+form_key+'"]').html());
+    let formCounter = parseFloat($(`.formCounter[data-key="${form_key}"]`).html());
     
     formCounter -= 1;
     
@@ -241,10 +272,10 @@ function billingShowForm(form_create_id, form_key = '')
     
     if( formCounter <= 0 )
     {
-        $('.formCounter[data-key="'+form_key+'"]').remove();
+        $(`.formCounter[data-key="${form_key}"]`).remove();
     }
     
-    $('.showForm[data-id="'+form_create_id+'"]').removeClass('badge-success').addClass('badge-info');
+    $(`.showForm[data-id="${form_create_id}"]`).removeClass('badge-success').addClass('badge-info');
     
     $.post("/engine/ajax/controller.php?mod=billing", { plugin: 'forms', hash: '{$this->Dashboard->hash}', show_form_id: form_create_id }, function(result)
 	{
@@ -273,8 +304,48 @@ HTML;
     }
 
     /**
+     * Заявка в popup
+     * @param array $columns
+     * @param array $data
+     * @return string
+     */
+    private static function contentPopup(array $columns, array $data) : string
+    {
+        $table = '<table width="100%" class="table table-striped">';
+
+        foreach ($data as $key => $value)
+        {
+            $key_name = $columns[$key] ?? $key;
+
+            if( $key_name == 'URL' )
+            {
+                $key_name = 'Страница';
+            }
+            elseif( $key_name == 'params' )
+            {
+                $key_name = 'Доп.параметры';
+            }
+
+            if( is_array($value) )
+            {
+                $value = "<pre>".print_r($value,1)."</pre>";
+            }
+
+            $table .= "<tr>
+                        <td>{$key_name}</td>
+                        <td>{$value}</td>
+                    </tr>";
+        }
+
+        $table .= '</table>';
+
+        return $table;
+    }
+
+    /**
      * Группировка по ключу
-     * @return void
+     * @param string $getKey
+     * @return string
      */
     private function Groups(string $getKey = '') : string
     {

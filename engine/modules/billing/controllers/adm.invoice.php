@@ -9,6 +9,7 @@
 
 namespace Billing\Admin\Controller;
 
+use Billing\BalanceException;
 use \Billing\Dashboard;
 use \Billing\Paging;
 
@@ -20,6 +21,7 @@ Class Invoice
      * Main page
      * @param array $Get
      * @return string
+     * @throws BalanceException
      */
     public function main( array $Get = [] ) : string
 	{
@@ -32,7 +34,7 @@ Class Invoice
             'config' => [
                 'status' => $this->Dashboard->config['status'],
                 'title' => $this->Dashboard->lang['title_short'],
-                'currency' => $this->Dashboard->API->Declension(1),
+                'currency' => \Billing\Api\Balance::Init()->Declension(1),
                 'convert' => 1
             ]
         ];
@@ -43,63 +45,51 @@ Class Invoice
 		{
 			$this->Dashboard->CheckHash();
 
-			$MassList = $_POST['massact_list'];
-			$MassAct = $_POST['act'];
+			$mas_list = $_POST['massact_list'];
+			$mass_act = $_POST['act'];
 
-			foreach( $MassList as $id )
+			foreach( $mas_list as $id )
 			{
-				$id = intval( $id );
+				if( ! $id = intval( $id ) ) continue;
 
-				if( ! $id ) continue;
+                switch ($mass_act)
+                {
+                    # Удалить
+                    #
+                    case 'remove':
 
-				# .. удалить
-				if( $MassAct == "remove" )
-				{
-					$this->Dashboard->LQuery->DbInvoiceRemove( $id );
-				}
-				# .. оплачено
-				if( $MassAct == "ok" )
-				{
-					$this->Dashboard->LQuery->DbInvoiceUpdate( $id );
-				}
-				# .. не оплачено
-				if( $MassAct == "no" )
-				{
-					$this->Dashboard->LQuery->DbInvoiceUpdate( $id, true );
-				}
+                        $this->Dashboard->LQuery->DbInvoiceRemove( $id );
 
-				# оплачено / зачислить средства
-				if( $MassAct == 'ok_pay' )
-				{
-					$Invoice = $this->Dashboard->LQuery->DbGetInvoiceByID( $id );
+                        break;
 
-					if( ! $Invoice['invoice_date_pay'] and ($Invoice['invoice_user_name'] or $Invoice['invoice_handler']) )
-					{
-						$this->Dashboard->LQuery->DbInvoiceUpdate( $id );
+                    # Статус -> оплачено
+                    #
+                    case 'ok':
 
-                        # есть обработчик
-                        #
-						if( $Invoice['invoice_handler'] )
-						{
-                            list($pluginHandler, $fileHandler) = Dashboard::exInvoiceHandler($Invoice['invoice_handler']);
+                        $this->Dashboard->LQuery->DbInvoiceUpdate( $id );
 
-                            if( $Handler = Dashboard::getHandler($pluginHandler, $fileHandler) )
-                            {
-                                $Handler->pay($Invoice, $this->DevTools->API);
-                            }
-						}
-						else
-						{
-							$this->Dashboard->API->PlusMoney(
-								$Invoice['invoice_user_name'],
-								$Invoice['invoice_get'],
-								sprintf( $this->Dashboard->lang['pay_msgOk'], $listPayments[$Invoice['invoice_paysys']]['title'] ?? $this->Dashboard->lang['pay_from_admin'], $Invoice['invoice_pay'], $listPayments[$Invoice['invoice_paysys']]['config']['currency'] ?? $this->Dashboard->API->Declension( $Invoice['invoice_get'] ) ),
-								'pay',
-								$id
-							);
-						}
-					}
-				}
+                        break;
+
+                    # Статус -> не оплачено
+                    #
+                    case 'no':
+
+                        $this->Dashboard->LQuery->DbInvoiceUpdate( $id, true );
+
+                        break;
+
+                    # Статус -> оплачено + зачислить платеж
+                    #
+                    case 'ok_pay':
+
+                        $this->Dashboard->invoiceRegisterPay(
+                            $this->Dashboard->LQuery->DbGetInvoiceByID( $id ),
+                            'admin'
+                        );
+
+                        break;
+                }
+
 			}
 
 			$this->Dashboard->ThemeMsg(
@@ -214,7 +204,7 @@ Class Invoice
                 [
                     $Value['invoice_id'],
                     $Value['invoice_pay'] . '&nbsp;' . $listPayments[$Value['invoice_paysys']]['config']['currency'],
-                    $this->Dashboard->API->Convert($Value['invoice_get']) . '&nbsp;' . $this->Dashboard->API->Declension( $Value['invoice_pay'] ),
+                    \Billing\Api\Balance::Init()->Convert(value: $Value['invoice_get'], separator_space: true, declension: true),
                     $this->Dashboard->ThemeChangeTime( $Value['invoice_date_creat'] ),
                     $this->Dashboard->ThemeInfoBilling( $listPayments[$Value['invoice_paysys']] ),
                     $Value['invoice_user_name'] ? $this->Dashboard->ThemeInfoUser( $Value['invoice_user_name'] ) : $this->Dashboard->lang['history_user_null'],

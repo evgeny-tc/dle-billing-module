@@ -26,6 +26,11 @@ Class Balance
     private static array $global = [];
 
     /**
+     * Макс. вложений
+     */
+    const MAX_HOOK = 5;
+
+    /**
      * @param array|null $params
      * @return static
      * @throws \BalanceException
@@ -53,6 +58,56 @@ Class Balance
         }
 
         return self::$instance;
+    }
+
+    /**
+     * Создать счет на оплату
+     * @param int $userId
+     * @param string $userLogin
+     * @param string $payment
+     * @param float $sum_get
+     * @param float $sum_pay
+     * @param mixed $payer_info
+     * @param string $handler
+     * @return int
+     * @throws BalanceException
+     */
+    public function createInvoice(int $userId = 0, string $userLogin = '', string $payment = '', float $sum_get = 0, float $sum_pay = 0, mixed $payer_info = '', string $handler = '') : int
+    {
+        $payment = self::$global['DB']->safesql( $payment );
+        $handler = self::$global['DB']->safesql( $handler );
+
+        $getUser = $this->getUser($userId, $userLogin);
+
+        if( is_array( $payer_info ) )
+        {
+            foreach( $payer_info as $key => $info )
+            {
+                if( is_array($info) )
+                {
+                    foreach($info as $info_key => $info_val)
+                    {
+                        $payer_info[$key][$info_key] = preg_replace('/[^ a-z&#;@а-яA-ZА-Я\d.]/ui', '', $info_val );
+                    }
+                }
+                else
+                {
+                    $payer_info[$key] = preg_replace('/[^ a-z&#;@а-яA-ZА-Я\d.]/ui', '', $info);
+                }
+            }
+
+            $payer_info = serialize( $payer_info );
+        }
+        else
+        {
+            $payer_info = self::$global['DB']->safesql( $payer_info );
+        }
+
+        self::$global['DB']->query( "INSERT INTO " . USERPREFIX . "_billing_invoice
+							(invoice_paysys, invoice_user_name, invoice_get, invoice_pay, invoice_date_creat, invoice_payer_info, invoice_handler) values
+							('{$payment}',  '{$getUser['name']}', '{$sum_get}', '{$sum_pay}', '" . self::$global['TIME'] . "', '{$payer_info}', '{$handler}')" );
+
+        return self::$global['DB']->insert_id();
     }
 
     /**
@@ -146,7 +201,7 @@ Class Balance
 
         $buildAlert = (new Alert(userId: $userId, name: $userLogin))->loadTemplate('balance')->buildTemplate(
             [
-                '{date}' => langdate( "j F Y  G:i", $this->_TIME ),
+                '{date}' => langdate( "j F Y  G:i", self::$global['TIME'] ),
                 '{login}' => $getUser['name'],
                 '{sum}'=> ( $plus ? "+{$plus} {$currency}" : "-{$plus} {$currency}" ),
                 '{comment}' => $comment,
@@ -166,11 +221,6 @@ Class Balance
 
         return $this;
     }
-
-    /**
-     * Макс. глубина вложений
-     */
-    const MAX_HOOK = 5;
 
     /**
      * Отправить событие в плагины
@@ -243,8 +293,10 @@ Class Balance
      * @param bool|null $declension
      * @return float|string
      */
-    public function Convert(?float $value = 0, ?bool $separator_space = false, ?string $format = '', ?bool $declension = false) : float|string
+    public function Convert(mixed $value = 0, ?bool $separator_space = false, ?string $format = '', ?bool $declension = false) : float|string
     {
+        $value = floatval($value);
+
         $format = $format ?: self::$global['BILLING']['format'];
 
         $decimal = $format == 'int' ? 0 : 2;
@@ -267,8 +319,10 @@ Class Balance
      * @param array|null $titles
      * @return string
      */
-    public function Declension(float $value, ?array $titles = []) : string
+    public function Declension(mixed $value, ?array $titles = []) : string
     {
+        $value = floatval($value);
+
         $titles = $titles ?: explode(',', self::$global['BILLING']['currency']);
 
         if( count( $titles ) != 3 )
