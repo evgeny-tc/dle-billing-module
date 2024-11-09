@@ -89,7 +89,6 @@ Class Invoice
 
                         break;
                 }
-
 			}
 
 			$this->Dashboard->ThemeMsg(
@@ -103,10 +102,12 @@ Class Invoice
         #
         if( $this->Dashboard->config['invoice_time'] )
         {
-            $this->Dashboard->LQuery->DbWhere( array(
-                "invoice_date_creat < {s}" => $this->Dashboard->_TIME - ( $this->Dashboard->config['invoice_time'] * 60 ),
-                "invoice_date_pay = '0' " => 1
-            ));
+            $this->Dashboard->LQuery->DbWhere(
+                [
+                    "invoice_date_creat < {s}" => $this->Dashboard->_TIME - ( $this->Dashboard->config['invoice_time'] * 60 ),
+                    "invoice_date_pay = '0' " => 1
+                ]
+            );
 
             $this->Dashboard->LQuery->DbInvoicesRemove();
         }
@@ -177,7 +178,7 @@ Class Invoice
 		}
 		else
 		{
-			$this->Dashboard->LQuery->DbWhere( array( "invoice_user_name = '{s}' " => $Get['user'] ) );
+			$this->Dashboard->LQuery->DbWhere( ["invoice_user_name = '{s}' " => $Get['user']]);
 
 			$PerPage = 30;
 			$Data = $this->Dashboard->LQuery->DbGetInvoice( $Get['page'], $PerPage );
@@ -256,11 +257,11 @@ Class Invoice
 			$ContentList .= $this->Dashboard->ThemePadded( $this->Dashboard->lang['history_no'] );
 		}
 
-		$tabs[] = array(
-				'id' => 'list',
-				'title' => $this->Dashboard->lang['invoice_title'],
-				'content' => $ContentList
-		);
+		$tabs[] = [
+            'id' => 'list',
+            'title' => $this->Dashboard->lang['invoice_title'],
+            'content' => $ContentList
+        ];
 
 		# Форма поиска
 		#

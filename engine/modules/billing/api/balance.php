@@ -26,9 +26,21 @@ Class Balance
     private static array $global = [];
 
     /**
-     * Макс. вложений
+     * Максимальная длина цепочки событий
      */
-    const MAX_HOOK = 5;
+    const MAX_HOOK_EVENTS = 10;
+
+    /**
+     * Данные для события
+     * @var array
+     */
+    private array $hook_data = [];
+
+    /**
+     * Текущее звено события
+     * @var int
+     */
+    private int $hook_num = 0;
 
     /**
      * @param array|null $params
@@ -55,6 +67,9 @@ Class Balance
                 'DLE' => $config,
                 'BILLING' => $params
             ];
+
+            self::$instance->hook_num = 0;
+            self::$instance->hook_data = [];
         }
 
         return self::$instance;
@@ -199,13 +214,30 @@ Class Balance
 							(history_plugin, history_plugin_id, history_user_name, history_plus, history_minus, history_balance, history_currency, history_text, history_date) values
 							('{$plugin_name}', '{$plugin_id}', '{$getUser['name']}', '{$plus}', '{$minus}', '{$getUser[self::getBalanceField()]}', '{$currency}', '{$comment}', '" . self::$global['TIME'] . "')" );
 
+        $userReportBalance = $getUser [self::getBalanceField()] + $plus - $minus;
+
+        # Событие в плагины
+        #
+        $this->hook_data = [
+            'userId' => $getUser['user_id'],
+            'userLogin' => $getUser['name'],
+            'plus' => $plus,
+            'minus' => $minus,
+            'balance' => $userReportBalance,
+            'comment' => $comment,
+            'plugin_id' => $plugin_id,
+            'plugin_name' => $plugin_name
+        ];
+
+        # Уведомления
+        #
         $buildAlert = (new Alert(userId: $userId, name: $userLogin))->loadTemplate('balance')->buildTemplate(
             [
                 '{date}' => langdate( "j F Y  G:i", self::$global['TIME'] ),
                 '{login}' => $getUser['name'],
                 '{sum}'=> ( $plus ? "+{$plus} {$currency}" : "-{$plus} {$currency}" ),
-                '{comment}' => $comment,
-                '{balance}' => \Billing\Api\Balance::Init()->Convert(value: $getUser [self::getBalanceField()], separator_space: true, declension: true)
+                '{comment}' => strip_tags($comment),
+                '{balance}' => \Billing\Api\Balance::Init()->Convert(value: $userReportBalance, separator_space: true, declension: true)
             ]
         );
 
@@ -224,12 +256,58 @@ Class Balance
 
     /**
      * Отправить событие в плагины
-     * @return $this
+     * @param mixed ...$hook_new_data
+     * @return Balance
      */
-    public function sendEvent() : self
+    function sendEvent(...$hook_new_data) : self
     {
-        //todo: hooks
+        if( $this->hook_num <= self::MAX_HOOK_EVENTS )
+        {
+            $this->hook_num += 1;
 
+            if( $hook_new_data )
+            {
+                $this->hook_data = array_merge($this->hook_data , $hook_new_data);
+            }
+
+            if( ! class_exists('\Billing\Hooks') )
+            {
+                require_once ENGINE_DIR . '/modules/billing/core/hooks.php';
+            }
+
+            $List = opendir( ENGINE_DIR . '/modules/billing/plugins/' );
+
+            while ( $name = readdir($List) )
+            {
+                if ( in_array($name, [".", "..", "/", "index.php", ".htaccess"]) ) continue;
+
+                if( file_exists( ENGINE_DIR . '/modules/billing/plugins/' . $name . '/hook.class.php' )
+                    and file_exists( ENGINE_DIR . '/data/billing/plugin.' . $name . '.php' ))
+                {
+                    $Hook = include( ENGINE_DIR . '/modules/billing/plugins/' . $name . '/hook.class.php' );
+
+                    if( $Hook instanceof \Billing\Hooks)
+                    {
+                        if( in_array('init', get_class_methods($Hook) ) )
+                        {
+                            $Hook->init(
+                                include MODULE_DATA . '/plugin.' . $name . '.php'
+                            );
+                        }
+
+                        $Hook->pay(
+                            $this->hook_data['userLogin'],
+                            $this->hook_data['plus'],
+                            $this->hook_data['minus'],
+                            $this->hook_data['balance'],
+                            $this->hook_data['comment'],
+                            $this->hook_data['plugin_name'],
+                            $this->hook_data['plugin_id']
+                        );
+                    }
+                }
+            }
+        }
 
         return $this;
     }
@@ -321,7 +399,7 @@ Class Balance
      */
     public function Declension(mixed $value, ?array $titles = []) : string
     {
-        $value = floatval($value);
+        $value = abs(floatval($value));
 
         $titles = $titles ?: explode(',', self::$global['BILLING']['currency']);
 
@@ -330,9 +408,9 @@ Class Balance
             return $titles[0];
         }
 
-        $cases = array (2, 0, 1, 1, 1, 2);
+        $cases = [2, 0, 1, 1, 1, 2];
 
-        return $titles[ ($value % 100 > 4 && $value % 100 < 20) ? 2 : $cases[min($value % 10, 5)] ];
+        return $titles[ ($value % 100 > 4 && $value % 100 < 20) ? 2 : $cases[min($value % 10, 5)] ] ?? '';
     }
 
     /**

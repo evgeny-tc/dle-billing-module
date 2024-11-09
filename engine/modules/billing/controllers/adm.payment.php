@@ -28,8 +28,8 @@ Class Payment
             $SaveData = $_POST['save_con'];
 
             $SaveData['convert'] = preg_replace ("/[^0-9.\s]/", "", $SaveData['convert'] );
-            $SaveData['minimum'] = $this->Dashboard->API->Convert( $SaveData['minimum'], $SaveData['format'] );
-            $SaveData['max'] = $this->Dashboard->API->Convert( $SaveData['max'], $SaveData['format'] );
+            $SaveData['minimum'] = \Billing\Api\Balance::Init()->Convert( $SaveData['minimum'], $SaveData['format'] );
+            $SaveData['max'] = \Billing\Api\Balance::Init()->Convert( $SaveData['max'], $SaveData['format'] );
 
             $this->Dashboard->SaveConfig( "payment." . $Name, $SaveData );
 
@@ -96,7 +96,7 @@ Class Payment
         $this->Dashboard->ThemeAddStr(
             $this->Dashboard->lang['payment_convert_text'],
             $this->Dashboard->lang['payment_convert_text_desc'],
-            $this->Dashboard->API->Convert( 1 ) . "&nbsp;" . $this->Dashboard->API->Declension( 1 ) . " = <input autocomplete=\"off\" name=\"save_con[convert]\" class=\"form-control\" type=\"number\" value=\"" . $Payment['convert'] ."\"  style=\"width: 90px\" required> <span class='payment_currency_name'></span>"
+            \Billing\Api\Balance::Init()->Convert( 1 ) . "&nbsp;" . \Billing\Api\Balance::Init()->Declension( 1 ) . " = <input autocomplete=\"off\" name=\"save_con[convert]\" class=\"form-control\" type=\"number\" value=\"" . $Payment['convert'] ."\"  style=\"width: 90px\" required> <span class='payment_currency_name'></span>"
         );
 
         $tabs[] = array(

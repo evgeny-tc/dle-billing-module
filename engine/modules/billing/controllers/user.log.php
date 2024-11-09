@@ -56,8 +56,13 @@ Class Log
                 '{comment}' => $Value['history_text'],
                 '{plugin}' => $Value['history_plugin'],
                 '{plugin.id}' => $Value['history_plugin_id'],
-                '{balance}' => $Value['history_balance'] . ' ' . $this->DevTools->API->Declension( $Value['history_balance'] ),
-                '{sum}' => $Value['history_plus'] > 0	? "<font color=\"green\">+{$Value['history_plus']} {$Value['history_currency']}</font>"
+                '{balance}' => \Billing\Api\Balance::Init()->Convert(
+                    value: $Value['history_balance'],
+                    separator_space: true,
+                    declension: true
+                ),
+                '{sum}' => $Value['history_plus'] > 0
+                    ? "<font color=\"green\">+{$Value['history_plus']} {$Value['history_currency']}</font>"
                     : "<font color=\"red\">-{$Value['history_minus']} {$Value['history_currency']}</font>"
             ];
 

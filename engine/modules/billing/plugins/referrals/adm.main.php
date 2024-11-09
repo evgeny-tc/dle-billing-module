@@ -15,6 +15,9 @@ use \Billing\Paging;
 
 Class Referrals extends PluginActions
 {
+    /**
+     * Shortage
+     */
     const PLUGIN = 'referrals';
 
     public function main( array $GET ) : string
@@ -92,12 +95,14 @@ Class Referrals extends PluginActions
 
 		while ( $Value = $this->Dashboard->LQuery->db->get_row() )
 		{
-			$this->Dashboard->ThemeAddTR( array(
-				$Value['ref_id'],
-				$this->Dashboard->ThemeChangeTime( $Value['ref_time'] ),
-				$this->Dashboard->ThemeInfoUser( $Value['ref_login'] ),
-				$this->Dashboard->ThemeInfoUser( $Value['ref_from'] )
-			));
+			$this->Dashboard->ThemeAddTR(
+                [
+                    $Value['ref_id'],
+                    $this->Dashboard->ThemeChangeTime( $Value['ref_time'] ),
+                    $this->Dashboard->ThemeInfoUser( $Value['ref_login'] ),
+                    $this->Dashboard->ThemeInfoUser( $Value['ref_from'] )
+                ]
+            );
 		}
 
 		$TabFirst = $this->Dashboard->ThemeParserTable();
@@ -134,6 +139,7 @@ Class Referrals extends PluginActions
         $arList = is_string($_List[0]) ? unserialize($_List[0]) : [];
 
         if( is_array($arList) )
+        {
             foreach ( $arList as $bonus_n => $bonus)
             {
                 $remove_num += 1;
@@ -154,6 +160,7 @@ Class Referrals extends PluginActions
                     ]
                 );
             }
+        }
 
 		$TabSecond = $this->Dashboard->ThemeParserTable('bonuses-list');
 
@@ -246,11 +253,19 @@ HTML;
 		return $Content;
 	}
 
+    /**
+     * @param string $value
+     * @return string
+     */
     private function clear(string $value) : string
     {
         return str_replace("'", '', $value);
     }
 
+    /**
+     * @param array $array
+     * @return void
+     */
     private function save(array $array) : void
     {
         $handler = fopen( MODULE_DATA . '/' . "plugin.referrals.list" . '.dat', "w" );
@@ -329,6 +344,9 @@ HTML;
         );
     }
 
+    /**
+     * @return void
+     */
     public function uninstall() : void
     {
         $this->Dashboard->CheckHash();

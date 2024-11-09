@@ -9,8 +9,10 @@
 
 namespace Billing;
 
+use JetBrains\PhpStorm\NoReturn;
+
 /**
- * Dashboard panel
+ * Dashboard
  */
 Class Dashboard
 {
@@ -47,13 +49,13 @@ Class Dashboard
 	public array $dle = [];
 
 	/**
-	 * Authorized user
+	 * Пользователь
 	 * @var array
 	 */
 	public array $member_id = [];
 
 	/**
-	 * Hash string to form
+	 * Hash
 	 * @var string
 	 */
 	public string $hash;
@@ -65,7 +67,7 @@ Class Dashboard
 	public int $_TIME;
 
 	/**
-	 * Config this module
+	 * Config
 	 * @var array
 	 */
 	public array $config = [];
@@ -78,32 +80,33 @@ Class Dashboard
 
 	/**
 	 * Connect api module
+     * @deprecated
 	 * @var object
 	 */
 	public object $API;
 
 	/**
 	 * Helper sql
+     * @deprecated
 	 * @var object
 	 */
 	public object $LQuery;
 
 	/**
-	 * Collection plugins for module
+	 * Плагины
 	 * @var array
 	 */
 	public array $Plugins = [];
 
 	/**
-	 * Collection payments for module
+	 * Платежные системы
 	 * @var array
 	 */
 	public array $Payments = [];
 
 	/**
-	 * For Build menu
+	 * Разделы меню
 	 */
-	//protected int $section_num = 0;
 	protected array $section = [];
 
 	/**
@@ -271,7 +274,7 @@ Class Dashboard
 							' . $links . '
 						</ul>
 					</div>
-					<form action="" enctype="multipart/form-data" method="post">
+					<form action="" enctype="multipart/form-data" class="systemsettings" method="post">
 						<div class="table-responsive">
 							<div class="tab-content">
 								' . $contents . '
@@ -282,12 +285,12 @@ Class Dashboard
 				</div>';
 	}
 
-	/**
-	 * Собрать меню
-	 * @param array $sectins
-	 * @param bool $status
-	 * @return string
-	 */
+    /**
+     * Собрать меню
+     * @param array|null $sections
+     * @param bool $status
+     * @return string
+     */
 	public function Menu( array|null $sections = [], bool $status = false ) : string
 	{
 		if( ! is_array( $sections ) or ! count( $sections ) ) return '<div style="text-align: center; padding: 40px">' . $this->lang['null'] . '</div>';
@@ -382,7 +385,7 @@ Class Dashboard
 	}
 
     /**
-     * Build checkbox
+     * Чекбокс
      * @param string $name
      * @param bool $selected
      * @param string $value
@@ -397,6 +400,12 @@ Class Dashboard
 		return "<input class=\"$class\" type=\"checkbox\" name=\"$name\" value=\"$value\" {$selected}>";
 	}
 
+    /**
+     * Чекбокс v2
+     * @param string $name
+     * @param $selected
+     * @return string
+     */
     public function MakeICheck(string $name, $selected) : string
     {
         $selected = $selected ? "checked" : "";
@@ -465,8 +474,10 @@ Class Dashboard
      * @param string $text
      * @param string $link
      * @param string $class_status
+     * @param bool $show_progress
      * @return void
      */
+    #[NoReturn]
     public function ThemeMsg(string $title, string $text, string $link = '', string $class_status = 'success', bool $show_progress = false ) : void
 	{
         $return = '';
@@ -559,7 +570,7 @@ HTML;
 		{
 			$answer .= "<tr>
 							<td class=\"col-xs-6 col-sm-6 col-md-7\">
-								<h8 class=\"media-heading text-semibold\">" . $this->str_table[$i]['title'] . "</h8>
+								<h6 class=\"media-heading text-semibold\">" . $this->str_table[$i]['title'] . "</h6>
 								<span class=\"text-muted text-size-small hidden-xs\">" . $this->str_table[$i]['desc'] . "</span>
 							</td>
 							<td class=\"col-xs-6 col-sm-6 col-md-5\">" . $this->str_table[$i]['field'] . "</td>
@@ -689,7 +700,7 @@ HTML;
 	}
 
 	/**
-	 * Build profile xfields
+	 * Доп.поля пользователя
 	 * @return string[]
 	 */
 	public function ThemeInfoUserXfields() : array
@@ -709,7 +720,7 @@ HTML;
 	}
 
     /**
-     * Payment info-panel
+     * Платежная система - панель информации
      * @param array|null $info
      * @return string
      */
@@ -736,7 +747,7 @@ HTML;
 	}
 
 	/**
-	 * Head page
+	 * Header
 	 * @param string $section_name
 	 * @return void
 	 */
@@ -801,7 +812,7 @@ HTML;
 	}
 
 	/**
-	 * Footer page
+	 * Footer
 	 * @return string
 	 */
 	public function ThemeEchoFoother() : string
@@ -819,7 +830,7 @@ HTML;
 	}
 
 	/**
-	 * Head content
+	 * Content
 	 * @param string $title
 	 * @param string $toolbar
 	 * @return string

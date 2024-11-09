@@ -128,7 +128,11 @@ Class Transactions
                     $Value['history_plus'] > 0  ? "<span class=\"color-green\">+{$Value['history_plus']} {$Value['history_currency']}</span>"
                         : "<span class=\"color-red\">-{$Value['history_minus']} {$Value['history_currency']}</span>",
                     $this->Dashboard->ThemeInfoUser( $Value['history_user_name'] ),
-                    $this->Dashboard->API->Convert( $Value['history_balance'] ) . "&nbsp;	" . $this->Dashboard->API->Declension( $Value['history_balance'] ),
+                    \Billing\Api\Balance::Init()->Convert(
+                        value: $Value['history_balance'],
+                        separator_space: true,
+                        declension: true
+                    ),
                     '<div class="th_description">
                         <a href="#" onClick="BillingJS.openDialog( \'#log_' . $Value['history_id'] . '\' ); return false">' . (strip_tags($Value['history_text']) ?: '---') . '</a>
                     </div>',
@@ -166,11 +170,11 @@ Class Transactions
 			);
 		}
 
-		$tabs[] = array(
-				'id' => 'list',
-				'title' => $this->Dashboard->lang['transactions_title'],
-				'content' => $ContentList
-		);
+		$tabs[] = [
+            'id' => 'list',
+            'title' => $this->Dashboard->lang['transactions_title'],
+            'content' => $ContentList
+        ];
 
 		# Форма поиска
 		#

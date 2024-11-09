@@ -9,12 +9,16 @@
 
 namespace Billing\Admin\Controller;
 
+use Billing\BalanceException;
 use \Billing\Dashboard;
 
 Class Users
 {
     public Dashboard $Dashboard;
 
+    /**
+     * @throws BalanceException
+     */
     public function main() : string
 	{
 		global $user_group;
@@ -41,7 +45,7 @@ Class Users
 				$_Errors = $this->Dashboard->lang['users_er_summa'];
 			}
 
-			$_Sum = $this->Dashboard->API->Convert( $_Sum );
+			$_Sum = \Billing\Api\Balance::Init()->Convert( $_Sum );
 
 			if( $_Errors )
 			{
@@ -55,28 +59,38 @@ Class Users
 					{
 						if( $_Do )
 						{
-							$this->Dashboard->API->PlusMoney(
-								trim($login),
-								$_Sum,
-								$_Comment,
-								'users',
-								$this->Dashboard->member_id['user_id']
-							);
+                            \Billing\Api\Balance::Init()->Comment(
+                                userLogin: $login,
+                                plus: $_Sum,
+                                comment: $_Comment,
+                                plugin_id: $this->Dashboard->member_id['user_id'],
+                                plugin_name: 'users',
+                                pm: (bool)$this->config['mail_payok_pm'],
+                                email: (bool)$this->config['mail_payok_email']
+                            )->To(
+                                userLogin: $login,
+                                sum: $_Sum
+                            )->sendEvent();
 						}
 						else
 						{
-							$this->Dashboard->API->MinusMoney(
-								trim($login),
-								$_Sum,
-								$_Comment,
-								'users',
-								$this->Dashboard->member_id['user_id']
-							);
+                            \Billing\Api\Balance::Init()->Comment(
+                                userLogin: $login,
+                                plus: $_Sum,
+                                comment: $_Comment,
+                                plugin_id: $this->Dashboard->member_id['user_id'],
+                                plugin_name: 'users',
+                                pm: (bool)$this->config['mail_payok_pm'],
+                                email: (bool)$this->config['mail_payok_email']
+                            )->From(
+                                userLogin: $login,
+                                sum: $_Sum
+                            )->sendEvent();
 						}
 					}
 				}
 
-				$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['users_ok'], $PHP_SELF . "?mod=billing&c=users" );
+				$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['users_ok'], "?mod=billing&c=users" );
 			}
 		}
 
@@ -101,7 +115,7 @@ Class Users
 				$_Errors = $this->Dashboard->lang['users_er_summa'];
 			}
 
-			$_Sum = $this->Dashboard->API->Convert( $_Sum );
+			$_Sum = \Billing\Api\Balance::Init()->Convert( $_Sum );
 
 			if( $_Errors )
 			{
@@ -122,7 +136,7 @@ Class Users
 		                                                    WHERE user_group = '$_Group'");
 		        }
 
-		        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['users_ok_group'], $PHP_SELF . "?mod=billing&c=users" );
+		        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['users_ok_group'], "?mod=billing&c=users" );
 			}
 		}
 
@@ -159,7 +173,7 @@ Class Users
 		}
 		else
 		{
-			$this->Dashboard->LQuery->DbWhere( array( "{$this->Dashboard->config['fname']} > 0 " => 1 ) );
+			$this->Dashboard->LQuery->DbWhere( ["{$this->Dashboard->config['fname']} > 0 " => 1] );
 
 			$Data = $this->Dashboard->LQuery->DbSearchUsers( 10 );
 		}
@@ -185,7 +199,11 @@ Class Users
                     $Value['email'],
                     $user_group[$Value['user_group']]['group_name'],
                     $this->Dashboard->ThemeChangeTime( $Value['reg_date']),
-                    $this->Dashboard->API->Convert( $Value[$this->Dashboard->config['fname']] ) ." ". $this->Dashboard->API->Declension( $Value[$this->Dashboard->config['fname']] )
+                    \Billing\Api\Balance::Init()->Convert(
+                        value: $Value[$this->Dashboard->config['fname']],
+                        separator_space: true,
+                        declension: true
+                    )
                 ]
             );
 		}
@@ -197,11 +215,11 @@ Class Users
 			$ContentTab .=  $this->Dashboard->ThemePadded( $this->Dashboard->lang['history_no'], '' );
 		}
 
-		$tabs[] = array(
-				'id' => 'users',
-				'title' => $this->Dashboard->lang['users_title'],
-				'content' => $ContentTab
-		);
+		$tabs[] = [
+            'id' => 'users',
+            'title' => $this->Dashboard->lang['users_title'],
+            'content' => $ContentTab
+        ];
 
 		# Форма поиска
 		#
@@ -220,11 +238,11 @@ Class Users
 		$ContentSearch = $this->Dashboard->ThemeParserStr();
 		$ContentSearch .= $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("search_btn", $this->Dashboard->lang['history_search_btn'], "green") );
 
-		$tabs[] = array(
-				'id' => 'search',
-				'title' => $this->Dashboard->lang['history_search'],
-				'content' => $ContentSearch
-		);
+		$tabs[] = [
+            'id' => 'search',
+            'title' => $this->Dashboard->lang['history_search'],
+            'content' => $ContentSearch
+        ];
 
 		# Статистика по группам
 		#
@@ -240,30 +258,40 @@ Class Users
 												 sum(" . $this->Dashboard->config['fname'] . ") as `sum`
 											FROM " . USERPREFIX . "_users WHERE user_group='$group_id'" );
 
-			$this->Dashboard->ThemeAddTR( array(
-					$group_value['group_name'],
-					$users['count'],
-					$this->Dashboard->API->Convert( $users['min'] ) . '&nbsp;' . $this->Dashboard->API->Declension( $users['min'] ),
-					$this->Dashboard->API->Convert( $users['max'] ) . '&nbsp;' . $this->Dashboard->API->Declension( $users['max'] ),
-					$this->Dashboard->API->Convert( $users['sum'] ) . '&nbsp;' . $this->Dashboard->API->Declension( $users['sum'] )
-			) );
+			$this->Dashboard->ThemeAddTR(
+                [
+                    $group_value['group_name'],
+                    $users['count'],
+                    \Billing\Api\Balance::Init()->Convert(
+                        value: $users['min'],
+                        separator_space: true,
+                        declension: true
+                    ),
+                    \Billing\Api\Balance::Init()->Convert(
+                        value: $users['max'],
+                        separator_space: true,
+                        declension: true
+                    ),
+                    \Billing\Api\Balance::Init()->Convert(
+                        value: $users['sum'],
+                        separator_space: true,
+                        declension: true
+                    )
+                ]
+            );
 		}
 
-		$tabs[] = array(
-				'id' => 'groups',
-				'title' => $this->Dashboard->lang['users_groups_title'],
-				'content' => $this->Dashboard->ThemeParserTable()
-		);
+		$tabs[] = [
+            'id' => 'groups',
+            'title' => $this->Dashboard->lang['users_groups_title'],
+            'content' => $this->Dashboard->ThemeParserTable()
+        ];
 
         $Content = '';
 
 		if( isset( $_POST['search_btn'] ) )
 		{
-			$Content .= $this->Dashboard->MakeMsgInfo(
-				$this->Dashboard->lang['search_info'],
-				"icon-search",
-				"blue"
-			);
+			$Content .= $this->Dashboard->MakeMsgInfo( $this->Dashboard->lang['search_info'] );
 		}
 
 		$Content .= $this->Dashboard->PanelTabs( $tabs );
@@ -294,13 +322,13 @@ Class Users
 			"<input name=\"edit_comm\" class=\"form-control\" type=\"text\" style=\"width: 100%\">"
 		);
 
-		$tabs = array();
-
-		$tabs[] = array(
-				'id' => 'user',
-				'title' => $this->Dashboard->lang['users_edit_user'],
-				'content' => $this->Dashboard->ThemeParserStr() . $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("edit_user_btn", $this->Dashboard->lang['act'], "green") )
-		);
+		$tabs = [
+            [
+                'id' => 'user',
+                'title' => $this->Dashboard->lang['users_edit_user'],
+                'content' => $this->Dashboard->ThemeParserStr() . $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("edit_user_btn", $this->Dashboard->lang['act'], "green") )
+            ]
+        ];
 
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['users_group'],
@@ -320,11 +348,11 @@ Class Users
 			"<input name=\"edit_summa_group\" class=\"form-control\" style=\"width: 20%\" type=\"text\"> " . $this->Dashboard->API->Declension( 10 )
 		);
 
-		$tabs[] = array(
-				'id' => 'group',
-				'title' => $this->Dashboard->lang['users_edit_group'],
-				'content' => $this->Dashboard->ThemeParserStr() . $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("edit_group_btn", $this->Dashboard->lang['act'], "green") )
-		);
+		$tabs[] = [
+            'id' => 'group',
+            'title' => $this->Dashboard->lang['users_edit_group'],
+            'content' => $this->Dashboard->ThemeParserStr() . $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("edit_group_btn", $this->Dashboard->lang['act'], "green") )
+        ];
 
 		$Content .= $this->Dashboard->PanelTabs( $tabs );
 		$Content .= $this->Dashboard->ThemeEchoFoother();

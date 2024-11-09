@@ -19,7 +19,7 @@ Class Invoice
     /**
      * @throws \Exception
      */
-    public function main(array $GET = [] )
+    public function main(array $GET = [] ) : string
     {
         # Проверка авторизации
         #
@@ -94,7 +94,11 @@ Class Invoice
                 '[paid]' => '',     '[/paid]' => '',
                 '{creat-date=' . $TplLineDate . '}' => $this->DevTools->ThemeChangeTime( $Value['invoice_date_creat'], $TplLineDate ),
                 '{id}' => $Value['invoice_id'],
-                '{sum}' => $Value['invoice_get'] ." " . $this->DevTools->API->Declension( $Value['invoice_get'] ),
+                '{sum}' => \Billing\Api\Balance::Init()->Convert(
+                    value: $Value['invoice_get'],
+                    separator_space: true,
+                    declension: true
+                ),
                 '{paylink}' => $InvoiceUrl,
                 '{desc}' => $Value['invoice_handler'] ? $this->DevTools->lang['invoice_good_desc2'] : $this->DevTools->lang['invoice_good_desc'],
             ];
@@ -104,7 +108,7 @@ Class Invoice
             $Line .= $TimeLine;
         }
 
-        if( $NumData > $this->DevTools->config['paging'] )
+        if( $NumData )
         {
             $TplPagination = $this->DevTools->ThemePregMatch( $Content, '~\[paging\](.*?)\[/paging\]~is' );
             $TplPaginationLink = $this->DevTools->ThemePregMatch( $Content, '~\[page_link\](.*?)\[/page_link\]~is' );
@@ -122,7 +126,6 @@ Class Invoice
             );
 
             $this->DevTools->ThemePregReplace( "page_this", $TplPagination );
-
             $this->DevTools->ThemeSetElementBlock( "paging", $TplPagination );
         }
         else

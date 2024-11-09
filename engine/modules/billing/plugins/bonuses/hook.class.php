@@ -12,16 +12,36 @@ namespace Billing;
 return new class extends Hooks
 {
     protected array $configPlugin = [];
-    protected Api $API;
 
-    public function init(array $pluginConfig, Api $API) : void
+    public function init(array $pluginConfig) : void
     {
         $this->configPlugin = $pluginConfig;
-        $this->API = $API;
     }
 
+    /**
+     * Начислить бонусов за платеж
+     * @param string $user
+     * @param float|null $plus
+     * @param float|null $minus
+     * @param float $balance
+     * @param string|null $desc
+     * @param string|null $plugin
+     * @param int|null $plugin_id
+     * @return void
+     */
     public function pay( string $user, ?float $plus, ?float $minus, float $balance, ?string $desc, ?string $plugin = '', ?int $plugin_id = 0 ) : void
 	{
+        global $db;
+
+        # Плагин выключен
+        #
+        if( ! $this->configPlugin['status'] )
+        {
+            return;
+        }
+
+        # Только при пополнении баланса
+        #
 		if( $plugin != 'pay' )
         {
             return;
@@ -29,57 +49,62 @@ return new class extends Hooks
 
         $_Lang = Core::getLang('bonuses');
 
-		$countPay = $this->API->db->super_query( "SELECT COUNT(*) as `count`
+        # Всего платежей у пользователя
+        #
+		$countPay = $db->super_query( "SELECT COUNT(*) as `count`
 														FROM " . USERPREFIX . "_billing_history
 														WHERE history_user_name = '{$user}' and history_plugin = 'pay'" );
 
 		# Первый платеж
 		#
-		if( $this->configPlugin['status']
-            and $countPay['count'] == 1
-            and $plus >= floatval($this->configPlugin['f_sum']) )
+		if( $countPay['count'] == 1 and $plus >= floatval($this->configPlugin['f_sum']) )
 		{
 			$bonus_sum = floatval($this->configPlugin['f_bonus_sum']) ?: ( $plus / 100 * floatval($this->configPlugin['f_bonus_percent']));
 
-			$this->API->PlusMoney(
-				$user,
-				$bonus_sum,
-				$_Lang['bonus_first_comment'],
-				'bonuses',
-				$plugin_id
-			);
+            \Billing\Api\Balance::Init()->Comment(
+                userLogin: $user,
+                plus: $bonus_sum,
+                comment: $_Lang['bonus_first_comment'],
+                plugin_id: $plugin_id,
+                plugin_name: 'bonuses',
+                pm: (bool)$this->configPlugin['bonus3_alert_pm'],
+                email: (bool)$this->configPlugin['bonus3_alert_main']
+            )->To(
+                userLogin: $user,
+                sum: $bonus_sum
+            )->sendEvent();
 		}
-
 		# Последующие платежи
 		#
-		if( $this->configPlugin['s_status']
-            and $countPay['count'] > 1
-            and floatval($plus >= $this->configPlugin['s_sum']) )
+		else if( $countPay['count'] > 1 and floatval($plus >= $this->configPlugin['s_sum']) )
 		{
 			$bonus_sum = floatval($this->configPlugin['s_bonus_sum']) ?: ( $plus / 100 * floatval($this->configPlugin['s_bonus_percent']));
 
-			$this->API->PlusMoney(
-				$user,
-				$bonus_sum,
-				$_Lang['bonus_comment'],
-				'bonuses',
-				$plugin_id
-			);
+            \Billing\Api\Balance::Init()->Comment(
+                userLogin: $user,
+                plus: $bonus_sum,
+                comment: $_Lang['bonus_comment'],
+                plugin_id: $plugin_id,
+                plugin_name: 'bonuses',
+                pm: (bool)$this->configPlugin['bonus3_alert_pm'],
+                email: (bool)$this->configPlugin['bonus3_alert_main']
+            )->To(
+                userLogin: $user,
+                sum: $bonus_sum
+            )->sendEvent();
 		}
 
 		# Активация профиля
 		#
-		if( $this->configPlugin['active_status']
-			and intval($this->configPlugin['active_count']) >= intval($countPay['count'])
-			and $plus >= floatval($this->configPlugin['active_min']) )
+		if( intval($this->configPlugin['active_count']) >= intval($countPay['count']) and $plus >= floatval($this->configPlugin['active_min']) )
 		{
-			$_uGroup = $this->API->db->super_query( "SELECT user_group FROM " . USERPREFIX . "_users WHERE name = '{$user}'" );
+			$_uGroup = $db->super_query( "SELECT user_group FROM " . USERPREFIX . "_users WHERE name = '{$user}'" );
 
 			if( in_array( $_uGroup['user_group'], explode(',', $this->configPlugin['active_from']) ) )
 			{
-				$this->API->db->query( "UPDATE " . PREFIX . "_users
+				$db->query( "UPDATE " . PREFIX . "_users
 									SET user_group='" . intval($this->configPlugin['active_to']) . "'
-									WHERE name='" . $user. "'" );
+									WHERE name='{$user}'" );
 			}
 		}
 	}
