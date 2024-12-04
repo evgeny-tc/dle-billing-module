@@ -15,9 +15,11 @@
  }
 
 const BILLING_MODULE = TRUE;
+
 const MODULE_PATH = ENGINE_DIR . '/modules/billing';
 const MODULE_DATA = ENGINE_DIR . '/data/billing';
 
+//todo: roles
 if( ! in_array( $member_id['user_group'], [1] ) )
 {
 	msg( "error", $lang['index_denied'], $lang['index_denied'] );
@@ -25,9 +27,10 @@ if( ! in_array( $member_id['user_group'], [1] ) )
 
 require_once MODULE_PATH . '/helpers/autoloader.php';
 
-# Install (?)
+# Install
 #
-\Billing\Dashboard::isInstall(function (){
+\Billing\Dashboard::isInstall(function ()
+{
     require_once MODULE_PATH . '/helpers/install.php';
 });
 
@@ -40,5 +43,5 @@ catch (\Exception $e)
     # todo: ThemeEchoHeader
     ob_end_clean();
 
-    msg( "error", $lang['xfield_xerr2'], $e->getMessage(), "javascript:history.go(-1)" );
+    msg( "error", $e->getMessage(), Billing\Dashboard::debugInfo(), "javascript:history.go(-1)" );
 }

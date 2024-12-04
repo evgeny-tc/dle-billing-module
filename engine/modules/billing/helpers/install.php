@@ -159,12 +159,12 @@ if( isset( $_POST['install'] ) or isset($_GET['install']) )
 		msg( "error", $_Lang['install_bad'], "<div style=\"text-align: left\">" . $_Lang['install_error_config'] . "<pre><code>" . str_replace('<', '&lt;', $saveConfigFile) . "</code></pre></div>", array( "" => "<i class=\"fa fa-repeat\"></i> " . $_Lang['main_re']) );
 	}
 
-	msg(
+    msg(
         "success",
-        $_Lang['install_ok'],
-        $_Lang['install_ok_text'],
+        $_Lang['install_pre_ok'],
+        $_Lang['install_pre_ok_text'],
         [
-            "?mod=billing" => $_Lang['install_okbtn']
+            "?mod=billing&m=info" => $_Lang['install_pre_ok_btn']
         ]
     );
 }
@@ -263,6 +263,7 @@ switch ($_GET['step'])
 HTML;
 
         break;
+
     default:
         echo <<<HTML
         <form action="?mod=billing&step=need" method="post">

@@ -40,7 +40,7 @@ Class Dashboard
     /**
      * Current version
      */
-    public string $version = '0.9.5';
+    public string $version = '1.0.1';
 
 	/**
 	 * DLE config
@@ -182,8 +182,10 @@ Class Dashboard
 
 		# Проверка версии
 		#
-		if( $this->version > $this->config['version'] )
+		if( version_compare($this->version, $this->config['version']) )
 		{
+            $this->controller = 'upgrade';
+
 			require_once MODULE_PATH . '/controllers/adm.upgrade.php';
 		}
 		# Подключение страницы
@@ -232,7 +234,7 @@ Class Dashboard
             return;
 		}
 
-        throw new \Exception($this->lang['main_error_metod']);
+        throw new \Exception($this->lang['main_error_method']);
 	}
 
 	/**
@@ -862,4 +864,17 @@ HTML;
 					</div>
 				</div>";
 	}
+
+    /**
+     * @return string
+     */
+    public static function debugInfo() : string
+    {
+        $debug = 'v. ' . self::$instance->version . " (vs " . self::$instance->config['version'] .")\n";
+        $debug .= 'default routing: ' . self::$instance->config['start_admin'] . "\n";
+        $debug .= 'controller: ' . self::$instance->controller . "\n";
+        $debug .= 'action: ' . self::$instance->action . "\n";
+
+        return '<pre style="text-align: left">' . $debug . '</pre>';
+    }
 }

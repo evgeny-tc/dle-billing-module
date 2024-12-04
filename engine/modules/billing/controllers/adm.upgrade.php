@@ -15,6 +15,9 @@ Class Upgrade
 {
     public Dashboard $Dashboard;
 
+    /**
+     * @throws \Exception
+     */
     public function main() : void
 	{
 		$List = opendir( MODULE_PATH . '/upgrades/' );
@@ -27,8 +30,10 @@ Class Upgrade
 			{
                 include MODULE_PATH . '/upgrades/' . $name;
 
-				break;
+				return;
 			}
 		}
+
+        throw new \Exception($this->Dashboard->lang['main_error_upgrade_file']);
 	}
 }

@@ -235,7 +235,8 @@ return array
 	'main_report_close' => "Больше не показывать",
 	'main_error_controller_file' => "Файл плагина не найден",
 	'main_error_controller' => "Класс плагина не найден",
-	'main_error_metod' => "Функция плагина не найден",
+	'main_error_method' => "Функция плагина не найден",
+	'main_error_upgrade_file' => "Отсутствует файл с обновлениями",
 
 	# main
 	#
@@ -712,11 +713,24 @@ return array
 	#
 	'currency' => "рубль,рубля,рублей",
 	'cabinet' => "Личный кабинет",
-	'install_ok' => "Модуль установлен",
+
+    'install_pre_ok' => "Последний шаг",
+    'install_pre_ok_btn' => "Готово",
+    'install_pre_ok_text' => '<div style="text-align: left">
+							Осталось подключить необходимые js скрипты в шаблон сайта - <a href="?mod=templates" target="_blank">откройте</a> файл <b>/templates/' . $config['skin'] . '/main.tpl</b> и перед <b>&lt;/head></b> добавьте строки:
+<p><pre>&lt;!-- основной скрипт dle-billing -->
+{include file="{THEME}/billing/js/scripts.js"}
+&lt;!-- dle-billing: push уведомления -->
+{include file="engine/modules/billing/widgets/push.php"}
+</pre></p>
+						</div>',
+
+    'install_ok' => "Модуль установлен",
 	'install_ok_text' => "<div style='text-align: left'>
-							<font color='green'><b>Модуль DLE-Billing установлен</b></font>.
-							<br /><br />Теперь вам доступна <a href='?mod=billing'><u>панель управления</u></a>, а так же персональный <a href='/billing.html'><u>личный кабинет</u></a>.
+							<font color='green'><b>Модуль DLE-Billing установлен</b></font>
+							<br /><br />Теперь вам доступна <a href='?mod=billing'><u>панель управления</u></a> и <a href='/billing.html'><u>личный кабинет</u></a>   
 						</div>",
+
 	'install_plugin' => "Плагин установлен",
 	'install_plugin_desc' => "Первичные настройки плагина установлены. Вы можете вернуться к панеле управления плагином.",
 	'install_bad' => "Установка не завершена",

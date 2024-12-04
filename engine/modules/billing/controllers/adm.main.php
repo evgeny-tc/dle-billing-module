@@ -507,6 +507,18 @@ Class Main
         die;
     }
 
+    public function info() : void
+    {
+        msg(
+            "success",
+            $this->Dashboard->lang['install_ok'],
+            $this->Dashboard->lang['install_ok_text'],
+            [
+                "?mod=billing" => $this->Dashboard->lang['install_okbtn']
+            ]
+        );
+    }
+
     /**
      * @param $msg_id
      * @return string
