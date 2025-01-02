@@ -219,4 +219,20 @@ Class Paging
 
         return sprintf($this->THEME_BLOCK, implode($_return));
     }
+
+    /**
+     * @param $intFrom
+     * @param $intPer
+     * @return void
+     */
+    public static function buildLimitParam( &$intFrom, &$intPer ) : void
+    {
+        $intFrom = intval( $intFrom );
+        $intPer = intval( $intPer );
+
+        if( $intFrom < 1 ) $intFrom = 1;
+        if( $intPer < 1 ) $intPer = 30;
+
+        $intFrom = ( $intFrom * $intPer ) - $intPer;
+    }
 }

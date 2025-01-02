@@ -9,15 +9,25 @@
 
 namespace Billing\User\Controller;
 
+use Billing\BalanceException;
 use \Billing\DevTools;
 use \Billing\Paging;
 
 Class Refund
 {
+    /**
+     *
+     */
     const PLUGIN = 'refund';
 
+    /**
+     * @var DevTools
+     */
     public DevTools $DevTools;
 
+    /**
+     * @var array
+     */
     private array $pluginСonfig;
 
 	function __construct()
@@ -28,7 +38,7 @@ Class Refund
     /**
      * @throws \Exception
      */
-    public function main(array $GET = [] )
+    public function main(array $GET = [] ) : string
 	{
 		# Проверка авторизации
 		#
@@ -83,34 +93,47 @@ Class Refund
             #
             if( $this->pluginСonfig['email'] )
             {
-                # todo: api alert
-                include_once \DLEPlugins::Check( ENGINE_DIR . '/classes/mail.class.php' );
-
-                $mail = new \dle_mail( $this->DevTools->dle, true );
-
-                $mail->send(
-                    $this->pluginСonfig['email'],
-                    $this->DevTools->lang['refund_email_title'],
-                    sprintf( $this->DevTools->lang['refund_email_msg'], $this->DevTools->member_id['name'], $_Money, $this->DevTools->API->Declension($_Money), $_Requisites, $this->DevTools->dle['http_home_url'] . $this->DevTools->dle['admin_path'] . "?mod=billing&c=refund" )
-                );
-
-                unset( $mail );
+                (new \Billing\Api\Alert(email: $this->pluginСonfig['email']))
+                    ->setTitle( $this->DevTools->lang['refund_email_title'] )
+                    ->setBody( sprintf( $this->DevTools->lang['refund_email_msg'], $this->DevTools->member_id['name'], $_Money, $this->DevTools->API->Declension($_Money), $_Requisites, $this->DevTools->dle['http_home_url'] . $this->DevTools->dle['admin_path'] . "?mod=billing&c=refund" ) )
+                    ->email();
             }
 
-			$RefundId = $this->DevTools->LQuery->DbCreatRefund(
-				$this->DevTools->member_id['name'],
-				$_Money,
-				$_MoneyCommission,
-				$_Requisites
-			);
+            try
+            {
+                $transactionRefund = \Billing\Api\Balance::Init()->Transaction();
 
-			$this->DevTools->API->MinusMoney(
-				$this->DevTools->member_id['name'],
-				$_Money,
-				sprintf( $this->DevTools->lang['refund_msgOk'], $RefundId ),
-				'refund',
-				$RefundId
-			);
+                $refundId = $this->DevTools->LQuery->DbCreatRefund(
+                    $this->DevTools->member_id['name'],
+                    $_Money,
+                    $_MoneyCommission,
+                    $_Requisites
+                );
+
+                if( $refundId )
+                {
+                    $transactionRefund->Comment(
+                        userLogin: $this->DevTools->member_id['name'],
+                        minus: floatval($_Money),
+                        comment: sprintf( $this->DevTools->lang['refund_msgOk'], $refundId ),
+                        plugin_id: $refundId,
+                        plugin_name: 'refund',
+                        pm: true,
+                        email: true
+                    )->From(
+                        userLogin: $this->DevTools->member_id['name'],
+                        sum: floatval($_Money)
+                    )->Commit();
+                }
+                else
+                {
+                    return $this->DevTools->lang['pay_error_title'];
+                }
+            }
+            catch (\Billing\BalanceException $e)
+            {
+                return $e->getMessage();
+            }
 
 			header( 'Location: /' . $this->DevTools->config['page'] . '.html/' . $this->DevTools->get_plugin . '/ok/' );
 
@@ -131,7 +154,11 @@ Class Refund
 		$TplLineNull = $this->DevTools->ThemePregMatch( $Content, '~\[not_history\](.*?)\[/not_history\]~is' );
 		$TplLineDate = $this->DevTools->ThemePregMatch( $TplLine, '~\{date=(.*?)\}~is' );
 
-		$this->DevTools->LQuery->DbWhere( array( "refund_user = '{s}' " => $this->DevTools->member_id['name'] ) );
+		$this->DevTools->LQuery->DbWhere(
+            [
+                "refund_user = '{s}' " => $this->DevTools->member_id['name']
+            ]
+        );
 
 		$Data = $this->DevTools->LQuery->DbGetRefund( $GET['page'], $this->DevTools->config['paging'] );
 		$NumData = $this->DevTools->LQuery->DbGetRefundNum();
@@ -195,12 +222,21 @@ Class Refund
 		return $this->DevTools->Show( $Content );
 	}
 
-	function ok()
+    /**
+     * @return string
+     * @throws \Exception
+     *
+     */
+	function ok() : string
 	{
 		return $this->DevTools->ThemeMsg( $this->DevTools->lang['refund_ok_title'], $this->DevTools->lang['refund_ok_text'] );
 	}
 
-	private function xfield( $key )
+    /**
+     * @param $key
+     * @return mixed
+     */
+	private function xfield( $key ) : mixed
 	{
 		$arrUserfields = $this->DevTools->ParsUserXFields( $this->DevTools->member_id['xfields'] );
 

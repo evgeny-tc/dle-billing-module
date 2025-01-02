@@ -14,10 +14,19 @@ use \Billing\Paging;
 
 Class Transfer
 {
+    /**
+     *
+     */
     const PLUGIN = 'transfer';
 
+    /**
+     * @var DevTools
+     */
     public DevTools $DevTools;
 
+    /**
+     * @var array
+     */
     private array $pluginСonfig;
 
 	function __construct()
@@ -54,14 +63,14 @@ Class Transfer
 
 		return $this->DevTools->ThemeMsg(
             $this->DevTools->lang['transfer_msgOk'],
-            sprintf( $this->DevTools->lang['transfer_log_text'], urlencode( $Get[0] ), $Get[0], $this->DevTools->API->Convert(money: $Get[1], number_format_f: true), $Get[2] )
+            sprintf( $this->DevTools->lang['transfer_log_text'], urlencode( $Get[0] ), $Get[0], \Billing\Api\Balance::Init()->Convert(value: $Get[1]), $Get[2] )
         );
 	}
 
     /**
      * @throws \Exception
      */
-    public function main(array $GET = [] )
+    public function main(array $GET = [] ) : string
 	{
 		# Проверка авторизации
 		#
@@ -83,24 +92,31 @@ Class Transfer
 		{
 			$this->DevTools->CheckHash( $_POST['bs_hash'] );
 
-			$_SearchUser = $this->DevTools->LQuery->DbSearchUserByName( htmlspecialchars( trim( $_POST['bs_user_name'] ), ENT_COMPAT, $this->DevTools->config_dle['charset'] ) );
+            $_Money = floatval( $_POST['bs_summa'] );
+			$_MoneyCommission = \Billing\Api\Balance::Init()->Convert( ( $_Money / 100 ) * (float) $this->pluginСonfig['com'] );
 
-			$_Money = $this->DevTools->LQuery->db->safesql( $_POST['bs_summa'] );
-			$_MoneyCommission = $this->DevTools->API->Convert( ( $_Money / 100 ) * (float) $this->pluginСonfig['com'] );
-
-			if( ! $_Money )
+			if( $_Money <= 0 )
 			{
                 throw new \Exception($this->DevTools->lang['pay_summa_error']);
 			}
 
+            if( $_Money > $this->DevTools->BalanceUser )
+            {
+                throw new \Exception($this->DevTools->lang['refund_error_balance']);
+            }
+
+            if( $_Money < $this->pluginСonfig['minimum'] )
+            {
+                throw new \Exception(
+                    sprintf( $this->DevTools->lang['transfer_error_minimum'], $this->pluginСonfig['minimum'], \Billing\Api\Balance::Init()->Declension( $this->pluginСonfig['minimum'] ) )
+                );
+            }
+
+            $_SearchUser = $this->DevTools->LQuery->DbSearchUserByName( htmlspecialchars( trim( $_POST['bs_user_name'] ), ENT_COMPAT, $this->DevTools->config_dle['charset'] ) );
+
             if( ! $_SearchUser['name'] )
 			{
                 throw new \Exception($this->DevTools->lang['transfer_error_get']);
-			}
-
-            if( $_Money > $this->DevTools->BalanceUser )
-			{
-                throw new \Exception($this->DevTools->lang['refund_error_balance']);
 			}
 
             if( $_SearchUser['name'] == $this->DevTools->member_id['name'] )
@@ -108,43 +124,53 @@ Class Transfer
                 throw new \Exception($this->DevTools->lang['transfer_error_name_me']);
 			}
 
-            if( $_Money < $this->pluginСonfig['minimum'] )
-			{
-                throw new \Exception(
-                    sprintf( $this->DevTools->lang['transfer_error_minimum'], $this->pluginСonfig['minimum'], $this->DevTools->API->Declension( $this->pluginСonfig['minimum'] ) )
+            try
+            {
+                $transactionTransfer = \Billing\Api\Balance::Init()->Transaction();
+                
+                \Billing\Api\Balance::Init()->Comment(
+                    userLogin: $this->DevTools->member_id['name'],
+                    minus: $_Money,
+                    comment: sprintf( $this->DevTools->lang['transfer_log_for'], urlencode( $_SearchUser['name'] ), $_SearchUser['name'], $_MoneyCommission, \Billing\Api\Balance::Init()->Declension( $_MoneyCommission ) ),
+                    plugin_id: intval($_SearchUser['user_id']),
+                    plugin_name: 'transfer',
+                    pm: true,
+                    email: true
+                )->From(
+                    userLogin: $this->DevTools->member_id['name'],
+                    sum: floatval($_Money)
                 );
-			}
 
-			$_Money = $this->DevTools->API->Convert( $_POST['bs_summa'] );
+                \Billing\Api\Balance::Init()->Comment(
+                    userLogin: $_SearchUser['name'],
+                    plus: floatval( $_Money - $_MoneyCommission ),
+                    comment: sprintf( $this->DevTools->lang['transfer_log_from'], urlencode( $this->DevTools->member_id['name'] ), $this->DevTools->member_id['name'] ),
+                    plugin_id: intval($this->DevTools->member_id['user_id']),
+                    plugin_name: 'transfer',
+                    pm: true,
+                    email: true
+                )->To(
+                    userLogin: $this->DevTools->member_id['name'],
+                    sum: floatval($_Money)
+                )->Commit();
+            }
+            catch (\Billing\BalanceException $e)
+            {
+                return $e->getMessage();
+            }
 
-			$this->DevTools->API->MinusMoney(
-				$this->DevTools->member_id['name'],
-				$_Money,
-				sprintf( $this->DevTools->lang['transfer_log_for'], urlencode( $_SearchUser['name'] ), $_SearchUser['name'], $_MoneyCommission, $this->DevTools->API->Declension( $_MoneyCommission ) ),
-				'transfer',
-				$_SearchUser['user_id']
-			);
+			header( 'Location: /' . $this->DevTools->config['page'] . '.html/' . $this->DevTools->get_plugin . '/ok/info/' . urlencode( base64_encode($_SearchUser['name']."|".$_MoneyCommission ."|".\Billing\Api\Balance::Init()->Declension( $_MoneyCommission ) ) ) );
 
-			$this->DevTools->API->PlusMoney(
-				$_SearchUser['name'],
-				( $_Money - $_MoneyCommission ),
-				sprintf( $this->DevTools->lang['transfer_log_from'], urlencode( $this->DevTools->member_id['name'] ), $this->DevTools->member_id['name'] ),
-				'transfer',
-				$_SearchUser['user_id']
-			);
-
-			header( 'Location: /' . $this->DevTools->config['page'] . '.html/' . $this->DevTools->get_plugin . '/ok/info/' . urlencode( base64_encode($_SearchUser['name']."|".$_MoneyCommission ."|".$this->DevTools->API->Declension( $_MoneyCommission ) ) ) );
-
-			return;
+			return '';
 		}
 
 		$GetSum = $GET['sum'] ?: $this->pluginСonfig['minimum'];
 
 		$this->DevTools->ThemeSetElement( "{hash}", $this->DevTools->hash );
 		$this->DevTools->ThemeSetElement( "{get.sum}", $GetSum );
-		$this->DevTools->ThemeSetElement( "{get.sum.currency}", $this->DevTools->API->Declension( $GetSum ) );
+		$this->DevTools->ThemeSetElement( "{get.sum.currency}", \Billing\Api\Balance::Init()->Declension( $GetSum ) );
 		$this->DevTools->ThemeSetElement( "{minimum}", $this->pluginСonfig['minimum'] );
-		$this->DevTools->ThemeSetElement( "{minimum.currency}", $this->DevTools->API->Declension( $this->pluginСonfig['minimum'] ) );
+		$this->DevTools->ThemeSetElement( "{minimum.currency}", \Billing\Api\Balance::Init()->Declension( $this->pluginСonfig['minimum'] ) );
 		$this->DevTools->ThemeSetElement( "{commission}", intval( $this->pluginСonfig['com'] ) );
 		$this->DevTools->ThemeSetElement( "{to}", $GET['to'] );
 
@@ -156,10 +182,12 @@ Class Transfer
 		$TplLineNull = $this->DevTools->ThemePregMatch( $Content, '~\[not_history\](.*?)\[/not_history\]~is' );
 		$TplLineDate = $this->DevTools->ThemePregMatch( $TplLine, '~\{date=(.*?)\}~is' );
 
-		$this->DevTools->LQuery->DbWhere( array(
-			"history_plugin = '{s} ' "=>'transfer',
-			"history_user_name = '{s}' " => $this->DevTools->member_id['name']
-		));
+		$this->DevTools->LQuery->DbWhere(
+            [
+                "history_plugin = '{s} ' "=>'transfer',
+                "history_user_name = '{s}' " => $this->DevTools->member_id['name']
+            ]
+        );
 
 		$Data = $this->DevTools->LQuery->DbGetHistory( $GET['page'], $this->DevTools->config['paging'] );
 		$NumData = $this->DevTools->LQuery->DbGetHistoryNum();

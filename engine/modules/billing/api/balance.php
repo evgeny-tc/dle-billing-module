@@ -26,6 +26,12 @@ Class Balance
     private static array $global = [];
 
     /**
+     * Перед созданием квитанции проверить на дубли
+     * @var bool
+     */
+    private bool $CHECK_INVOICE_DOUBLE = false;
+
+    /**
      * Максимальная длина цепочки событий
      */
     const MAX_HOOK_EVENTS = 10;
@@ -76,9 +82,21 @@ Class Balance
     }
 
     /**
+     * @param bool $check
+     * @return $this
+     */
+    public function checkDouble(bool $check = true) : self
+    {
+        $this->CHECK_INVOICE_DOUBLE = $check;
+
+        return $this;
+    }
+
+    /**
      * Создать счет на оплату
-     * @param int $userId
-     * @param string $userLogin
+     * @param int $userId - id
+     * @param string $userLogin - name
+     * @param string $userAnonymous - or user ip
      * @param string $payment
      * @param float $sum_get
      * @param float $sum_pay
@@ -87,12 +105,19 @@ Class Balance
      * @return int
      * @throws BalanceException
      */
-    public function createInvoice(int $userId = 0, string $userLogin = '', string $payment = '', float $sum_get = 0, float $sum_pay = 0, mixed $payer_info = '', string $handler = '') : int
+    public function createInvoice(int $userId = 0, string $userLogin = '', string $userAnonymous = '', string $payment = '', float $sum_get = 0, float $sum_pay = 0, mixed $payer_info = '', string $handler = '') : int
     {
         $payment = self::$global['DB']->safesql( $payment );
         $handler = self::$global['DB']->safesql( $handler );
 
-        $getUser = $this->getUser($userId, $userLogin);
+        if( $userAnonymous )
+        {
+            $getUser['name'] = $userAnonymous;
+        }
+        else
+        {
+            $getUser = $this->getUser($userId, $userLogin);
+        }
 
         if( is_array( $payer_info ) )
         {
@@ -118,9 +143,35 @@ Class Balance
             $payer_info = self::$global['DB']->safesql( $payer_info );
         }
 
+        # Неавторизованный пользователь
+        #
+        $invoice_user_anonymous = $userAnonymous ? 1 : 0;
+
+        # Проверка на дубль
+        #
+        if( $this->CHECK_INVOICE_DOUBLE )
+        {
+            $search_double = self::$global['DB']->super_query( "SELECT invoice_id FROM " . USERPREFIX . "_billing_invoice 
+                                                                    where invoice_paysys = '{$payment}'
+                                                                        and invoice_user_name = '{$getUser['name']}'
+                                                                        and invoice_user_anonymous = '{$invoice_user_anonymous}'
+                                                                        and invoice_get = '{$sum_get}'
+                                                                        and invoice_pay = '{$sum_pay}'
+                                                                        and invoice_payer_info = '{$payer_info}'
+                                                                        and invoice_handler = '{$handler}'
+                                                                        and invoice_date_pay = 0 " );
+
+            if( intval( $search_double['invoice_id'] ) )
+            {
+                return $search_double['invoice_id'];
+            }
+        }
+
         self::$global['DB']->query( "INSERT INTO " . USERPREFIX . "_billing_invoice
-							(invoice_paysys, invoice_user_name, invoice_get, invoice_pay, invoice_date_creat, invoice_payer_info, invoice_handler) values
-							('{$payment}',  '{$getUser['name']}', '{$sum_get}', '{$sum_pay}', '" . self::$global['TIME'] . "', '{$payer_info}', '{$handler}')" );
+							(invoice_paysys, invoice_user_name, invoice_user_anonymous, invoice_get, invoice_pay, invoice_date_creat, invoice_payer_info, invoice_handler) values
+							('{$payment}',  '{$getUser['name']}', '{$invoice_user_anonymous}', '{$sum_get}', '{$sum_pay}', '" . self::$global['TIME'] . "', '{$payer_info}', '{$handler}')" );
+
+        $this->checkDouble( false );
 
         return self::$global['DB']->insert_id();
     }

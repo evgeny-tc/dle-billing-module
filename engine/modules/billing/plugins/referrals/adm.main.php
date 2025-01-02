@@ -20,6 +20,10 @@ Class Referrals extends PluginActions
      */
     const PLUGIN = 'referrals';
 
+    /**
+     * @param array $GET
+     * @return string
+     */
     public function main( array $GET ) : string
 	{
         $this->checkInstall();
@@ -87,7 +91,7 @@ Class Referrals extends PluginActions
 		$PerPage = $this->Dashboard->config['paging'];
 		$StartFrom = intval( $GET['page'] );
 
-		$this->Dashboard->LQuery->parsPage( $StartFrom, $PerPage );
+		Paging::buildLimitParam($StartFrom, $PerPage);
 
 		$ResultCount = $this->Dashboard->LQuery->db->super_query( "SELECT COUNT(*) as count FROM " . USERPREFIX . "_billing_referrals" );
 
@@ -124,15 +128,15 @@ Class Referrals extends PluginActions
 			$TabFirst .= $this->Dashboard->ThemePadded( $this->Dashboard->lang['history_no'], '' );
 		}
 
-		$tabs[] = array(
-				'id' => 'list',
-				'title' => $_Lang['users'],
-				'content' => $TabFirst
-		);
+		$tabs[] = [
+            'id' => 'list',
+            'title' => $_Lang['users'],
+            'content' => $TabFirst
+        ];
 
 		# Конструктор бонусов
 		#
-		$this->Dashboard->ThemeAddTR( array( $_Lang['table_header'] ));
+		$this->Dashboard->ThemeAddTR( [$_Lang['table_header']] );
 
 		$remove_num = 0;
 
@@ -175,11 +179,11 @@ Class Referrals extends PluginActions
 		);
 
 
-		$tabs[] = array(
-				'id' => 'bonus',
-				'title' => $_Lang['partner_bonus'],
-				'content' => $TabSecond
-		);
+		$tabs[] = [
+            'id' => 'bonus',
+            'title' => $_Lang['partner_bonus'],
+            'content' => $TabSecond
+        ];
 
 		# Форма настроек
 		#
@@ -216,11 +220,11 @@ Class Referrals extends PluginActions
 		$TabThird = $this->Dashboard->ThemeParserStr();
 		$TabThird .= $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("save", $this->Dashboard->lang['save'], "green") );
 
-		$tabs[] = array(
-				'id' => 'settings',
-				'title' => $_Lang['settings'],
-				'content' => $TabThird
-		);
+		$tabs[] = [
+            'id' => 'settings',
+            'title' => $_Lang['settings'],
+            'content' => $TabThird
+        ];
 
 		$Content = $this->Dashboard->PanelPlugin('plugins/referrals', 'https://dle-billing.ru/doc/plugins/referrals' );
 		$Content .= <<<HTML

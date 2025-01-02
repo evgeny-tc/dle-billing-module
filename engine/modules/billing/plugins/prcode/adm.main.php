@@ -15,7 +15,14 @@ use \Billing\Paging;
 
 Class Prcode extends PluginActions
 {
+    /**
+     *
+     */
     const PLUGIN = 'prcode';
+
+    /**
+     *
+     */
     const HELP_URL = 'https://dle-billing.ru/doc/plugins/prcode/';
 
 	private array $_Lang = [];
@@ -25,6 +32,10 @@ Class Prcode extends PluginActions
         $this->_Lang = Dashboard::getLang(static::PLUGIN);
 	}
 
+    /**
+     * @param array $GET
+     * @return string
+     */
 	public function main( array $GET ) : string
 	{
         $this->checkInstall();
@@ -96,7 +107,6 @@ Class Prcode extends PluginActions
 
 				$this->Dashboard->LQuery->db->query( "INSERT INTO " . USERPREFIX . "_billing_prcodes (prcode_tag, prcode_sum) values ('" . $_prCode . "', '" . $_Sum . "')" );
 
-
 				$_Answer .= '<tr><td>' . $_prCode . '</td><td>' . $_Sum . ' ' . $_Declension . '</td></tr>';
 			}
 
@@ -105,30 +115,32 @@ Class Prcode extends PluginActions
 
 		# Список
 		#
-		$this->Dashboard->ThemeAddTR( array(
-			'<td width="1%">#</td>',
-			'<td>' . $this->_Lang['ap_code'] . '</td>',
-			'<td>' . $this->_Lang['ap_sum'] . '</td>',
-			'<td>' . $this->_Lang['ap_active'] . '</td>',
-			'<td>' . $this->_Lang['ap_time_active'] . '</td>',
-			'<td width="2%"><center><input type="checkbox" class="icheck" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></center></td>'
-		));
+		$this->Dashboard->ThemeAddTR(
+            [
+                '<td width="1%">#</td>',
+                '<td>' . $this->_Lang['ap_code'] . '</td>',
+                '<td>' . $this->_Lang['ap_sum'] . '</td>',
+                '<td>' . $this->_Lang['ap_active'] . '</td>',
+                '<td>' . $this->_Lang['ap_time_active'] . '</td>',
+                '<td width="2%"><center><input type="checkbox" class="icheck" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></center></td>'
+            ]
+        );
 
 		$PerPage = $this->Dashboard->config['paging'];
 
 		$StartFrom = $GET['page'];
 
-		$this->Dashboard->LQuery->parsPage( $StartFrom, $PerPage );
+		Paging::buildLimitParam($StartFrom, $PerPage);
 
-		$ResultCount = $this->Dashboard->LQuery->db->super_query( "SELECT COUNT(*) as count
-																	FROM " . USERPREFIX . "_billing_prcodes
-																	ORDER BY prcode_id DESC" );
+        # Количество
+        #
+		$ResultCount = $this->Dashboard->LQuery->db->super_query( "SELECT COUNT(*) as count FROM " . USERPREFIX . "_billing_prcodes ORDER BY prcode_id DESC" );
 
 		$NumData = $ResultCount['count'];
 
-		$this->Dashboard->LQuery->db->query( "SELECT * FROM " . USERPREFIX . "_billing_prcodes
-												ORDER BY prcode_active_date, prcode_id DESC
-												LIMIT {$StartFrom}, {$PerPage}" );
+        # Запрос
+        #
+		$this->Dashboard->LQuery->db->query( "SELECT * FROM " . USERPREFIX . "_billing_prcodes ORDER BY prcode_active_date, prcode_id DESC LIMIT {$StartFrom}, {$PerPage}" );
 
 		while ( $Value = $this->Dashboard->LQuery->db->get_row() )
 		{
@@ -162,11 +174,11 @@ Class Prcode extends PluginActions
 			$TabFirst .= $this->Dashboard->ThemePadded( $this->Dashboard->lang['history_no'], '' );
 		}
 
-		$tabs[] = array(
-			'id' => 'list',
-			'title' => $this->_Lang['ap_codes'],
-			'content' => $TabFirst
-		);
+		$tabs[] = [
+            'id' => 'list',
+            'title' => $this->_Lang['ap_codes'],
+            'content' => $TabFirst
+        ];
 
 		# Форма создания кодов
 		#
@@ -188,11 +200,11 @@ Class Prcode extends PluginActions
 			"<input name=\"get_theme\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"0000-0000-0000-0000\">"
 		);
 
-		$tabs[] = array(
-			'id' => 'create',
-			'title' => $this->_Lang['ap_create'],
-			'content' => $this->Dashboard->ThemeParserStr() . $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("btnGenerate", $this->_Lang['ap_create_btn'], "green") )
-		);
+		$tabs[] = [
+            'id' => 'create',
+            'title' => $this->_Lang['ap_create'],
+            'content' => $this->Dashboard->ThemeParserStr() . $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("btnGenerate", $this->_Lang['ap_create_btn'], "green") )
+        ];
 
 		# Настройка плагина
 		#
@@ -208,11 +220,11 @@ Class Prcode extends PluginActions
 			"<input name=\"save_con[name]\" size=\"50\" class=\"form-control\" type=\"text\" value=\"" . $_Config['name'] ."\">"
 		);
 
-		$tabs[] = array(
-			'id' => 'settings',
-			'title' => 'Настройки',
-			'content' => $this->Dashboard->ThemeParserStr() . $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("save", $this->Dashboard->lang['save'], "green") )
-		);
+		$tabs[] = [
+            'id' => 'settings',
+            'title' => 'Настройки',
+            'content' => $this->Dashboard->ThemeParserStr() . $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("save", $this->Dashboard->lang['save'], "green") )
+        ];
 
 		$this->Dashboard->ThemeEchoHeader( $this->_Lang['title'] );
 
@@ -223,6 +235,9 @@ Class Prcode extends PluginActions
 		return $Content;
 	}
 
+    /**
+     * @return string
+     */
 	private function generate() : string
 	{
 		$chars = 'ABDEFGHKNQRSTYZ23456789';
@@ -271,6 +286,9 @@ Class Prcode extends PluginActions
         );
     }
 
+    /**
+     * @return void
+     */
     public function uninstall() : void
     {
         $this->Dashboard->CheckHash();

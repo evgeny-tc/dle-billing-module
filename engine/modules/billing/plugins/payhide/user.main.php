@@ -9,6 +9,7 @@
 
 namespace Billing\User\Controller;
 
+use Billing\BalanceException;
 use \Billing\DevTools;
 use \Billing\Paging;
 
@@ -28,9 +29,10 @@ Class Payhide
 	}
 
 	/**
+     * ЛК
 	 * @throws \Exception
 	 */
-	public function main(array $GET = [] )
+	public function main(array $GET = [] ) : string
 	{
 		# Проверка авторизации
 		#
@@ -63,10 +65,10 @@ Class Payhide
 		{
 			$TimeLine = $TplLine;
 
-			$params = array(
-			    '{date=' . $TplLineDate . '}' => $this->DevTools->ThemeChangeTime( $Value['payhide_date'], $TplLineDate ),
-				'{price}' => $Value['payhide_price'] . ' ' . $this->DevTools->API->Declension( $Value['payhide_price'] )
-			);
+			$params = [
+                '{date=' . $TplLineDate . '}' => $this->DevTools->ThemeChangeTime( $Value['payhide_date'], $TplLineDate ),
+                '{price}' => $Value['payhide_price'] . ' ' . $this->DevTools->API->Declension( $Value['payhide_price'] )
+            ];
 
 			if( $Value['payhide_time'] )
 			{
@@ -159,9 +161,13 @@ Class Payhide
 		return $this->DevTools->Show( $Content, "payhide" );
 	}
 
-	# Страница оплаты
-	#
-	public function pay( array $DATA = [] )
+    /**
+     * Страница оплаты
+     * @param array $DATA
+     * @return string
+     * @throws BalanceException
+     */
+	public function pay( array $DATA = [] ) : string
 	{
 		$Get = $this->decode( $DATA['sign'] );
 
@@ -172,6 +178,7 @@ Class Payhide
 		if( $this->DevTools->member_id['name'] )
 		{
 			$userUid = $this->DevTools->member_id['name'];
+
 			$payFromBalance = true;
 		}
 
@@ -184,13 +191,15 @@ Class Payhide
 
 		# Проверка на повторную оплату
 		#
-		$this->DevTools->LQuery->DbWhere( array(
-			"payhide_user ='{s}' " => $userUid,
-			"payhide_tag ='{$Get['key']}' " => 1,
-			"payhide_post_id ='{s}' " => $Get['post_id'],
-			"payhide_price ='{s}' " => $Get['price'],
-			"(payhide_time = 0 or payhide_time >= {s})" => $this->DevTools->_TIME
-		));
+		$this->DevTools->LQuery->DbWhere(
+            [
+                "payhide_user ='{s}' " => $userUid,
+                "payhide_tag ='{$Get['key']}' " => 1,
+                "payhide_post_id ='{s}' " => $Get['post_id'],
+                "payhide_price ='{s}' " => $Get['price'],
+                "(payhide_time = 0 or payhide_time >= {s})" => $this->DevTools->_TIME
+            ]
+        );
 
 		$Access = $this->DevTools->LQuery->db->super_query( "SELECT * FROM " . USERPREFIX . "_billing_payhide {$this->DevTools->LQuery->where} LIMIT 1" );
 
@@ -207,37 +216,46 @@ Class Payhide
 
 		# Начать оплату
 		#
-		$invoice_id = $this->DevTools->LQuery->DbCreatInvoice(
-			'',
-			$userUid,
-			floatval($Get['price']),
-			floatval($Get['price']),
-			[
-				'billing' => [
-					'from_balance' => $payFromBalance
-				],
-				'params' => [
-					'tag' => $Get['key'],
-					'post_id' => $Get['post_id'],
-					'pagelink' => base64_encode($Get['pagelink']),
-					'endtime' => $Get['endtime'],
-					'post_autor' => $Get['post_autor'],
-					'title' => $pay_description
-				]
-			],
-			'payhide:pay'
-		);
+        try
+        {
+            $invoice_id = \Billing\Api\Balance::Init()->checkDouble()->createInvoice(
+                userLogin: $member_id['name'] ?? '',
+                userAnonymous: $member_id['name'] ? '' : $userUid,
+                sum_get: floatval($Get['price']),
+                payer_info: [
+                    'billing' => [
+                        'from_balance' => $payFromBalance
+                    ],
+                    'params' => [
+                        'tag' => $Get['key'],
+                        'post_id' => $Get['post_id'],
+                        'pagelink' => base64_encode($Get['pagelink']),
+                        'endtime' => $Get['endtime'],
+                        'post_autor' => $Get['post_autor'],
+                        'title' => $pay_description
+                    ]
+                ],
+                handler: 'payhide:pay'
+            );
+        }
+        catch (BalanceException $e)
+        {
+            exit( $this->model(
+                $this->pluginLang['error'],
+                $e->getMessage()
+            ));
+        }
 
 		header("Location: /{$this->DevTools->config['page']}.html/pay/waiting/id/{$invoice_id}/&modal=1");
 
-		echo $this->DevTools->Show( sprintf( $this->pluginLang['pay_message'], "/{$this->DevTools->config['page']}.html/pay/waiting/id/{$invoice_id}/&modal=1" ) );;
+		echo $this->DevTools->Show( sprintf( $this->pluginLang['pay_message'], "/{$this->DevTools->config['page']}.html/pay/waiting/id/{$invoice_id}/&modal=1" ) );
 
 		exit;
 	}
 
 	# Оплата с личного баланса
 	#
-	private function pay_balance( $Data )
+	private function pay_balance( $Data ) : void
 	{
 		# Недостаточно средств
 		#

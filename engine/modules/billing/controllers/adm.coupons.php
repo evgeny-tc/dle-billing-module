@@ -104,19 +104,20 @@ Class Coupons
             ]
         );
 
+        $StartFrom = $GET['page'];
         $PerPage = $this->Dashboard->config['paging'];
 
-        $StartFrom = $GET['page'];
+        Paging::buildLimitParam($StartFrom, $PerPage);
 
-        $this->Dashboard->LQuery->parsPage( $StartFrom, $PerPage );
-
+        # Всего записей
+        #
         $ResultCount = $this->Dashboard->LQuery->db->super_query( "SELECT COUNT(*) as count FROM " . USERPREFIX . "_billing_coupons" );
 
         $NumData = $ResultCount['count'];
 
-        $this->Dashboard->LQuery->db->query( "SELECT * FROM " . USERPREFIX . "_billing_coupons
-												ORDER BY  coupon_id DESC
-												LIMIT {$StartFrom}, {$PerPage}" );
+        # Запрос
+        #
+        $this->Dashboard->LQuery->db->query( "SELECT * FROM " . USERPREFIX . "_billing_coupons ORDER BY  coupon_id DESC LIMIT {$StartFrom}, {$PerPage}" );
 
         while ( $Value = $this->Dashboard->LQuery->db->get_row() )
         {

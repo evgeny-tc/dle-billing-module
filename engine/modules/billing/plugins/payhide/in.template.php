@@ -11,7 +11,7 @@ if( ! function_exists('BillingPayhideParser') )
 {
     # Осталось времени
     #
-    function BillingPayhideTimer( $time )
+    function BillingPayhideTimer( $time ) : string
     {
         $LocConf = array
         (

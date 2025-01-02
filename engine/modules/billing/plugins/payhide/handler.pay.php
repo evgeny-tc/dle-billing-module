@@ -27,6 +27,7 @@ return new class extends Handler
         $InfoPay = unserialize($Invoice['invoice_payer_info']);
 
         $InfoPay['params']['pagelink'] = base64_decode($InfoPay['params']['pagelink']);
+        $InfoPay['params']['post_id'] = intval( $InfoPay['params']['post_id'] );
 
         # Процент автору статьи
         #

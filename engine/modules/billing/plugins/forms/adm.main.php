@@ -130,7 +130,7 @@ Class Forms extends PluginActions
 
         $PerPage = $this->Dashboard->config['paging'];
 
-        $this->Dashboard->LQuery->parsPage( $page, $PerPage );
+        Paging::buildLimitParam($StartFrom, $PerPage);
 
         $ResultCount = $this->Dashboard->LQuery->db->super_query( "SELECT COUNT(*) as `count`
 																	FROM " . USERPREFIX . "_billing_forms

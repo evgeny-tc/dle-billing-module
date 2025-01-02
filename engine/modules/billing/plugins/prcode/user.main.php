@@ -13,11 +13,24 @@ use \Billing\DevTools;
 
 Class Prcode
 {
+    /**
+     *
+     */
     const PLUGIN = 'prcode';
 
+    /**
+     * @var DevTools
+     */
     public DevTools $DevTools;
 
+    /**
+     * @var array
+     */
     private array $pluginСonfig;
+
+    /**
+     * @var array
+     */
     private array $pluginLang;
 
 	function __construct()
@@ -65,18 +78,25 @@ Class Prcode
                 throw new \Exception($this->pluginLang['ui_error_active']);
             }
 
+            $processActivate = \Billing\Api\Balance::Init()->Transaction();
+
 			$this->DevTools->LQuery->db->query( "UPDATE " . USERPREFIX . "_billing_prcodes
 														SET prcode_active_user = '" . $this->DevTools->member_id['name'] . "',
 															prcode_active_date = '" . $this->DevTools->_TIME . "'
 														        WHERE prcode_id='" . $_SearchPromoCode['prcode_id'] . "'" );
 
-			$this->DevTools->API->PlusMoney(
-				$this->DevTools->member_id['name'],
-				$_SearchPromoCode['prcode_sum'],
-				sprintf($this->pluginLang['ui_active_desc'], $PromoCode),
-                static::PLUGIN,
-				$_SearchPromoCode['prcode_id']
-			);
+            $processActivate->From(
+                userLogin: $this->DevTools->member_id['name'],
+                sum: $_SearchPromoCode['prcode_sum']
+            )
+                ->Comment(
+                    userLogin: $this->DevTools->member_id['name'],
+                    plus: $_SearchPromoCode['prcode_sum'],
+                    comment: sprintf($this->pluginLang['ui_active_desc'], $PromoCode),
+                    plugin_id: $_SearchPromoCode['prcode_id'],
+                    plugin_name: static::PLUGIN
+                )
+                ->Commit();
 
 			return $this->DevTools->ThemeMsg(
 				$this->pluginLang['ui_active_ok'],

@@ -9,12 +9,18 @@
 
 namespace Billing\Admin\Controller;
 
+use Billing\BalanceException;
 use \Billing\Dashboard;
 use \Billing\PluginActions;
 use \Billing\Paging;
 
 Class Refund extends PluginActions
 {
+    /**
+     * @param array $Get
+     * @return string
+     * @throws BalanceException
+     */
     public function main( array $Get ) : string
 	{
         $this->checkInstall();
@@ -37,7 +43,7 @@ Class Refund extends PluginActions
 		{
 			$this->Dashboard->CheckHash();
 
-			$RemoveList = $_POST['remove_list'];
+			$RemoveList = $_POST['massact_list'];
 			$RemoveAct = $_POST['act'];
 
 			foreach( $RemoveList as $remove_id )
@@ -64,12 +70,17 @@ Class Refund extends PluginActions
 
                     if( ! intval($getRefundItem['refund_date_return']) and ! intval($getRefundItem['refund_date_cancel']) )
                     {
-                        $this->Dashboard->API->PlusMoney(
-                            $getRefundItem['refund_user'],
-                            $this->Dashboard->API->Convert( $getRefundItem['refund_summa'] ),
-                            str_replace("{remove_id}", $remove_id, $this->Dashboard->lang['refund_back']),
-                            'refund',
-                            $remove_id
+                        \Billing\Api\Balance::Init()->Comment(
+                            userLogin: $getRefundItem['refund_user'],
+                            minus: floatval($getRefundItem['refund_summa']),
+                            comment: str_replace("{remove_id}", $remove_id, $this->Dashboard->lang['refund_back']),
+                            plugin_id: $remove_id,
+                            plugin_name: 'refund',
+                            pm: true,
+                            email: true
+                        )->From(
+                            userLogin: $getRefundItem['refund_user'],
+                            sum: floatval($getRefundItem['refund_summa'])
                         );
 
                         $this->Dashboard->LQuery->DbRefundCancel( $remove_id );
@@ -97,7 +108,7 @@ Class Refund extends PluginActions
                 '<th>'.$this->Dashboard->lang['history_date'].'</th>',
                 '<th>'.$this->Dashboard->lang['history_user'].'</th>',
                 '<th>'.$this->Dashboard->lang['status'].'</th>',
-                '<th><span class="settingsb"><input type="checkbox" class="icheck" value="" name="remove_list[]" onclick="BillingJS.checkAll(this)" /></span></th>'
+                '<th><span class="settingsb"><input type="checkbox" class="icheck" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></span></th>'
             ]
         );
 
@@ -165,16 +176,18 @@ Class Refund extends PluginActions
             else
                 $refund_status = "<font color=\"red\">".$this->Dashboard->lang['refund_wait']."</a>";
 
-			$this->Dashboard->ThemeAddTR( array(
-				$Value['refund_id'],
-				$this->Dashboard->API->Convert( $Value['refund_summa']-$Value['refund_commission'] )." ".$this->Dashboard->API->Declension(($Value['refund_summa']-$Value['refund_commission']) ),
-				$this->Dashboard->API->Convert( $Value['refund_commission'] )." ".$this->Dashboard->API->Declension( $Value['refund_commission'] ),
-				$Value['refund_requisites'],
-				$this->Dashboard->ThemeChangeTime( $Value['refund_date']),
-				$this->Dashboard->ThemeInfoUser( $Value['refund_user'] ),
-                $refund_status,
-                '<span class="settingsb">' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['refund_id']) . '</span>'
-			));
+			$this->Dashboard->ThemeAddTR( 
+                [
+                    $Value['refund_id'],
+                    $this->Dashboard->API->Convert( $Value['refund_summa']-$Value['refund_commission'] )." ".$this->Dashboard->API->Declension(($Value['refund_summa']-$Value['refund_commission']) ),
+                    $this->Dashboard->API->Convert( $Value['refund_commission'] )." ".$this->Dashboard->API->Declension( $Value['refund_commission'] ),
+                    $Value['refund_requisites'],
+                    $this->Dashboard->ThemeChangeTime( $Value['refund_date']),
+                    $this->Dashboard->ThemeInfoUser( $Value['refund_user'] ),
+                    $refund_status,
+                    '<span class="settingsb">' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['refund_id']) . '</span>'
+                ]
+            );
 		}
 
 		$ContentList = '<div style="width: 100%; overflow: auto">' . $this->Dashboard->ThemeParserTable(added_table_class:'table-width-scroll') . '</div>';

@@ -139,7 +139,7 @@ Class DevTools
         $this->_TIME = $_TIME;
         $this->hash = $dle_login_hash;
 
-        $this->BalanceUser = $this->API->Convert( $this->member_id[$this->config['fname']] );
+        $this->BalanceUser = \Billing\Api\Balance::Init()->Convert( $this->member_id[$this->config['fname']] );
 
         # Параметры загрузки
         #
@@ -281,8 +281,8 @@ Class DevTools
         $Cabinet = str_replace( "{module.skin}", $this->dle['skin'], $Cabinet);
 
         $Cabinet = str_replace( "{user.name}", $this->member_id['name'], $Cabinet);
-        $Cabinet = str_replace( "{user.balance}", $this->API->Convert($this->BalanceUser, number_format_f: true), $Cabinet);
-        $Cabinet = str_replace( "{user.balance.currency}", $this->API->Declension( $this->BalanceUser ), $Cabinet);
+        $Cabinet = str_replace( "{user.balance}", \Billing\Api\Balance::Init()->Convert($this->BalanceUser), $Cabinet);
+        $Cabinet = str_replace( "{user.balance.currency}", \Billing\Api\Balance::Init()->Declension( $this->BalanceUser ), $Cabinet);
         $Cabinet = str_replace( "{user.foto}", $this->Foto( $this->member_id['foto'] ), $Cabinet);
 
         $Cabinet = str_replace( "[active]{$this->get_plugin}[/active]", "-active", $Cabinet);
@@ -332,7 +332,7 @@ Class DevTools
             $_Payment = [
                 'status' => 1,
                 'title' => $this->lang['pay_balance'],
-                'currency' => $this->API->Declension( $sum ),
+                'currency' => \Billing\Api\Balance::Init()->Declension( $sum ),
                 'min' => 0.01,
                 'max' => $this->BalanceUser,
                 'convert' => 1
@@ -354,7 +354,7 @@ Class DevTools
                 $this->lang['pay_minimum_error'],
                 $_Payment['title'],
                 $_Payment['minimum'],
-                $this->API->Declension( $_Payment['minimum'] )
+                \Billing\Api\Balance::Init()->Declension( $_Payment['minimum'] )
             ) );
         }
         else if( $sum > $_Payment['max'] )
@@ -363,7 +363,7 @@ Class DevTools
                 $this->lang['pay_max_error'],
                 $_Payment['title'],
                 $_Payment['max'],
-                $this->API->Declension( $_Payment['max'] )
+                \Billing\Api\Balance::Init()->Declension( $_Payment['max'] )
             ) );
         }
     }
@@ -414,7 +414,7 @@ Class DevTools
                 $TimeLine = str_replace("{module.skin}", $this->dle['skin'], $TimeLine);
                 $TimeLine = str_replace("{payment.name}", $Name, $TimeLine);
                 $TimeLine = str_replace("{payment.title}", $Info['config']['title'], $TimeLine);
-                $TimeLine = str_replace("{payment.topay}", $this->API->Convert(money: $sumPay, number_format_f: true), $TimeLine);
+                $TimeLine = str_replace("{payment.topay}", \Billing\Api\Balance::Init()->Convert($sumPay), $TimeLine);
                 $TimeLine = str_replace("{payment.currency}", $Info['config']['currency'], $TimeLine);
 
                 $paymentList .= $TimeLine;

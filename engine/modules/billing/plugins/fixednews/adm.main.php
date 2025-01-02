@@ -16,6 +16,10 @@ Class Fixednews extends PluginActions
 {
     const PLUGIN = 'fixednews';
 
+    /**
+     * @param array $Get
+     * @return string
+     */
     public function main( array $Get = [] ) : string
 	{
         $this->checkInstall();
@@ -56,11 +60,11 @@ Class Fixednews extends PluginActions
 
 		# Форма настроек
 		#
-		$dle_categorys = [];
+		$dle_category = [];
 
 		foreach( $cat_info as $cat_id => $cat )
 		{
-			$dle_categorys[$cat_id] = $cat['name'];
+            $dle_category[$cat_id] = $cat['name'];
 		}
 
 		$dle_groups = [];
@@ -87,22 +91,22 @@ Class Fixednews extends PluginActions
 		$this->Dashboard->ThemeAddStr(
 			$pluginLang['stop_cat'],
 			$pluginLang['stop_cat_desc'],
-			$this->Dashboard->GetSelect($dle_categorys, "save_con[stop_categorys][]", explode(",", $_Config['stop_categorys']), true )
+			$this->Dashboard->GetSelect($dle_category, "save_con[stop_categorys][]", explode(",", $_Config['stop_categorys']), true )
 		);
 
 		$SettingForm = $this->Dashboard->ThemeParserStr();
 		$SettingForm .= $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("save", $this->Dashboard->lang['save'], "green") );
 
-		$tabs[] = array(
-				'id' => 'settings',
-				'title' => $pluginLang['settings_title'],
-				'content' => $SettingForm
-		);
+		$tabs[] = [
+            'id' => 'settings',
+            'title' => $pluginLang['settings_title'],
+            'content' => $SettingForm
+        ];
 
 		# Группы пользователей
 		#
-		$returnGroups = array('<td></td>');
-		$countGroups = array();
+		$returnGroups = ['<td></td>'];
+		$countGroups = [];
 
 		foreach( $user_group as $group_info )
 		{
@@ -154,22 +158,22 @@ Class Fixednews extends PluginActions
 		$ContentFix = $this->Dashboard->ThemeParserTable('',
 			'
 			<tr>
-				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
+				<td colspan="' . ( count( $countGroups ) + 1 ) . '">
 					' . $pluginLang['link_help'] . '
 				</td>
 			</tr>
 			<tr>
-				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
+				<td colspan="' . ( count( $countGroups ) + 1 ) . '">
 					' . $pluginLang['link_help_instr'] . '
 				</td>
 			</tr>
 			<tr>
-				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
+				<td colspan="' . ( count( $countGroups ) + 1 ) . '">
 					' . $pluginLang['link'] . '
 				</td>
 			</tr>
 			<tr>
-				<td colspan="' . ( count( $rowCategory ) + 1 ) . '">
+				<td colspan="' . ( count( $countGroups ) + 1 ) . '">
 					' . $pluginLang['link_name_1'] . '
 				</td>
 			</tr>'
@@ -177,11 +181,11 @@ Class Fixednews extends PluginActions
 
 		$ContentFix .= $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("save", $this->Dashboard->lang['save'], "green") );
 
-		$tabs[] = array(
-				'id' => 'fix',
-				'title' => $pluginLang['fix'],
-				'content' => $ContentFix
-		);
+		$tabs[] = [
+            'id' => 'fix',
+            'title' => $pluginLang['fix'],
+            'content' => $ContentFix
+        ];
 
 		# Поднятие
 		#
@@ -206,11 +210,11 @@ Class Fixednews extends PluginActions
 		);
 		$ContentUp .= $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("save", $this->Dashboard->lang['save'], "green") );
 
-		$tabs[] = array(
-				'id' => 'up_post',
-				'title' => $pluginLang['up'],
-				'content' => $ContentUp
-		);
+		$tabs[] = [
+            'id' => 'up_post',
+            'title' => $pluginLang['up'],
+            'content' => $ContentUp
+        ];
 
 		# Публикация на главной
 		#
@@ -233,14 +237,14 @@ Class Fixednews extends PluginActions
 				</td>
 			</tr>'
 		);
+
 		$ContentUp .= $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("save", $this->Dashboard->lang['save'], "green") );
 
-		$tabs[] = array(
-				'id' => 'post_main',
-				'title' => $pluginLang['post_main'],
-				'content' => $ContentUp
-		);
-
+		$tabs[] = [
+            'id' => 'post_main',
+            'title' => $pluginLang['post_main'],
+            'content' => $ContentUp
+        ];
 
 		$Content = $this->Dashboard->PanelPlugin('plugins/fixednews', 'https://dle-billing.ru/doc/plugins/fixednews/' );
 		$Content .= $this->Dashboard->PanelTabs( $tabs );
@@ -249,6 +253,9 @@ Class Fixednews extends PluginActions
 		return $Content;
 	}
 
+    /**
+     * @return void
+     */
     public function install() : void
     {
         $this->Dashboard->CheckHash();

@@ -15,9 +15,19 @@ use \Billing\Paging;
 
 Class Payhide extends PluginActions
 {
+    /**
+     *
+     */
     const PLUGIN = 'payhide';
+
+    /**
+     *
+     */
     const HELP_URL = 'https://dle-billing.ru/doc/plugins/payhide/';
 
+    /**
+     * @var array
+     */
     private array $pluginLang;
 
 	function __construct()
@@ -25,7 +35,11 @@ Class Payhide extends PluginActions
 		$this->pluginLang = Dashboard::getLang(static::PLUGIN);
 	}
 
-	public function main( array $GET = [] )
+    /**
+     * @param array $GET
+     * @return string
+     */
+	public function main( array $GET = [] ) : string
 	{
         $this->checkInstall();
 
@@ -55,14 +69,14 @@ Class Payhide extends PluginActions
 			$MassList = $_POST['massact_list'];
 
 			if( is_array($MassList) )
-				foreach( $MassList as $id )
-				{
-					$id = intval( $id );
+            {
+                foreach( $MassList as $id )
+                {
+                    if( ! $id = intval( $id ) ) continue;
 
-					if( ! $id ) continue;
-
-					$this->Dashboard->LQuery->db->query( "DELETE FROM " . USERPREFIX . "_billing_payhide WHERE payhide_id='$id'" );
-				}
+                    $this->Dashboard->LQuery->db->query( "DELETE FROM " . USERPREFIX . "_billing_payhide WHERE payhide_id='$id'" );
+                }
+            }
 
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->pluginLang['remove'] );
 		}
@@ -85,12 +99,14 @@ Class Payhide extends PluginActions
 		$PerPage = $this->Dashboard->config['paging'];
 		$StartFrom = $GET['page'];
 
-		$this->Dashboard->LQuery->parsPage( $StartFrom, $PerPage );
+        Paging::buildLimitParam($StartFrom, $PerPage);
 
-		$ResultCount = $this->Dashboard->LQuery->db->super_query( "SELECT COUNT(*) as `count`
-																	FROM " . USERPREFIX . "_billing_payhide
-																	ORDER BY payhide_id desc" );
+        # Количество
+        #
+		$ResultCount = $this->Dashboard->LQuery->db->super_query( "SELECT COUNT(*) as `count` FROM " . USERPREFIX . "_billing_payhide ORDER BY payhide_id desc" );
 
+        # Записи
+        #
 		$this->Dashboard->LQuery->db->query( "SELECT * FROM " . USERPREFIX . "_billing_payhide
 												LEFT JOIN " . USERPREFIX . "_post ON " . USERPREFIX . "_billing_payhide.payhide_post_id=" . USERPREFIX . "_post.id
 												ORDER BY payhide_id desc LIMIT {$StartFrom}, {$PerPage}" );
@@ -107,16 +123,18 @@ Class Payhide extends PluginActions
                 $pay_description = '<br><span style="font-size: 10px; color: grey">' . $Value['ex_pagelink'][0] . '</span>';
             }
 
-			$this->Dashboard->ThemeAddTR( array(
-				$Value['payhide_id'],
-				$this->Dashboard->ThemeChangeTime( $Value['payhide_date'] ),
-				$this->Dashboard->ThemeInfoUser( $Value['payhide_user'] ),
-				($Value['payhide_post_id'] ? sprintf( $this->pluginLang['access_post'], $Value['payhide_pagelink'], $Value['title'] ) : sprintf( $this->pluginLang['access_page'], $Value['payhide_pagelink'] )) . $pay_description,
-				$Value['autor'] ? $this->Dashboard->ThemeInfoUser( $Value['autor'] ) : '',
-				$Value['payhide_price'] . ' ' . $this->Dashboard->API->Declension( $Value['payhide_price'] ),
-				$Value['payhide_time'] ? ( ( $Value['payhide_time']>=$this->Dashboard->_TIME ) ? "<font color='green'>".$this->pluginLang['timeTo'].langdate( "j F Y  G:i", $Value['payhide_time'])."</font>": "<font color='red'>".$this->pluginLang['timeTo'].langdate( "j F Y  G:i", $Value['payhide_time'])."</font>" ) : $this->pluginLang['timeFull'],
-				'<span class="settingsb">' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['payhide_id']) . '</span>'
-			));
+			$this->Dashboard->ThemeAddTR(
+                [
+                    $Value['payhide_id'],
+                    $this->Dashboard->ThemeChangeTime( $Value['payhide_date'] ),
+                    $this->Dashboard->ThemeInfoUser( $Value['payhide_user'] ),
+                    ($Value['payhide_post_id'] ? sprintf( $this->pluginLang['access_post'], $Value['payhide_pagelink'], $Value['title'] ) : sprintf( $this->pluginLang['access_page'], $Value['payhide_pagelink'] )) . $pay_description,
+                    $Value['autor'] ? $this->Dashboard->ThemeInfoUser( $Value['autor'] ) : '',
+                    $Value['payhide_price'] . ' ' . $this->Dashboard->API->Declension( $Value['payhide_price'] ),
+                    $Value['payhide_time'] ? ( ( $Value['payhide_time']>=$this->Dashboard->_TIME ) ? "<font color='green'>".$this->pluginLang['timeTo'].langdate( "j F Y  G:i", $Value['payhide_time'])."</font>": "<font color='red'>".$this->pluginLang['timeTo'].langdate( "j F Y  G:i", $Value['payhide_time'])."</font>" ) : $this->pluginLang['timeFull'],
+                    '<span class="settingsb">' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['payhide_id']) . '</span>'
+                ]
+            );
 		}
 
 		$Content = $this->Dashboard->ThemeParserTable();
@@ -137,23 +155,23 @@ Class Payhide extends PluginActions
 			$Content .= $this->Dashboard->ThemePadded( $this->Dashboard->lang['history_no'], '' );
 		}
 
-		$tabs[] = array(
-			'id' => 'list',
-			'title' => $this->pluginLang['title'],
-			'content' => $Content
-		);
-
-		$tabs[] = array(
-			'id' => 'tag',
-			'title' => $this->pluginLang['gentags'],
-			'content' => $this->tag()
-		);
-
-		$tabs[] = array(
-			'id' => 'settings',
-			'title' => $this->pluginLang['settigns'],
-			'content' => $this->settings($pluginConfig)
-		);
+        $tabs = [
+            [
+                'id' => 'list',
+                'title' => $this->pluginLang['title'],
+                'content' => $Content
+            ],
+            [
+                'id' => 'tag',
+                'title' => $this->pluginLang['gentags'],
+                'content' => $this->tag()
+            ],
+            [
+                'id' => 'settings',
+                'title' => $this->pluginLang['settigns'],
+                'content' => $this->settings($pluginConfig)
+            ]
+        ];
 
 		$this->Dashboard->ThemeEchoHeader( $this->pluginLang['title'] );
 
@@ -164,9 +182,12 @@ Class Payhide extends PluginActions
 		return $Content;
 	}
 
-	# Форма настроек
-	#
-	private function settings( $_Config )
+    /**
+     * Форма настроек
+     * @param $_Config
+     * @return string
+     */
+	private function settings( $_Config ) : string
 	{
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['settings_status'],
@@ -192,9 +213,11 @@ Class Payhide extends PluginActions
 		return $Content;
 	}
 
-	# Форма генерации тега
-	#
-	private function tag()
+    /**
+     * Форма генерации тега
+     * @return string
+     */
+	private function tag() : string
 	{
 		$genKey = $this->Dashboard->genCode( 3 );
 
@@ -388,8 +411,12 @@ HTML;
             $this->Dashboard->lang['plugin_install'],
             $this->Dashboard->PanelPlugin(path: 'plugins/' . $this->Dashboard->controller, link: static::HELP_URL, styles: '' ),
             '?mod=billing&c=' . $this->Dashboard->controller
-        );    }
+        );
+    }
 
+    /**
+     * @return void
+     */
     public function uninstall() : void
     {
         $this->Dashboard->CheckHash();

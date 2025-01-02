@@ -68,11 +68,11 @@ Class Bonuses extends PluginActions
 			$this->Dashboard->MakeCheckBox("save_con[bonus3_alert_main]", $_Config['bonus3_alert_main'])
 		);
 
-		$tabs[] = array(
-			'id' => 'tab0',
-			'title' => $this->_Lang['tab0'],
-			'content' => $this->Dashboard->ThemeParserStr()
-		);
+		$tabs[] = [
+            'id' => 'tab0',
+            'title' => $this->_Lang['tab0'],
+            'content' => $this->Dashboard->ThemeParserStr()
+        ];
 
 		# Tab 1
 		#
@@ -97,11 +97,11 @@ Class Bonuses extends PluginActions
 				. " / <input name=\"save_con[f_bonus_percent]\" class=\"form-control\" style=\"width: 50px\" type=\"text\" value=\"" . $_Config['f_bonus_percent'] ."\" /> %"
 	 	);
 
-		$tabs[] = array(
-				'id' => 'tab1',
-				'title' => $this->_Lang['tab1'],
-				'content' => $this->Dashboard->ThemeParserStr()
-		);
+		$tabs[] = [
+            'id' => 'tab1',
+            'title' => $this->_Lang['tab1'],
+            'content' => $this->Dashboard->ThemeParserStr()
+        ];
 
 		# Tab 2
 		#
@@ -126,11 +126,11 @@ Class Bonuses extends PluginActions
 				. " / <input name=\"save_con[s_bonus_percent]\" class=\"form-control\" style=\"width: 50px\" type=\"text\" value=\"" . $_Config['s_bonus_percent'] ."\" /> %"
 		);
 
-		$tabs[] = array(
-				'id' => 'tab2',
-				'title' => $this->_Lang['tab2'],
-				'content' => $this->Dashboard->ThemeParserStr()
-		);
+		$tabs[] = [
+            'id' => 'tab2',
+            'title' => $this->_Lang['tab2'],
+            'content' => $this->Dashboard->ThemeParserStr()
+        ];
 
 		# Tab 3
 		#
@@ -147,11 +147,11 @@ Class Bonuses extends PluginActions
 				. $this->Dashboard->API->Declension( $_Config['t_bonus_sum'] )
 		);
 
-		$tabs[] = array(
-				'id' => 'tab3',
-				'title' => $this->_Lang['tab3'],
-				'content' => $this->Dashboard->ThemeParserStr()
-		);
+		$tabs[] = [
+            'id' => 'tab3',
+            'title' => $this->_Lang['tab3'],
+            'content' => $this->Dashboard->ThemeParserStr()
+        ];
 
 		# Tab 4
 		#
@@ -186,11 +186,11 @@ Class Bonuses extends PluginActions
 			"<select name=\"save_con[active_to]\" class=\"form-control\" style=\"width: 50%\">" . $this->Dashboard->GetGroups( $_Config['active_to'], array(1, 5) ) . "</select>"
 		);
 
-		$tabs[] = array(
-				'id' => 'tab4',
-				'title' => $this->_Lang['tab4'],
-				'content' => $this->Dashboard->ThemeParserStr()
-		);
+		$tabs[] = [
+            'id' => 'tab4',
+            'title' => $this->_Lang['tab4'],
+            'content' => $this->Dashboard->ThemeParserStr()
+        ];
 
 		# Tab 5
 		#
@@ -207,11 +207,11 @@ Class Bonuses extends PluginActions
 				. $this->Dashboard->API->Declension( $_Config['viewfull_sum'] )
 	 	);
 
-		$tabs[] = array(
-				'id' => 'tab5',
-				'title' => $this->_Lang['tab5'],
-				'content' => $this->Dashboard->ThemeParserStr()
-		);
+		$tabs[] = [
+            'id' => 'tab5',
+            'title' => $this->_Lang['tab5'],
+            'content' => $this->Dashboard->ThemeParserStr()
+        ];
 
 		# Tab 6
 		#
@@ -240,11 +240,11 @@ Class Bonuses extends PluginActions
 			"<input name=\"save_con[activesite_timeout]\" class=\"form-control\" style=\"width: 30%\" type=\"text\" value=\"" . $_Config['activesite_timeout'] ."\">"
 	 	);
 
-		$tabs[] = array(
-				'id' => 'tab6',
-				'title' => $this->_Lang['tab6'],
-				'content' => $this->Dashboard->ThemeParserStr()
-		);
+		$tabs[] = [
+            'id' => 'tab6',
+            'title' => $this->_Lang['tab6'],
+            'content' => $this->Dashboard->ThemeParserStr()
+        ];
 
 		$Content = $this->Dashboard->PanelPlugin('plugins/bonuses', 'https://dle-billing.ru/doc/plugins/bonuses/' );
 		$Content .= $this->Dashboard->PanelTabs( $tabs, $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton( "save", $this->Dashboard->lang['save'], "green" ) ) );

@@ -14,6 +14,10 @@ use \Billing\PluginActions;
 
 Class Transfer extends PluginActions
 {
+    /**
+     * @param array $Get
+     * @return string
+     */
     public function main( array $Get ) : string
 	{
         $this->checkInstall();

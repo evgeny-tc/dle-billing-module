@@ -14,8 +14,19 @@ use \Billing\PluginActions;
 
 Class Paygroups extends PluginActions
 {
+    /**
+     *
+     */
     const PLUGIN = 'paygroups';
+
+    /**
+     *
+     */
     const HELP_URL = 'https://dle-billing.ru/doc/plugins/paygroups/';
+
+    /**
+     *
+     */
     const INSTALL_URL = 'https://dle-billing.ru/doc/plugins/paygroups/';
 
     /**
@@ -116,19 +127,19 @@ Class Paygroups extends PluginActions
 		$SettingForm = $this->Dashboard->ThemeParserStr();
 		$SettingForm .= $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("save", $this->Dashboard->lang['save'], "green") );
 
-		$tabs[] = array(
-				'id' => 'settings',
-				'title' => $pluginLang['settings_title'],
-				'content' => $SettingForm
-		);
+		$tabs[] = [
+            'id' => 'settings',
+            'title' => $pluginLang['settings_title'],
+            'content' => $SettingForm
+        ];
 
 		foreach( $user_group as $group_id => $group_info )
 		{
 			if( in_array( $group_id, explode(",", $_Config['stop']) ) or $group_id == '5' ) continue;
 
 			$type = $group_info['time_limit']
-						? array( '0' => $pluginLang['a_time_all'], '1' => $pluginLang['a_time'] )
-						: array( '0' => $pluginLang['a_time_all'] );
+						? ['0' => $pluginLang['a_time_all'], '1' => $pluginLang['a_time']]
+						: ['0' => $pluginLang['a_time_all']];
 
 			$this->Dashboard->ThemeAddStr(
 				$pluginLang['a_status'],
@@ -160,11 +171,11 @@ Class Paygroups extends PluginActions
 				"<textarea style=\"width:100%;height:50px;\" onClick=\"this.focus(); this.select()\">&lt;a href='#' onClick='BillingGroup.Form({$group_id}); return false'>{$pluginLang['a_go']}&laquo;{$group_info['group_name']}&raquo;&lt;/a></textarea>"
 			);
 
-			$tabs[] = array(
-					'id' => 'group_' . $group_id,
-					'title' => $group_info['group_name'],
-					'content' => $this->Dashboard->ThemeParserStr() . $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton( "update", $pluginLang['a_btn_update'], "green" ) )
-			);
+			$tabs[] = [
+                'id' => 'group_' . $group_id,
+                'title' => $group_info['group_name'],
+                'content' => $this->Dashboard->ThemeParserStr() . $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton( "update", $pluginLang['a_btn_update'], "green" ) )
+            ];
 		}
 
 		$Content = $this->Dashboard->PanelPlugin('plugins/paygroups', static::HELP_URL );
@@ -174,6 +185,11 @@ Class Paygroups extends PluginActions
 		return $Content;
 	}
 
+    /**
+     * Сохранить настройки в файл
+     * @param array $save_con
+     * @return void
+     */
 	private function SaveFileArray( array $save_con = [] ) : void
 	{
 		$handler = fopen( MODULE_DATA . '/plugin.paygroups_list.php', "w" );
@@ -204,6 +220,10 @@ Class Paygroups extends PluginActions
 		fclose( $handler );
 	}
 
+    /**
+     * @param string $data
+     * @return void
+     */
 	private function array_parse( string &$data ) : void
 	{
 		$data = str_replace( "$", "&#036;", $data );
@@ -211,6 +231,9 @@ Class Paygroups extends PluginActions
 		$data = str_replace( "}", "&#125;", $data );
 	}
 
+    /**
+     * @return void
+     */
     public function install() : void
     {
         $this->Dashboard->CheckHash();
@@ -234,6 +257,9 @@ Class Paygroups extends PluginActions
         );
     }
 
+    /**
+     * @return void
+     */
     public function unistall() : void
     {
         $this->Dashboard->CheckHash();

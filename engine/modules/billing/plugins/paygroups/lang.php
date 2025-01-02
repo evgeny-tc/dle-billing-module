@@ -28,8 +28,8 @@ return array
 	'a_status_desc' => "Разрешить переход в эту группу",
 	'a_start' => "Переход из групп:",
 	'a_start_desc' => "Разрешить переход из следующих группу",
-	'a_type' => "Вариант перехода:",
-	'a_type_desc' => "Вариант перехода в группу",
+	'a_type' => "Тип перехода:",
+	'a_type_desc' => "Тип перехода в группу",
 	'a_type_info' =>  '<i class="help-button visible-lg-inline-block text-primary-600 fa fa-question-circle position-right position-left" data-rel="popover" data-trigger="hover" data-placement="auto right" data-content="Временное размещение в группе отключено" data-original-title="" title=""></i> [ <a href="?mod=usergroup&action=edit&id=%s" target="_blank">включить</a> ]',
 	'a_price' => "Цена перехода:",
 	'a_price_desc' => "Укажите цену перехода в группу, формат:

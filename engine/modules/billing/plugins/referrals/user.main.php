@@ -121,7 +121,7 @@ Class Referrals
 
 		# Список
 		#
-		$List = array();
+		$List = [];
 
 		$this->DevTools->LQuery->db->query( "SELECT * FROM " . USERPREFIX . "_billing_referrals WHERE ref_from = '" . $this->DevTools->member_id['name'] . "' ORDER BY ref_id desc" );
 
@@ -137,6 +137,9 @@ Class Referrals
 		return $this->DevTools->Show( $Content );
 	}
 
+    /**
+     * @return void
+     */
 	public function redirect() : void
 	{
 		if( $_GET['p'] )

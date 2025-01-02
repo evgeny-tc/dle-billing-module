@@ -92,11 +92,11 @@ Class Donate extends PluginActions
 							   $this->Dashboard->MakeButton("save", $this->Dashboard->lang['save'], "green")
 						   );
 
-		$tabs[] = array(
-				'id' => 'settings',
-				'title' => $this->Dashboard->lang['menu_1'],
-				'content' => $ContentSettings
-		);
+		$tabs[] = [
+            'id' => 'settings',
+            'title' => $this->Dashboard->lang['menu_1'],
+            'content' => $ContentSettings
+        ];
 
 		# Tab 2
 		#
