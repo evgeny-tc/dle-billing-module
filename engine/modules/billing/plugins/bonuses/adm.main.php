@@ -14,8 +14,14 @@ use \Billing\PluginActions;
 
 Class Bonuses extends PluginActions
 {
+    /**
+     *
+     */
     const PLUGIN = 'bonuses';
 
+    /**
+     * @var array
+     */
     public array $_Lang = [];
 
 	function __construct()
@@ -23,6 +29,10 @@ Class Bonuses extends PluginActions
 		$this->_Lang = Dashboard::getLang(static::PLUGIN);
 	}
 
+    /**
+     * @param array $Get
+     * @return string
+     */
 	public function main( array $Get ) : string
 	{
 		$this->checkInstall();

@@ -13,8 +13,15 @@ use \Billing\Dashboard;
 
 Class Payment
 {
+    /**
+     * @var Dashboard
+     */
     public Dashboard $Dashboard;
 
+    /**
+     * @param array $Get
+     * @return string
+     */
     public function main( array $Get ) : string
     {
         $Name = $this->Dashboard->LQuery->parsVar( $Get['billing'], "/[^a-zA-Z0-9\s]/" );
@@ -99,11 +106,11 @@ Class Payment
             \Billing\Api\Balance::Init()->Convert( 1 ) . "&nbsp;" . \Billing\Api\Balance::Init()->Declension( 1 ) . " = <input autocomplete=\"off\" name=\"save_con[convert]\" class=\"form-control\" type=\"number\" value=\"" . $Payment['convert'] ."\"  style=\"width: 90px\" required> <span class='payment_currency_name'></span>"
         );
 
-        $tabs[] = array(
+        $tabs[] = [
             'id' => 'main',
             'title' => $this->Dashboard->lang['main_settings_1'],
             'content' => $this->Dashboard->ThemeParserStr()
-        );
+        ];
 
         $this->Dashboard->ThemeAddStr(
             $this->Dashboard->lang['paysys_url'],
@@ -136,14 +143,14 @@ Class Payment
         $Content .= $this->Dashboard->ThemeEchoFoother();
 
         $Content .= '<script>
-        $(window).on("load", function () {
-            updateConvertCurrency();
-        });
-        
-        function updateConvertCurrency()
-        {
-            $(".payment_currency_name").html($("#payment_currency_setname").val());
-        }
+            $(window).on("load", function () {
+                updateConvertCurrency();
+            });
+            
+            function updateConvertCurrency()
+            {
+                $(".payment_currency_name").html($("#payment_currency_setname").val());
+            }
         </script>';
 
         return $Content;

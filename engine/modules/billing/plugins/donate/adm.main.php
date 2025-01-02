@@ -14,8 +14,15 @@ use \Billing\PluginActions;
 
 Class Donate extends PluginActions
 {
+    /**
+     *
+     */
     const PLUGIN = 'donate';
 
+    /**
+     * @param array $Get
+     * @return string
+     */
     public function main( array $Get ) : string
 	{
         $this->checkInstall();

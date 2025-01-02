@@ -4,12 +4,10 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2024
+ * @copyright     Copyright (c) 2012-2025
  */
 
 namespace Billing;
-
-use JetBrains\PhpStorm\NoReturn;
 
 /**
  * Dashboard
@@ -821,7 +819,7 @@ HTML;
 	{
 		global $is_loged_in, $skin_footer, $skin_not_logged_footer;
 
-		$skin_footer = preg_replace('~<div class=\"footer text-muted text-size-small\">\s+(.*?)\s+<\/div>~s', "<div class=\"footer text-muted text-size-small\">&copy 2024 <a href=\"https://dle-billing.ru/\" target=\"_blank\">dle-billing.ru</a></div>", $skin_footer);
+		$skin_footer = preg_replace('~<div class=\"footer text-muted text-size-small\">\s+(.*?)\s+<\/div>~s', "<div class=\"footer text-muted text-size-small\">&copy 2025 <a href=\"https://dle-billing.ru/\" target=\"_blank\">dle-billing.ru</a></div>", $skin_footer);
 
 		if( $is_loged_in )
         {
