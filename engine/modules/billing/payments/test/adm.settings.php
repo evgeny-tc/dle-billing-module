@@ -14,7 +14,7 @@ Class Test implements IPayment
     /**
      * @var string
      */
-	const SERVER_PAY = 'https://test-pay.dle-billing.ru/';
+	const SERVER_PAY = 'https://testpay.dle-billing.ru/';
 
     /**
      * @var DevTools
@@ -52,9 +52,12 @@ Class Test implements IPayment
 
         $moduleConfig = DevTools::getConfig('');
 
+        $hash = $this->buildHash( $invoice );
+
 		return '<form method="POST" id="paysys_form" action="' . self::SERVER_PAY . '">
                      <input type="hidden" name="invoice_id" value="'.$id.'">
                      <input type="hidden" name="desc" value="'.$desc.'">
+                     <input type="hidden" name="hash" value="'.$hash.'">
                      
                      ' . implode($invoice_data) . '
                      
@@ -68,40 +71,75 @@ Class Test implements IPayment
 	}
 
     /**
+     * Реквизиты плательщика (сохранить в квитанцию)
      * @param array $data
      * @return string
      */
 	public function check_payer_requisites( array $data ) : string
 	{
-		return (string)$data['sender'];
+		return (string)$data['requisites'];
 	}
 
+    /**
+     * ID квитанции
+     * @param array $data
+     * @return int
+     */
 	public function check_id( array $data ) : int
 	{
-		return intval($data['label']);
+		return intval($data['invoice_id']);
 	}
 
+    /**
+     * Ответ платежной системе
+     * @param array $data
+     * @return string
+     */
 	public function check_ok( array $data ) : string
 	{
-		return "HTTP 202 OK";
+		return "Платеж обработан";
 	}
 
+    /**
+     * Проверка платежа
+     * @param array $result
+     * @param array $config_payment
+     * @param array $invoice
+     * @return string|bool
+     */
 	public function check_out(array $result, array $config_payment, array $invoice ) : string|bool
 	{
-		$hash = sha1($result['notification_type'].'&'.$result['operation_id'].'&'.$result['amount'].'&'.$result['currency'].'&'.$result['datetime'].'&'.$result['sender'].'&'.$result['codepro'].'&'.$config_payment['key'].'&'.$result['label']);
+        # Простая проверка без внедрения секретный ключей
+        #
+        $hash = $this->buildHash( $invoice );
 
-		if( $result['withdraw_amount'] != $invoice['invoice_pay'] )
+		if( $result['status'] != 'success' )
 		{
-			return "Error sum " . $result['amount'];
+			return 'Платеж не прошел';
 		}
 
-		if($hash !== $result['sha1_hash'])
+		if ($hash !== $result['hash'])
 		{
-			return "Error hash";
+			return $result['hash'] . "-Hash не совпадает: ".$hash;
 		}
 
 		return true;
 	}
+
+    /**
+     * @param array $invoice
+     * @return string
+     */
+    private static function buildHash(array $invoice) : string
+    {
+        unset( $invoice['invoice_pay'] );
+
+        $arHash = array_values($invoice);
+
+        ksort($arHash);
+
+        return md5(implode($arHash));
+    }
 }
 
 $Paysys = new Test;
