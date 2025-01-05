@@ -76,18 +76,30 @@ trait Core
     }
 
     /**
-     * Get plugin lang
+     * Загрузить языковый файл
      * @param string $plugin
      * @return array
      */
     public static function getLang(string $plugin) : array
     {
+        global $selected_language;
+
+        $selected_language = preg_replace("/[^a-zA-Z0-9-_\s]/", "", trim( $selected_language ) );
+
         if( isset(static::$Lang[$plugin]) )
         {
             return static::$Lang[$plugin];
         }
 
-        if( file_exists(MODULE_PATH . '/plugins/' . $plugin . '/lang.php') )
+        if( file_exists(MODULE_PATH . '/lang/' . $selected_language . '/' . $plugin . '.php') )
+        {
+            return static::$Lang[$plugin] = include MODULE_PATH . '/lang/' . $selected_language . '/' . $plugin . '.php';
+        }
+        if( file_exists(MODULE_PATH . '/lang/' . $plugin . '.php') )
+        {
+            return static::$Lang[$plugin] = include MODULE_PATH . '/lang/' . $plugin . '.php';
+        }
+        else if( file_exists(MODULE_PATH . '/plugins/' . $plugin . '/lang.php') )
         {
             return static::$Lang[$plugin] = include MODULE_PATH . '/plugins/' . $plugin . '/lang.php';
         }

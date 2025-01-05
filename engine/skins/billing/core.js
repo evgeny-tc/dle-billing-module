@@ -3,9 +3,9 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2024
+ * @copyright     Copyright (c) 2012-2025
  */
-function BillingJSAdmin( hash )
+function BillingJSAdmin()
 {
 	/**
 	 * Ожидание применения изменений
@@ -98,13 +98,13 @@ function BillingJSAdmin( hash )
 		{
 			this.users.clean(name);
 
-			$('#user_'+name).html('<i class=\"fa fa-plus\" style=\"margin-left: 10px; vertical-align: middle\"></i>');
+			$(`#user_${name}`).html('<i class=\"fa fa-plus\" style=\"margin-left: 10px; vertical-align: middle\"></i>');
 		}
 		else
 		{
 			this.users[this.users.length+1] = name;
 
-			$('#user_' + name).html('<i class=\'fa fa-check\' style=\'margin-left: 10px; vertical-align: middle\'></i>');
+			$(`#user_${name}`).html('<i class=\'fa fa-check\' style=\'margin-left: 10px; vertical-align: middle\'></i>');
 		}
 
 		this.users.clean(undefined);
@@ -118,6 +118,9 @@ function BillingJSAdmin( hash )
 	 */
 	this.url_items = $("#url-count").val();
 
+	/**
+	 * Добавить замену
+	 */
 	this.urlAdd = function()
 	{
 		this.url_items ++;
@@ -132,13 +135,17 @@ function BillingJSAdmin( hash )
 		$(".url-list").append(field);
 	}
 
+	/**
+	 * Удалить замену
+	 * @param id
+	 */
 	this.urlRemove = function( id )
 	{
 		$("#url-item-" + id).remove();
 	}
 }
 
-let BillingJS = new BillingJSAdmin(dle_login_hash);
+let BillingJS = new BillingJSAdmin();
 
 Array.prototype.in_array = function(p_val)
 {
@@ -164,3 +171,13 @@ Array.prototype.clean = function(deleteValue)
     }
     return this;
 };
+
+$(function()
+{
+	$('input[data-tokenfield="users"]').tokenfield({
+		autocomplete: {
+			source: 'engine/ajax/controller.php?mod=billing&plugin=admin&action=userlist&hash=' + dle_login_hash
+		},
+		showAutocompleteOnFocus: true
+	});
+});

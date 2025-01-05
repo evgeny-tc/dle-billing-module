@@ -3,6 +3,7 @@
 return array
 (
 	'hash_error' => "Время ожидания модуля закончилось. Повторите попытку",
+	'access_denied' => "Доступ запрещен",
 
     'register_pay_unknown_invoice' => "<i>Квитанция не найдена</i>",
     'register_pay_payed_invoice' => "<i>Квитанция оплачена</i>",

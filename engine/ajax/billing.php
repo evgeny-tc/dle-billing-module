@@ -23,7 +23,7 @@ require_once MODULE_PATH . '/helpers/autoloader.php';
 
 if( ! $_REQUEST['hash'] or $_REQUEST['hash'] != $dle_login_hash )
 {
-    billing_error('Check stop!');
+    billing_error('Hash error!');
 }
 
 if( $Plugin = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( mb_strtolower( $_REQUEST['plugin'] ) ) ) )

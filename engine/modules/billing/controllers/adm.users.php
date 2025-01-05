@@ -301,7 +301,8 @@ Class Users
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['users_login'],
 			$this->Dashboard->lang['users_login_desc'],
-			"<input name=\"edit_name\" id=\"edit_name\" class=\"form-control\" style=\"width: 100%\" value=\"". $_GET['login'] ."\" type=\"text\">"
+			#"<input name=\"edit_name\" id=\"edit_name\" class=\"form-control\" style=\"width: 100%\" value=\"". $_GET['login'] ."\" type=\"text\">"
+			'<input class="form-control" type="text" name="edit_name" data-tokenfield="users" autocomplete="off" value="" />'
 		);
 
 		$this->Dashboard->ThemeAddStr(

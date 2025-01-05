@@ -137,6 +137,8 @@ Class Dashboard
 	{
 		global $config, $member_id, $_TIME, $db, $dle_login_hash, $selected_language;
 
+        $selected_language = preg_replace("/[^a-zA-Z0-9-_\s]/", "", trim( $selected_language ) );
+
 		$this->lang 	= file_exists(MODULE_PATH . '/lang/' . $selected_language . '/admin.php') ? include MODULE_PATH . '/lang/' . $selected_language . '/admin.php' : include MODULE_PATH . '/lang/admin.php';
 
 		$this->config 	= static::getConfig();
@@ -868,7 +870,7 @@ HTML;
      */
     public static function debugInfo() : string
     {
-        $debug = 'v. ' . self::$instance->version . " (vs " . self::$instance->config['version'] .")\n";
+        $debug = 'v.' . self::$instance->version . " (vs " . self::$instance->config['version'] .")\n";
         $debug .= 'default routing: ' . self::$instance->config['start_admin'] . "\n";
         $debug .= 'controller: ' . self::$instance->controller . "\n";
         $debug .= 'action: ' . self::$instance->action . "\n";
