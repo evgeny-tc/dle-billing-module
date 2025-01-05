@@ -218,9 +218,9 @@ Class Payhide
 		#
         try
         {
-            $invoice_id = \Billing\Api\Balance::Init()->checkDouble()->createInvoice(
-                userLogin: $member_id['name'] ?? '',
-                userAnonymous: $member_id['name'] ? '' : $userUid,
+           $invoice_id = \Billing\Api\Balance::Init()->checkDouble()->createInvoice(
+                userLogin: $this->DevTools->member_id['name'] ?? '',
+                userAnonymous: $this->DevTools->member_id['name'] ? '' : $userUid,
                 sum_get: floatval($Get['price']),
                 payer_info: [
                     'billing' => [
