@@ -238,7 +238,7 @@ Class Dashboard
 	}
 
 	/**
-	 * Вкладки
+	 * Панель с вкладками
 	 * @param array $tabs
 	 * @param string $footer
 	 * @return string
@@ -249,13 +249,47 @@ Class Dashboard
 		$links = '';
 		$contents = '';
 
-		for( $i = 0; $i <= count($tabs); $i++ )
+		for( $i = 0; $i <= count($tabs); $i ++ )
 		{
 			if( empty($tabs[$i]['title']) ) continue;
 
+            # Ссылка
+            #
             if( isset($tabs[$i]['link']) )
             {
                 $links .= '<li style="float: right"><a href="' . $tabs[$i]['link'] . '">' . $tabs[$i]['title'] . '</a></li>';
+
+                continue;
+            }
+
+            # Форма поиска (popup)
+            #
+            if( isset($tabs[$i]['search']) )
+            {
+                $links .= '<li style="float: right">
+                                <a data-toggle="modal" data-target="#advancedsearch_' . $i . '" href="#"> <i class="fa fa-search position-left"></i> ' . $tabs[$i]['title'] . '</a>
+                          </li>';
+
+                $contents .= '<div class="modal fade" id="advancedsearch_' . $i . '" name="advancedsearch_' . $i . '" role="dialog" aria-labelledby="advancedsearch_' . $i . 'Label">
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <form action="" method="post">
+                                            <input type="hidden" name="user_hash" value="' . $this->hash . '" />
+                                            <div class="modal-header ui-dialog-titlebar">
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                <span class="ui-dialog-title" id="newcatsLabel">' . $tabs[$i]['title'] . '</span>
+                                            </div>
+                                            <div class="modal-body">
+                                                ' . $tabs[$i]['content'] . '
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button name="search_btn" class="btn bg-teal btn-sm btn-raised position-left legitRipple"><i class="fa fa-search position-left"></i>Показать</button>
+                                                <button onclick="document.reload()" class="btn bg-danger btn-sm btn-raised legitRipple"><i class="fa fa-eraser position-left"></i>Сбросить поиск</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>';
 
                 continue;
             }

@@ -13,12 +13,18 @@ use Billing\BalanceException;
 use \Billing\Dashboard;
 use \Billing\Paging;
 
+/**
+ * Список платежей
+ */
 Class Invoice
 {
+    /**
+     * @var Dashboard
+     */
     public Dashboard $Dashboard;
 
     /**
-     * Main page
+     * Главная
      * @param array $Get
      * @return string
      * @throws BalanceException
@@ -129,12 +135,15 @@ Class Invoice
 				case '>':
 					$_WhereData["invoice_pay > {s}"] = substr($_POST['search_summa'], 1, strlen($_POST['search_summa']));
 				break;
+
 				case '<':
 					$_WhereData["invoice_pay < {s}"] = substr($_POST['search_summa'], 1, strlen($_POST['search_summa']));
 				break;
+
 				case '=':
 					$_WhereData["invoice_pay = {s}"] = substr($_POST['search_summa'], 1, strlen($_POST['search_summa']));
 				break;
+
 				default:
 					$_WhereData["invoice_pay = {s}"] = $_POST['search_summa'];
 			}
@@ -144,12 +153,15 @@ Class Invoice
 				case '>':
 					$_WhereData["invoice_get > {s}"] = substr($_POST['search_summa_get'], 1, strlen($_POST['search_summa_get']));
 				break;
+
 				case '<':
 					$_WhereData["invoice_get < {s}"] = substr($_POST['search_summa_get'], 1, strlen($_POST['search_summa_get']));
 				break;
+
 				case '=':
 					$_WhereData["invoice_get = {s}"] = substr($_POST['search_summa_get'], 1, strlen($_POST['search_summa_get']));
 				break;
+
 				default:
 					$_WhereData["invoice_get = {s}"] = $_POST['search_summa_get'];
 			}
@@ -324,17 +336,11 @@ Class Invoice
 			' до ' . $this->Dashboard->MakeCalendar("search_date_pay_to", $_POST['search_date_pay_to'], 'width: 40%', 'calendar')
 		);
 
-		$boxSearch = $this->Dashboard->ThemeParserStr();
-
-        $boxSearch .= $this->Dashboard->ThemePadded(
-            $this->Dashboard->MakeButton("search_btn", $this->Dashboard->lang['history_search_btn'], "green") .
-            "<a href=\"\" class=\"btn btn-sm btn-default\" style=\"margin-left:7px;\">{$this->Dashboard->lang['history_search_btn_null']}</a>"
-        );
-
 		$tabs[] = [
             'id' => 'search',
-            'title' => $this->Dashboard->lang['history_search'],
-            'content' => $boxSearch
+            'search' => true,
+            'title' => $this->Dashboard->lang['advanced_search'],
+            'content' => $this->Dashboard->ThemeParserStr()
         ];
 
 		if( isset( $_POST['search_btn'] ) )

@@ -148,19 +148,22 @@ Class Users
 		{
 			$this->Dashboard->CheckHash();
 
-			$_WhereData = array();
+			$_WhereData = [];
 
 			switch( substr( $_POST['search_balance'], 0, 1) )
 			{
 				case '>':
 					$_WhereData["{$this->Dashboard->config['fname']} > '{s}'"] = substr($_POST['search_balance'], 1, strlen($_POST['search_balance']));
 				break;
+
 				case '<':
 					$_WhereData["{$this->Dashboard->config['fname']} < '{s}'"] = substr($_POST['search_balance'], 1, strlen($_POST['search_balance']));
 				break;
+
 				case '=':
 					$_WhereData["{$this->Dashboard->config['fname']} = '{s}'"] = substr($_POST['search_balance'], 1, strlen($_POST['search_balance']));
 				break;
+
 				default:
 					$_WhereData["{$this->Dashboard->config['fname']} = '{s}'"] = $_POST['search_balance'];
 			}
@@ -194,7 +197,7 @@ Class Users
 		{
 			$this->Dashboard->ThemeAddTR(
                 [
-                    "<span onClick=\"BillingJS.usersAdd( '" . $Value['name'] . "' )\" id=\"user_".$Value['name']."\" style=\"cursor: pointer\"><i class=\"fa fa-plus\" style=\"margin-left: 10px; vertical-align: middle\"></i></span>" .
+                    "<span onClick=\"BillingJS.usersAdd( '{$Value['name']}' )\" id=\"user_".$Value['name']."\" style=\"cursor: pointer\"><i class=\"fa fa-plus\" style=\"margin-left: 10px; vertical-align: middle\"></i></span>" .
                     $this->Dashboard->ThemeInfoUser( $Value['name'] ),
                     $Value['email'],
                     $user_group[$Value['user_group']]['group_name'],
@@ -235,13 +238,11 @@ Class Users
 			"<input name=\"search_balance\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . $_POST['search_balance'] ."\">"
 		);
 
-		$ContentSearch = $this->Dashboard->ThemeParserStr();
-		$ContentSearch .= $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("search_btn", $this->Dashboard->lang['history_search_btn'], "green") );
-
 		$tabs[] = [
             'id' => 'search',
-            'title' => $this->Dashboard->lang['history_search'],
-            'content' => $ContentSearch
+            'search' => true,
+            'title' => $this->Dashboard->lang['advanced_search'],
+            'content' => $this->Dashboard->ThemeParserStr()
         ];
 
 		# Статистика по группам
@@ -301,8 +302,7 @@ Class Users
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['users_login'],
 			$this->Dashboard->lang['users_login_desc'],
-			#"<input name=\"edit_name\" id=\"edit_name\" class=\"form-control\" style=\"width: 100%\" value=\"". $_GET['login'] ."\" type=\"text\">"
-			'<input class="form-control" type="text" name="edit_name" data-tokenfield="users" autocomplete="off" value="" />'
+			'<input class="form-control" type="text" id="edit_name" name="edit_name" data-tokenfield="users" autocomplete="off" value="' . $_GET['login'] . '" autocomplete="off" />'
 		);
 
 		$this->Dashboard->ThemeAddStr(

@@ -109,7 +109,9 @@ function BillingJSAdmin()
 
 		this.users.clean(undefined);
 
-		$('#edit_name').val( this.users.join(', ') );
+		$('#edit_name').tokenfield('setTokens', this.users);
+
+		//$('#edit_name').val( this.users.join(', ') );
 	};
 
 	/**
@@ -176,7 +178,7 @@ $(function()
 {
 	$('input[data-tokenfield="users"]').tokenfield({
 		autocomplete: {
-			source: 'engine/ajax/controller.php?mod=billing&plugin=admin&action=userlist&hash=' + dle_login_hash
+			source: '?mod=billing&c=ajax&m=searchUser'
 		},
 		showAutocompleteOnFocus: true
 	});

@@ -4,6 +4,9 @@ return array
 (
 	'hash_error' => "Время ожидания модуля закончилось. Повторите попытку",
 	'access_denied' => "Доступ запрещен",
+	'unknown_action' => "Неизвестное действие",
+
+    'advanced_search' => "Расширенный поиск",
 
     'register_pay_unknown_invoice' => "<i>Квитанция не найдена</i>",
     'register_pay_payed_invoice' => "<i>Квитанция оплачена</i>",
@@ -533,8 +536,8 @@ return array
 	'users_title_full' => "Результаты поиска",
 	'users_desc' => "Поиск пользователей, изменение баланса",
 	'users_search' => "Найти пользователя",
-	'users_label' => "Данные для поиска:",
-	'users_label_desc' => "Введите логин ( email ) пользователя или его часть",
+	'users_label' => "Поиск пользователя:",
+	'users_label_desc' => "Введите логин или email пользователя или его часть",
 	'users_btn' => "Найти",
 	'users_plus' => "Пополнить баланс",
 	'users_login' => "Пользователи:",
@@ -558,7 +561,7 @@ return array
 	'users_ok_group' => "Баланс группы изменён",
 	'users_ok' => "Баланс выбранных пользователей изменен",
 	'users_ok_reserv' => "Баланс пользователя понижен",
-	'users_minus' => "Понизить баланс",
+	'users_minus' => "Списать с баланса",
 	'users_edit' => "Изменить баланс",
 	'users_edit_user' => "Изменить баланс пользователю",
 	'users_edit_group' => "Изменить баланс группе",

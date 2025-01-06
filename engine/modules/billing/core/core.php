@@ -9,6 +9,8 @@
 
 namespace Billing;
 
+use JetBrains\PhpStorm\NoReturn;
+
 trait Core
 {
     /**
@@ -284,10 +286,10 @@ trait Core
     }
 
     /**
-     * csfr
+     * CSFR
      * @param string $hash
      * @return void
-     * @throws Exception
+     * @throws \Exception
      */
     public function CheckHash(string $hash = '') : void
     {
@@ -295,7 +297,7 @@ trait Core
 
         if( ! $hash or $hash != $this->hash )
         {
-            throw new Exception($this->lang['hash_error']);
+            throw new \Exception($this->lang['hash_error']);
         }
     }
 
@@ -505,5 +507,15 @@ trait Core
             return strcmp($b["config"]['status'], $a["config"]['status']);
         });
         return $Plugins;
+    }
+
+    /**
+     * @param array $data
+     * @return string
+     */
+    #[NoReturn]
+    public function ajaxResponse(mixed $data) : string
+    {
+        return json_encode($data);
     }
 }

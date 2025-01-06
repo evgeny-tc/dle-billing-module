@@ -28,13 +28,6 @@ if( ! $_REQUEST['hash'] or $_REQUEST['hash'] != $dle_login_hash )
 
 if( $Plugin = preg_replace("/[^a-zA-Z0-9\s]/", "", trim( mb_strtolower( $_REQUEST['plugin'] ) ) ) )
 {
-    if( file_exists( ENGINE_DIR . "/modules/billing/controllers/ajax.{$Plugin}.php" ) )
-    {
-        include_once ENGINE_DIR . "/modules/billing/controllers/ajax.{$Plugin}.php";
-
-        die();
-    }
-
     if( file_exists( ENGINE_DIR . "/modules/billing/plugins/{$Plugin}/ajax.php" ) )
     {
         include_once ENGINE_DIR . "/modules/billing/plugins/{$Plugin}/ajax.php";

@@ -120,17 +120,22 @@ Class Refund extends PluginActions
 
 			$_WhereData = [];
 
+            # Сумма
+            #
 			switch( substr( $_POST['search_summa'], 0, 1) )
 			{
 				case '>':
 					$_WhereData["refund_summa > {s}"] = substr($_POST['search_summa'], 1, strlen($_POST['search_summa']));
 				break;
+
 				case '<':
 					$_WhereData["refund_summa < {s}"] = substr($_POST['search_summa'], 1, strlen($_POST['search_summa']));
 				break;
+
 				case '=':
 					$_WhereData["refund_summa = {s}"] = substr($_POST['search_summa'], 1, strlen($_POST['search_summa']));
 				break;
+
 				default:
 					$_WhereData["refund_summa = {s}"] = $_POST['search_summa'];
 			}
@@ -140,11 +145,11 @@ Class Refund extends PluginActions
 
 			if( $_POST['search_status'] == 'wait' )
 			{
-				$_WhereData["refund_date_return = '0'"] = 1;
+				$_WhereData["refund_date_return = 0 and refund_date_cancel = 0"] = 1;
 			}
 			elseif( $_POST['search_status'] == 'ok' )
 			{
-				$_WhereData["refund_date_return != '0'"] = 1;
+				$_WhereData["refund_date_return != 0"] = 1;
 			}
 
 			$_WhereData["refund_date > '{s}'"] = strtotime( $_POST['search_date'] );
@@ -231,11 +236,11 @@ HTML;
 			$ContentList .= $this->Dashboard->ThemePadded( $this->Dashboard->lang['history_no'], '' );
 		}
 
-		$tabs[] = array(
-				'id' => 'list',
-				'title' => $this->Dashboard->lang['refund_title'],
-				'content' => $ContentList
-		);
+		$tabs[] = [
+            'id' => 'list',
+            'title' => $this->Dashboard->lang['refund_title'],
+            'content' => $ContentList
+        ];
 
 		# Форма поиск
 		#
@@ -270,16 +275,12 @@ HTML;
 			$this->Dashboard->lang['date_to'] . $this->Dashboard->MakeCalendar("search_date_to", $_POST['search_date_to'], 'width: 40%', 'calendar')
 		);
 
-		$ContentSearch = $this->Dashboard->ThemeParserStr();
-		$ContentSearch .= $this->Dashboard->ThemePadded(
-			$this->Dashboard->MakeButton("search_btn", $this->Dashboard->lang['history_search_btn'], "green")
-		);
-
-		$tabs[] = array(
-				'id' => 'search',
-				'title' => $this->Dashboard->lang['history_search'],
-				'content' => $ContentSearch
-		);
+		$tabs[] = [
+            'id' => 'search',
+            'search' => true,
+            'title' => $this->Dashboard->lang['advanced_search'],
+            'content' => $this->Dashboard->ThemeParserStr()
+        ];
 
 		if( isset( $_POST['search_btn'] ) )
 		{
@@ -341,6 +342,12 @@ HTML;
 		);
 
 		$Content = $this->Dashboard->PanelPlugin('plugins/refund' );
+
+        if( isset( $_POST['search_btn'] ) )
+        {
+            $Content .= $this->Dashboard->MakeMsgInfo( $this->Dashboard->lang['search_info'] );
+        }
+
         $Content .= $Get['user'] ? $this->Dashboard->MakeMsgInfo( "<a href='?mod=billing&c=refund' title='{$this->Dashboard->lang['remove']}' class='btn bg-danger btn-sm btn-raised position-left legitRipple' style='vertical-align: middle;'><i class='fa fa-repeat'></i> " . $Get['user'] . "</a> <span style='vertical-align: middle;'>{$this->Dashboard->lang['info_login']}</span>", "icon-user", "blue") : "";
 		$Content .= $this->Dashboard->PanelTabs( $tabs );
 		$Content .= $this->Dashboard->ThemeEchoFoother();

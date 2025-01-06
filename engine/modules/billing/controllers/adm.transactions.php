@@ -12,10 +12,21 @@ namespace Billing\Admin\Controller;
 use \Billing\Dashboard;
 use \Billing\Paging;
 
+/**
+ * История движения средств
+ */
 Class Transactions
 {
+    /**
+     * @var Dashboard
+     */
     public Dashboard $Dashboard;
 
+    /**
+     * @param array $Get
+     * @return string
+     * @throws \Exception
+     */
     public function main( array $Get ) : string
 	{
 		if( isset($Get['user']) )
@@ -221,17 +232,12 @@ Class Transactions
 			$this->Dashboard->lang['date_to'] . $this->Dashboard->MakeCalendar("search_date_to", $_POST['search_date_to'], 'width: 40%', 'calendar')
 		);
 
-		$ContentSearch = $this->Dashboard->ThemeParserStr();
-		$ContentSearch .= $this->Dashboard->ThemePadded(
-            $this->Dashboard->MakeButton("search_btn", $this->Dashboard->lang['history_search_btn'], "green") .
-            "<a href=\"\" class=\"btn btn-sm btn-default\" style=\"margin-left:7px;\">{$this->Dashboard->lang['history_search_btn_null']}</a>"
-        );
-
-		$tabs[] = array(
-				'id' => 'search',
-				'title' => $this->Dashboard->lang['history_search'],
-				'content' => $ContentSearch
-		);
+		$tabs[] = [
+            'id' => 'search',
+            'search' => true,
+            'title' => $this->Dashboard->lang['advanced_search'],
+            'content' => $this->Dashboard->ThemeParserStr()
+        ];
 
 		if( isset( $_POST['search_btn'] ) )
 		{
@@ -243,7 +249,6 @@ Class Transactions
 		}
 
 		$Content .= $this->Dashboard->PanelTabs( $tabs );
-
 		$Content .= $this->Dashboard->ThemeEchoFoother();
 
 		return $Content;
