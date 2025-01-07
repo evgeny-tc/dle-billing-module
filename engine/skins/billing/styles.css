@@ -593,3 +593,8 @@ p.bt_catalog_desc
     display: table;
     clear: both;
 }
+
+#billing_sidepanel
+{
+    background-color: white;
+}

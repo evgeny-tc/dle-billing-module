@@ -841,6 +841,7 @@ HTML;
 		echo '
 		      <script src="engine/skins/billing/highcharts.js"></script>
 		      <script src="engine/skins/billing/accessibility.js"></script>
+		      <script src="engine/skins/billing/jquery.slidereveal.min.js"></script>
 			  <script src="engine/skins/billing/core.js"></script>
 			  <script type="text/javascript">
 			  	jQuery(document).ready(function(){'.$JSmenu.'});

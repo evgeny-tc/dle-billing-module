@@ -8,6 +8,56 @@
 function BillingJSAdmin()
 {
 	/**
+	 * Замена URL
+	 * @type {*|jQuery}
+	 */
+	this.url_items = $("#url-count").val();
+
+	/**
+	 * Боковая панель
+	 * @param url
+	 * @param params
+	 */
+	this.openSlide = function(url, params = {})
+	{
+		ShowLoading("");
+
+		$('#billing_sidepanel').remove();
+
+		let urlParse = url.split('.');
+
+		$.ajax({
+			method: "POST",
+			dataType: 'json',
+			url: `?mod=billing&c=${urlParse[0]??""}&m=${urlParse[1]??""}&p=${urlParse[2]??""}`,
+			data: { params }
+		})
+			.done(function( response )
+			{
+				HideLoading("");
+
+				$('body').append(`<div id="billing_sidepanel">${response.data}</div>`);
+
+				let slider = $('#billing_sidepanel').slideReveal(
+					{
+						position: "right",
+						push: false,
+						width: 500,
+						overlay: true
+					}
+				);
+
+				slider.slideReveal("show");
+			})
+			.fail(function()
+			{
+				HideLoading("");
+
+				DLEalert("Ошибка при выполнении запроса", "Error");
+			});
+	};
+
+	/**
 	 * Ожидание применения изменений
 	 * @param elem
 	 */
@@ -35,7 +85,7 @@ function BillingJSAdmin()
 			console.log(i, elem);
 
 		}, 1000);
-	}
+	};
 
 	/**
 	 * Отметить все чекбоксы на странице
@@ -113,12 +163,6 @@ function BillingJSAdmin()
 
 		//$('#edit_name').val( this.users.join(', ') );
 	};
-
-	/**
-	 * Замена URL
-	 * @type {*|jQuery}
-	 */
-	this.url_items = $("#url-count").val();
 
 	/**
 	 * Добавить замену

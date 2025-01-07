@@ -145,7 +145,7 @@ Class Transactions
                         declension: true
                     ),
                     '<div class="th_description">
-                        <a href="#" onClick="BillingJS.openDialog( \'#log_' . $Value['history_id'] . '\' ); return false">' . (strip_tags($Value['history_text']) ?: '---') . '</a>
+                        <a href="#" onClick="BillingJS.openSlide( \'ajax.transactionInfo.id/'.$Value['history_id'].'\', {\'id\': '.$Value['history_id'].' } ); return false">' . (strip_tags($Value['history_text']) ?: '---') . '</a>
                     </div>',
                     '<span class="settingsb">' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['history_id']) . '</span>
                         <div id="log_' . $Value['history_id'] . '" title="' . $this->Dashboard->lang['history_transaction'] . $Value['history_id'] . '" style="display:none">

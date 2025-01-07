@@ -13,10 +13,27 @@ use \Billing\Dashboard;
 
 Class Ajax
 {
+    /**
+     * @var Dashboard
+     */
     public Dashboard $Dashboard;
 
     /**
-     * Настройки модуля
+     * Информация о транзакции
+     * @param array $get
+     * @return string
+     */
+    public function transactionInfo(array $get) : string
+    {
+        return $this->Dashboard->ajaxResponse(
+            [
+                'data' => 'id: ' . $get['id']
+            ]
+        );
+    }
+
+    /**
+     * Поиск пользователей
      * @return string
      */
     public function searchUser() : string
