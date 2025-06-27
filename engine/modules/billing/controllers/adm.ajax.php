@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module/
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2024
+ * @copyright     Copyright (c) 2012-2025
  */
 
 namespace Billing\Admin\Controller;
@@ -27,7 +27,7 @@ Class Ajax
     {
         return $this->Dashboard->ajaxResponse(
             [
-                'data' => 'id: ' . $get['id']
+                'data' => \Billing\iTransaction::sliderInfo( (int)$get['id'] )
             ]
         );
     }

@@ -16,6 +16,11 @@ Class Coupons
 {
     public Dashboard $Dashboard;
 
+    /**
+     * @param array $GET
+     * @return string
+     * @throws \Exception
+     */
     public function main( array $GET = [] ) : string
     {
         # Удалить отмеченные
@@ -95,12 +100,12 @@ Class Coupons
         #
         $this->Dashboard->ThemeAddTR(
             [
-                '<td width="1%">#</td>',
-                '<td>' . $this->Dashboard->lang['coupons']['list']['key'] . '</td>',
-                '<td>' . $this->Dashboard->lang['coupons']['list']['value'] . '</td>',
-                '<td>' . $this->Dashboard->lang['coupons']['list']['time'] . '</td>',
-                '<td>' . $this->Dashboard->lang['coupons']['list']['use'] . '</td>',
-                '<td width="2%"><span class="settingsb"><input type="checkbox" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></span></td>'
+                '<th width="1%">#</th>',
+                '<th>' . $this->Dashboard->lang['coupons']['list']['key'] . '</th>',
+                '<th>' . $this->Dashboard->lang['coupons']['list']['value'] . '</th>',
+                '<th>' . $this->Dashboard->lang['coupons']['list']['time'] . '</th>',
+                '<th>' . $this->Dashboard->lang['coupons']['list']['use'] . '</th>',
+                '<th class="th_checkbox"><input type="checkbox" value="" class="icheck" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></th>'
             ]
         );
 

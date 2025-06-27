@@ -513,7 +513,6 @@ trait Core
      * @param array $data
      * @return string
      */
-    #[NoReturn]
     public function ajaxResponse(mixed $data) : string
     {
         return json_encode($data);

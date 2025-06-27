@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2024
+ * @copyright     Copyright (c) 2012-2025
  */
 
 spl_autoload_register(function ($class)
@@ -13,6 +13,11 @@ spl_autoload_register(function ($class)
     {
         $class = str_replace('Billing\\Api\\', '', $class);
         $file = MODULE_PATH . '/api/' . preg_replace("/[^a-zA-Z\s]/", "", trim( mb_strtolower($class) ) ) .'.php';
+    }
+    else if( str_contains($class, 'Billing\\DB\\') )
+    {
+        $class = str_replace('Billing\\DB\\', '', $class);
+        $file = MODULE_PATH . '/database/' . preg_replace("/[^a-zA-Z\s]/", "", trim( mb_strtolower($class) ) ) .'.db.php';
     }
     else
     {

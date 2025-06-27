@@ -9,6 +9,9 @@
 
 namespace Billing;
 
+/**
+ * Шаблоны
+ */
 trait Utheme
 {
     /**
