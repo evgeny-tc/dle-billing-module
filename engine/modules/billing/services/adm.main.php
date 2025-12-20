@@ -7,7 +7,7 @@
  * @copyright     Copyright (c) 2012-2024
  */
 
-namespace Billing\Admin\Controller;
+namespace Billing\Services\Admin;
 
 use \Billing\Dashboard;
 
@@ -27,37 +27,37 @@ Class Main
 		#
 		$section = [
             [
-                'icon' => "engine/skins/billing/icons/configure.png",
+                'icon' => "public/billing/icons/configure.png",
                 'link' => "?mod=billing&c=main&m=settings",
                 'title' => $this->Dashboard->lang['menu_1'],
                 'desc' => $this->Dashboard->lang['menu_1_d']
             ],
             [
-                'icon' => "engine/skins/billing/icons/transactions.png",
+                'icon' => "public/billing/icons/transactions.png",
                 'link' => "?mod=billing&c=transactions",
                 'title' => $this->Dashboard->lang['menu_2'],
                 'desc' => $this->Dashboard->lang['menu_2_d']
             ],
             [
-                'icon' => "engine/skins/billing/icons/users.png",
+                'icon' => "public/billing/icons/users.png",
                 'link' => "?mod=billing&c=users",
                 'title' => $this->Dashboard->lang['menu_3'],
                 'desc' => $this->Dashboard->lang['menu_3_d']
             ],
             [
-                'icon' => "engine/skins/billing/icons/invoice.png",
+                'icon' => "public/billing/icons/invoice.png",
                 'link' => "?mod=billing&c=invoice",
                 'title' => $this->Dashboard->lang['menu_4'],
                 'desc' => $this->Dashboard->lang['menu_4_d']
             ],
             [
-                'icon' => "engine/skins/billing/icons/statistics.png",
+                'icon' => "public/billing/icons/statistics.png",
                 'link' => "?mod=billing&c=statistics",
                 'title' => $this->Dashboard->lang['menu_5'],
                 'desc' => $this->Dashboard->lang['menu_5_d']
             ],
             [
-                'icon' => "engine/skins/billing/icons/coupons.png",
+                'icon' => "public/billing/icons/coupons.png",
                 'link' => "?mod=billing&c=coupons",
                 'title' => $this->Dashboard->lang['coupons']['menu']['name'],
                 'desc' => $this->Dashboard->lang['coupons']['menu']['desc']
@@ -67,7 +67,7 @@ Class Main
         if( isset($this->Dashboard->config['test']) and intval($this->Dashboard->config['test']) )
         {
             $section[] = [
-                'icon' => "engine/skins/billing/icons/log.png",
+                'icon' => "public/billing/icons/log.png",
                 'link' => "?mod=billing&m=log",
                 'title' => $this->Dashboard->lang['menu_7'],
                 'desc' => $this->Dashboard->lang['menu_7_d']
@@ -87,7 +87,7 @@ Class Main
 		foreach ($this->Dashboard->Payments() as $name => $info )
 		{
 			$sectionPayments[] = [
-                'icon' => 'engine/skins/billing/payments/' . $name . '.png',
+                'icon' => 'public/billing/payments/' . $name . '.png',
                 'link' => '?mod=billing&c=payment&p=billing/' . $name,
                 'title' => $info['title'],
                 'desc' => $info['desc'],
@@ -135,7 +135,7 @@ Class Main
 
             $this->Dashboard->ThemeAddTR(
                 [
-                    '<img class="billing-plugin-item-image" src="engine/skins/billing/plugins/' . $name . '.png" onError="this.src=\'/engine/skins/billing/icons/plugin.png\'">',
+                    '<img class="billing-plugin-item-image" src="public/billing/plugins/' . $name . '.png" onError="this.src=\'/public/billing/icons/plugin.png\'">',
                     $name,
                     "<a href='?mod=billing&c={$name}'>{$info['title']}</a><br><span style='color: grey; font-size: 12px'>{$info['desc']}</span>",
                     "<a href='{$info['link']}' target='_blank'>{$info['author']}</a>",
@@ -163,6 +163,7 @@ Class Main
     /**
      * Настройки модуля
      * @return string
+     * @throws \Exception
      */
 	public function settings() : string
 	{

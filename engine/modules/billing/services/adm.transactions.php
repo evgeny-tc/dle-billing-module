@@ -7,7 +7,7 @@
  * @copyright     Copyright (c) 2012-2024
  */
 
-namespace Billing\Admin\Controller;
+namespace Billing\Services\Admin;
 
 use \Billing\Dashboard;
 use \Billing\Paging;
@@ -118,7 +118,7 @@ Class Transactions
 		#
 		$this->Dashboard->ThemeAddTR(
             [
-                '<th width="1%">#</th>',
+                '<th width="5%">#</th>',
                 '<th>'.$this->Dashboard->lang['history_date'].'</th>',
                 '<th>'.$this->Dashboard->lang['history_summa'].'</th>',
                 '<th>'.$this->Dashboard->lang['history_user'].'</th>',
@@ -137,7 +137,7 @@ Class Transactions
                     $Value['history_id'],
                     $this->Dashboard->ThemeChangeTime( $Value['history_date'] ),
                     $Value['history_plus'] > 0  ? "<span class=\"color-green\">+{$Value['history_plus']} {$Value['history_currency']}</span>"
-                        : "<span class=\"color-red\">-{$Value['history_minus']} {$Value['history_currency']}</span>",
+                                                : "<span class=\"color-red\">-{$Value['history_minus']} {$Value['history_currency']}</span>",
                     $this->Dashboard->ThemeInfoUser( $Value['history_user_name'] ),
                     \Billing\Api\Balance::Init()->Convert(
                         value: $Value['history_balance'],
@@ -145,20 +145,9 @@ Class Transactions
                         declension: true
                     ),
                     '<div class="th_description">
-                        <a href="#" onClick="BillingJS.openSlide( \'ajax.transactionInfo.id/'.$Value['history_id'].'\', {\'id\': '.$Value['history_id'].' } ); return false">' . (strip_tags($Value['history_text']) ?: '---') . '</a>
+                        <a href="#" onClick="BillingJS.openSlide( \'ajax.transactionInfo\', {\'id\': '.$Value['history_id'].' } ); return false">' . (strip_tags($Value['history_text']) ?: '---') . '</a>
                     </div>',
-                    '<span class="settingsb">' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['history_id']) . '</span>
-                        <div id="log_' . $Value['history_id'] . '" title="' . $this->Dashboard->lang['history_transaction'] . $Value['history_id'] . '" style="display:none">
-                            <b>' . $this->Dashboard->lang['history_transaction_text'] . '</b>
-                            <br />
-                            ' . $Value['history_text'] . '
-                            <br /><br />
-                            <p>
-                                <b>' . $this->Dashboard->lang['history_code'] . ':</b>
-                                <br />
-                                ' . $Value['history_plugin'] . ' / ' . $Value['history_plugin_id'] . '
-                            </p>
-                        </div>'
+                    '<span class="settingsb">' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['history_id']) . '</span>'
                 ]
             );
 		}
@@ -241,11 +230,7 @@ Class Transactions
 
 		if( isset( $_POST['search_btn'] ) )
 		{
-			$Content .= $this->Dashboard->MakeMsgInfo(
-				$this->Dashboard->lang['search_info'],
-				"icon-search",
-				"blue"
-			);
+			$Content .= $this->Dashboard->MakeMsgInfo( $this->Dashboard->lang['search_info'] );
 		}
 
 		$Content .= $this->Dashboard->PanelTabs( $tabs );
@@ -253,4 +238,118 @@ Class Transactions
 
 		return $Content;
 	}
+
+    /**
+     * Информация о транзакции в слайдере
+     * @param int $id
+     * @return string
+     */
+    public function slider_Info( int $id ) : string
+    {
+        global $user_group;
+
+        $transaction = \Billing\DB\Transaction::getById($id);
+
+        if( ! $transaction )
+        {
+            return $this->Dashboard->getAlertMsg(
+                $this->Dashboard->lang['error'],
+                $this->Dashboard->lang['slider_transaction']['not_found'],
+                'warning billing-ajax-slider',
+                false
+            );;
+        }
+
+        $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['id'], field: $transaction['history_id'] );
+        $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['date'], field: $this->Dashboard->ThemeChangeTime( $transaction['history_date'] ));
+        $this->Dashboard->ThemeAddStr(
+            title: $this->Dashboard->lang['slider_transaction']['sum'],
+            field: $transaction['history_plus'] > 0  ? "<span class=\"color-green\">+{$transaction['history_plus']} {$transaction['history_currency']}</span>"
+                                                     : "<span class=\"color-red\">-{$transaction['history_minus']} {$transaction['history_currency']}</span>"
+        );
+        $this->Dashboard->ThemeAddStr(
+            title: $this->Dashboard->lang['slider_transaction']['balance'],
+            field: \Billing\Api\Balance::Init()->Convert(
+                        value: $transaction['history_balance'],
+                        separator_space: true,
+                        declension: true
+                    )
+        );
+        $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['ip'], field: $transaction['history_ip'] );
+        $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['agent_info'], field: $transaction['history_agent_info'] );
+
+        $content = $this->Dashboard->PanelTabs(
+            tabs: [
+                [
+                    'id' => 'main',
+                    'title' => $this->Dashboard->lang['slider_transaction']['title'],
+                    'content' => $this->Dashboard->ThemeParserStr()
+                ]
+            ],
+            slider: true
+        );
+
+        $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['plugin'], field: $transaction['history_plugin'] );
+        $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['plugin_more_id'], field: $transaction['history_plugin_id'] );
+
+        $content .= $this->Dashboard->PanelTabs(
+            tabs: [
+                [
+                    'id' => 'desc',
+                    'title' => $this->Dashboard->lang['slider_transaction']['desc'],
+                    'content' => $this->Dashboard->ThemeParserStr()
+                ]
+            ],
+            footer: "<div style='padding: 10px;'>{$transaction['history_text']}</div>",
+            slider: true,
+            header_added_class: 'tab_header_green'
+        );
+
+        if( $transaction['user_id'] )
+        {
+            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['id'], field: $transaction['user_id'] );
+            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['login'], field: $this->Dashboard->ThemeInfoUser( $transaction['name'] ) );
+            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['group'], field: $user_group[$transaction['user_group']]['group_name'] );
+            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['email'], field: $transaction['email'] );
+            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['ip'], field: $transaction['logged_ip'] );
+            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['reg'], field: $this->Dashboard->ThemeChangeTime( $transaction['reg_date'] ) );
+            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['last_visit'], field: $this->Dashboard->ThemeChangeTime( $transaction['lastdate'] ) );
+            $this->Dashboard->ThemeAddStr(
+                title: $this->Dashboard->lang['slider_transaction']['now_balance'],
+                field: \Billing\Api\Balance::Init()->Convert(
+                        value: $transaction['user_balance'],
+                        separator_space: true,
+                        declension: true
+                    )
+            );
+
+            $info_user = '';
+
+            if( $transaction['banned'] == 'yes' )
+            {
+                $info_user = "<span class=\"text-danger\">" . $this->Dashboard->lang['slider_transaction']['user_ban'] . "</span>";
+            }
+        }
+        else
+        {
+            $info_user = $this->Dashboard->lang['statistics_users_error'];
+        }
+
+        $content .= $this->Dashboard->PanelTabs(
+            tabs: [
+                [
+                    'id' => 'user',
+                    'title' => $this->Dashboard->lang['slider_transaction']['user'],
+                    'content' => $this->Dashboard->ThemeParserStr()
+                ]
+            ],
+            footer: "<div style='padding: 10px;'>{$info_user}</div>",
+            slider: true,
+            header_added_class: 'tab_header_grey'
+        );
+
+        #$content .= "<pre>".print_r($transaction, 1)."</pre>";
+
+        return $content;
+    }
 }

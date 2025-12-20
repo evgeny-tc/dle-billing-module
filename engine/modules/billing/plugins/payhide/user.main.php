@@ -7,7 +7,7 @@
  * @copyright     Copyright (c) 2012-2023
  */
 
-namespace Billing\User\Controller;
+namespace Billing\Services\User;
 
 use Billing\BalanceException;
 use \Billing\DevTools;

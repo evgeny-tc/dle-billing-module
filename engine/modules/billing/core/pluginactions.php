@@ -13,6 +13,9 @@ Class PluginActions
 {
     public Dashboard $Dashboard;
 
+    /**
+     * @throws \Exception
+     */
     public function install() : void
     {
         $this->Dashboard->CheckHash();
@@ -31,6 +34,9 @@ Class PluginActions
         );
     }
 
+    /**
+     * @throws \Exception
+     */
     public function uninstall() : void
     {
         $this->Dashboard->CheckHash();

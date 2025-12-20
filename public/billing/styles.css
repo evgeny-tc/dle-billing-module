@@ -597,4 +597,47 @@ p.bt_catalog_desc
 #billing_sidepanel
 {
     background-color: white;
+    overflow: auto;
+}
+
+.th_checkbox
+{
+    width: 60px;
+}
+
+.tab-panel-slider
+{
+    margin: 20px;
+}
+
+.billing-ajax-slider .panel-body
+{
+    padding: 0 !important;
+}
+
+.tab-panel-slider table td, .tab-panel-slider .text-semibold
+{
+    font-size: 13px !important;
+    font-weight: normal !important;
+    padding: 0.25rem 0.55rem !important;
+}
+
+.color-green
+{
+    color: green;
+}
+
+.color-red
+{
+    color: red;
+}
+
+.tab_header_green
+{
+    background-color: #44956b !important;
+}
+
+.tab_header_grey
+{
+    background-color: #5d5d5d !important;
 }

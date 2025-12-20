@@ -7,7 +7,7 @@
  * @copyright     Copyright (c) 2012-2025
  */
 
-namespace Billing\Admin\Controller;
+namespace Billing\Services\Admin;
 
 use \Billing\Dashboard;
 
@@ -22,12 +22,18 @@ Class Ajax
      * Информация о транзакции
      * @param array $get
      * @return string
+     * @throws \Exception
      */
     public function transactionInfo(array $get) : string
     {
+        $this->Dashboard->CheckHash();
+
+        $service = new \Billing\Services\Admin\Transactions();
+        $service->Dashboard = $this->Dashboard;
+
         return $this->Dashboard->ajaxResponse(
             [
-                'data' => \Billing\iTransaction::sliderInfo( (int)$get['id'] )
+                'data' => $service->slider_Info( (int)$_POST['params']['id'] )
             ]
         );
     }

@@ -30,7 +30,10 @@ function BillingJSAdmin()
 			method: "POST",
 			dataType: 'json',
 			url: `?mod=billing&c=${urlParse[0]??""}&m=${urlParse[1]??""}&p=${urlParse[2]??""}`,
-			data: { params }
+			data: {
+				params: params,
+				user_hash: dle_login_hash
+			}
 		})
 			.done(function( response )
 			{

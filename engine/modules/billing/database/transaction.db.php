@@ -21,7 +21,11 @@ Class Transaction extends BaseDB
     {
         parent::init();
 
-        if( $result = parent::$db->super_query( "SELECT * FROM " . USERPREFIX . self::TABLE_NAME . " WHERE history_id = {$id}" ) )
+        if( $result = parent::$db->super_query( "SELECT *, `user_data`.*
+                FROM " . USERPREFIX . self::TABLE_NAME . " `transaction`
+                LEFT JOIN " . USERPREFIX . "_users `user_data`
+                        ON user_data.name = transaction.history_user_name
+                    WHERE history_id = {$id}" ) )
         {
             return $result;
         }

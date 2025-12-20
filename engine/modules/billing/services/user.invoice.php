@@ -7,7 +7,7 @@
  * @copyright     Copyright (c) 2012-2024
  */
 
-namespace Billing\User\Controller;
+namespace Billing\Services\User;
 
 use \Billing\DevTools;
 use \Billing\Paging;

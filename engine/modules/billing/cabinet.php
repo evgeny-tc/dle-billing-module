@@ -6,7 +6,6 @@
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
  * @copyright     Copyright (c) 2012-2024
  */
-
 if( ! defined('BILLING_MODULE') )
 {
     define("BILLING_MODULE", TRUE);

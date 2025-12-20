@@ -9,8 +9,6 @@
 
 namespace Billing;
 
-use JetBrains\PhpStorm\NoReturn;
-
 trait Core
 {
     /**

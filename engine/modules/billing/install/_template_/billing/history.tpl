@@ -4,7 +4,7 @@
 	[history]
 	<tr>
 		<td style="width: 5%">
-			<img src="/engine/skins/billing/plugins/{plugin}.png" onError="this.src='/engine/skins/billing/icons/transactions.png'" class="billing-history-item-image">
+			<img src="/public/billing/plugins/{plugin}.png" onError="this.src='/public/billing/icons/transactions.png'" class="billing-history-item-image">
 		</td>
 		<td style="padding: 0 10px">
 			<div style="font-size: 11px; color: grey">{date=j.m.Y G:i}</div>

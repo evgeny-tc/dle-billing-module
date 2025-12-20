@@ -7,7 +7,7 @@
  * @copyright     Copyright (c) 2012-2024
  */
 
-namespace Billing\Admin\Controller;
+namespace Billing\Services\Admin;
 
 use \Billing\Dashboard;
 use \Billing\PluginActions;
@@ -143,7 +143,7 @@ Class Donate extends PluginActions
 
 		$Content = $this->Dashboard->PanelPlugin('plugins/donate', 'https://dle-billing.ru/doc/plugins/donate/' );
 
-		$Content .= '<script type="text/javascript" src="engine/skins/billing/donate.js"></script>
+		$Content .= '<script type="text/javascript" src="public/billing/donate.js"></script>
                      <script>DLE_Billing_Donate.MODAL_BODY = `' . $_Lang['js_template'] . '`;
                              DLE_Billing_Donate.MODAL_TITLE = `' . $_Lang['create'] . '`;</script>';
 

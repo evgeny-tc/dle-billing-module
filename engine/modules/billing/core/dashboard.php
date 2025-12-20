@@ -25,8 +25,8 @@ Class Dashboard
     /**
      * @throws \Exception
      */
-    public static function Start()
-	{
+    public static function Start(): null
+    {
         if ( empty(self::$instance) )
 		{
             self::$instance = new self();
@@ -38,7 +38,7 @@ Class Dashboard
     /**
      * Current version
      */
-    public string $version = '1.0.1';
+    public string $version = '1.0.2';
 
 	/**
 	 * DLE config
@@ -108,15 +108,13 @@ Class Dashboard
 	protected array $section = [];
 
 	/**
-	 * For Build table
+	 * Таблица
 	 */
-	protected int $list_table_num = 0;
 	protected array $list_table = [];
 
 	/**
-	 * For build settings panel
+	 * Строки для таблицы настроек
 	 */
-	protected int $str_table_num = 0;
 	protected array $str_table = [];
 
     /**
@@ -138,9 +136,7 @@ Class Dashboard
 		global $config, $member_id, $_TIME, $db, $dle_login_hash, $selected_language;
 
         $selected_language = preg_replace("/[^a-zA-Z0-9-_\s]/", "", trim( $selected_language ) );
-
 		$this->lang 	= file_exists(MODULE_PATH . '/lang/' . $selected_language . '/admin.php') ? include MODULE_PATH . '/lang/' . $selected_language . '/admin.php' : include MODULE_PATH . '/lang/admin.php';
-
 		$this->config 	= static::getConfig();
 
         //TODO: models
@@ -186,50 +182,30 @@ Class Dashboard
 		{
             $this->controller = 'upgrade';
 
-			require_once MODULE_PATH . '/controllers/adm.upgrade.php';
+			require_once MODULE_PATH . '/services/adm.upgrade.php';
 		}
+
 		# Подключение страницы
 		#
-		else if( file_exists( MODULE_PATH . '/controllers/adm.' . mb_strtolower( $this->controller ) . '.php' ) )
-		{
-			require_once MODULE_PATH . '/controllers/adm.' . mb_strtolower( $this->controller ) . '.php';
-		}
-		# Подключение плагина
-		#
-		else if( file_exists( MODULE_PATH . '/plugins/' . mb_strtolower( $this->controller ) . '/adm.main.php' ) )
-		{
-			require_once MODULE_PATH . '/plugins/' . mb_strtolower( $this->controller ) . '/adm.main.php';
-		}
-		else
-		{
-			throw new \Exception($this->lang['main_error_controller_file']);
-		}
+        $serviceName = ucfirst($this->controller);
 
-        $classControllerName = ucfirst($this->controller);
-
-        if( class_exists("\\Billing\\Admin\\Controller\\$classControllerName") )
+        if( class_exists("\\Billing\\Services\\Admin\\{$serviceName}") )
         {
-            $Controller = new ("\\Billing\\Admin\\Controller\\$classControllerName");
-        }
-        # todo: для совместимости
-        #
-        else if( class_exists('\\Billing\\ADMIN') )
-        {
-            $Controller = new ADMIN;
+            $service = new ("\\Billing\\Services\\Admin\\{$serviceName}");
         }
         else
         {
             throw new \Exception($this->lang['main_error_controller']);
         }
 
-		if( in_array($this->action, get_class_methods($Controller) ) )
+		if( in_array($this->action, get_class_methods($service) ) )
 		{
-            if( property_exists($Controller, 'Dashboard') )
+            if( property_exists($service, 'Dashboard') )
             {
-                $Controller->Dashboard = $this;
+                $service->Dashboard = $this;
             }
 
-			echo $Controller->{$this->action}( $arrParams );
+			echo $service->{$this->action}( $arrParams );
 
             return;
 		}
@@ -237,13 +213,19 @@ Class Dashboard
         throw new \Exception($this->lang['main_error_method']);
 	}
 
-	/**
-	 * Панель с вкладками
-	 * @param array $tabs
-	 * @param string $footer
-	 * @return string
-	 */
-	public function PanelTabs( array $tabs, string $footer = '' ) : string
+    /**
+     * Панель с вкладками
+     * @param array $tabs
+     * @param string $footer
+     * @param bool $slider
+     * @param string $header_added_class
+     * @return string
+     */
+	public function PanelTabs(
+        array $tabs,
+        string $footer = '',
+        bool $slider = false,
+        string $header_added_class = '') : string
 	{
 		$titles = '';
 		$links = '';
@@ -303,9 +285,9 @@ Class Dashboard
 							  : '<div class="tab-pane" id="' . $tabs[$i]['id'] . '">' . $tabs[$i]['content'] . '</div>';
 		}
 
-		return '<div class="panel panel-default">
+		return '<div class="panel panel-default ' . ( $slider ? 'tab-panel-slider' : '' ) . '">
 					<div class="panel-heading">
-						<ul class="nav nav-tabs nav-tabs-solid">
+						<ul class="nav nav-tabs nav-tabs-solid ' . $header_added_class . '">
 							' . $titles . '
 							' . $links . '
 						</ul>
@@ -347,7 +329,7 @@ Class Dashboard
 
 			$answer .= '<div class="col-sm-6 media-list media-list-linked" ' . ( $status && $sections[$i]['on'] != '1' ? 'style="opacity: 0.5"': '' ) . '>
 						  <a class="media-link" href="'. $sections[$i]['link'] .'">
-							<div class="media-left"><img src="'. $sections[$i]['icon'] .'" onError="this.src=\'engine/skins/billing/icons/plugin.png\'" class="img-lg section_icon"></div>
+							<div class="media-left"><img src="'. $sections[$i]['icon'] .'" onError="this.src=\'public/billing/icons/plugin.png\'" class="img-lg section_icon"></div>
 							<div class="media-body">
 								<h6 class="media-heading  text-semibold">'. $sections[$i]['title'] .'</h6>
 								<span class="text-muted text-size-small">'. $sections[$i]['desc'] .'</span>
@@ -378,12 +360,12 @@ Class Dashboard
         if( $link )
         {
             $icon = "<a href='{$link}' target='_blank' class='tip help_url'>
-                        {$this->lang['help']} <img src='/engine/skins/billing/{$path}.png' onError=\"this.src='engine/skins/billing/icons/plugin.png'\" class='bt_icon' />
+                        {$this->lang['help']} <img src='/public/billing/{$path}.png' onError=\"this.src='public/billing/icons/plugin.png'\" class='bt_icon' />
                      </a>";
         }
         else
         {
-            $icon = "<img src='/engine/skins/billing/{$path}.png' onError=\"this.src='engine/skins/billing/icons/plugin.png'\" class='bt_icon' />";
+            $icon = "<img src='/public/billing/{$path}.png' onError=\"this.src='public/billing/icons/plugin.png'\" class='bt_icon' />";
         }
 
 		return '<span style="text-align: left">' . $this->MakeMsgInfo(
@@ -513,8 +495,12 @@ Class Dashboard
      * @param bool $show_progress
      * @return void
      */
-    #[NoReturn]
-    public function ThemeMsg(string $title, string $text, string $link = '', string $class_status = 'success', bool $show_progress = false ) : void
+    public function ThemeMsg(
+        string $title,
+        string $text,
+        string $link = '',
+        string $class_status = 'success',
+        bool $show_progress = false ) : void
 	{
         $return = '';
         $disabled = '';
@@ -533,7 +519,46 @@ Class Dashboard
             $disabled = 'onclick="return false;" disabled="1"';
         }
 
-		$return .= <<<HTML
+        $return .= $this->getAlertMsg(
+            $title,
+            $text,
+            $class_status,
+            $link,
+            $disabled,
+            $linkText
+        );
+
+		echo $return . $this->ThemeEchoFoother();
+		die();
+	}
+
+    /**
+     * Alert
+     * @param string $title
+     * @param string $text
+     * @param string $class_status
+     * @param string $link
+     * @param string $disabled
+     * @param string $linkText
+     * @return string
+     */
+    public function getAlertMsg(string $title, string $text, string $class_status = '', string $link = '', string $disabled = '', string $linkText = '') : string
+    {
+        $link_block = '';
+
+        if( $linkText )
+        {
+            $link_block = <<<HTML
+                                <div class="panel-footer">
+									<div class="text-center">
+										<a class="btn btn-sm bg-teal btn-raised position-left legitRipple btn-progress" href="{$link}" {$disabled}>{$linkText}</a>
+									</div>
+								</div>
+HTML;
+
+        }
+
+        return <<<HTML
 						<div class="content">
 							<div class="alert alert-{$class_status} alert-styled-left alert-arrow-left alert-component message_box">
 								<h4>{$title}</h4>
@@ -544,18 +569,11 @@ Class Dashboard
 										</tr>
 									</tbody></table>
 								</div>
-								<div class="panel-footer">
-									<div class="text-center">
-										<a class="btn btn-sm bg-teal btn-raised position-left legitRipple btn-progress" href="{$link}" {$disabled}>{$linkText}</a>
-									</div>
-								</div>
+								{$link_block}
 							</div>
 						</div>
 HTML;
-
-		echo $return . $this->ThemeEchoFoother();
-		die();
-	}
+    }
 
 	/**
 	 * Сохранить config
@@ -593,36 +611,35 @@ HTML;
 	}
 
 	/**
-	 * Build setting lines
+	 * Таблица настроек
 	 * @return string
 	 */
 	public function ThemeParserStr() : string
 	{
-		if( ! $this->str_table_num ) return '';
+		if( ! $this->str_table ) return '';
 
 		$answer = "<table width=\"100%\" class=\"table table-striped\">";
 
-		for( $i = 1; $i <= $this->str_table_num; $i++ )
-		{
-			$answer .= "<tr>
+        foreach ($this->str_table as $row)
+        {
+            $answer .= "<tr>
 							<td class=\"col-xs-6 col-sm-6 col-md-7\">
-								<h6 class=\"media-heading text-semibold\">" . $this->str_table[$i]['title'] . "</h6>
-								<span class=\"text-muted text-size-small hidden-xs\">" . $this->str_table[$i]['desc'] . "</span>
+								<h6 class=\"media-heading text-semibold\">" . $row['title'] . "</h6>
+								<span class=\"text-muted text-size-small hidden-xs\">" . $row['desc'] . "</span>
 							</td>
-							<td class=\"col-xs-6 col-sm-6 col-md-5\">" . $this->str_table[$i]['field'] . "</td>
+							<td class=\"col-xs-6 col-sm-6 col-md-5\">" . $row['field'] . "</td>
 						</tr>";
-		}
+        }
 
 		$answer .= "</table>";
 
-		$this->str_table = array();
-		$this->str_table_num = 0;
+		$this->str_table = [];
 
 		return $answer;
 	}
 
     /**
-     * Build table
+     * Таблица
      * @param string $id
      * @param string $other_tr
      * @param int|bool $row_key
@@ -631,31 +648,38 @@ HTML;
      */
     public function ThemeParserTable( string $id = '', string $other_tr = '', int|bool $row_key = false, string $added_table_class = '' ) : string
     {
-        if( ! $this->list_table_num ) return '';
-
-        $answer = "<table width=\"100%\" class=\"table table-normal table-hover {$added_table_class}\" ".( ( $id ) ? 'id="'.$id.'"':'' ).">";
-
-        for( $i = 1; $i <= $this->list_table_num; $i++ )
+        if( ! $this->list_table )
         {
-            $key = $row_key !== false ? 'id="' . preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $this->list_table[$i][$row_key] ) ) . '"' : '';
-
-            $answer .= "<tr {$key}>";
-
-            if( $i == 1 ) $answer .= "<thead>";
-
-            foreach( $this->list_table[$i] as $width=>$td )	$answer .= ( $i==1 ) ? $td: "<td>" . $td . "</td>";
-
-            if( $i == 1 ) $answer .= "</thead>";
-            $answer .= "</tr>";
+            return '';
         }
 
-        $answer .= $other_tr;
-        $answer .= "</table>";
+        $table = "<table width=\"100%\" class=\"table table-normal table-hover {$added_table_class}\" ".( ( $id ) ? 'id="'.$id.'"':'' ).">";
 
-        $this->list_table_num = 0;
-        $this->list_table = array();
+        foreach ($this->list_table as $iter => $row)
+        {
+            $row_content = '';
 
-        return $answer;
+            foreach( $row as $td )
+            {
+                $row_content .= ( $iter == 0 ) ? $td : "<td>" . $td . "</td>";
+            }
+
+            if( $iter == 0 )
+            {
+                $row_content = "<thead>{$row_content}</thead>";
+            }
+
+            $key = $row_key !== false ? 'id="' . preg_replace("/[^a-zA-Z0-9\s]/", "", trim( $row[$row_key] ) ) . '"' : '';
+
+            $table .= "<tr {$key}>" . $row_content . "</tr>";
+        }
+
+        $this->list_table = [];
+
+        $table .= $other_tr;
+        $table .= "</table>";
+
+        return $table;
     }
 
 	/**
@@ -665,9 +689,7 @@ HTML;
 	 */
 	public function ThemeAddTR( array $array ) : void
 	{
-		$this->list_table_num++;
-
-		$this->list_table[$this->list_table_num] = $array;
+		$this->list_table[] = $array;
 	}
 
 	/**
@@ -677,15 +699,13 @@ HTML;
 	 * @param string $field
 	 * @return void
 	 */
-	public function ThemeAddStr(string $title, string $desc, string $field) : void
+	public function ThemeAddStr(string $title, string $desc = '', string $field = '') : void
 	{
-		$this->str_table_num++;
-
-		$this->str_table[$this->str_table_num] = array(
-			'title' => $title,
-			'desc' => $desc,
-			'field' => $field
-		);
+		$this->str_table[] = [
+            'title' => $title,
+            'desc' => $desc,
+            'field' => $field
+        ];
 	}
 
     /**
@@ -836,13 +856,13 @@ HTML;
 						<span style=\"font-size: 11px\">{$this->lang['desc']} {$this->config['version']}</span>
 					</div>", $Topmenu );
 
-		echo "<link href=\"engine/skins/billing/styles.css\" media=\"screen\" rel=\"stylesheet\" type=\"text/css\" />";
+		echo "<link href=\"public/billing/styles.css\" media=\"screen\" rel=\"stylesheet\" type=\"text/css\" />";
 
 		echo '
-		      <script src="engine/skins/billing/highcharts.js"></script>
-		      <script src="engine/skins/billing/accessibility.js"></script>
-		      <script src="engine/skins/billing/jquery.slidereveal.min.js"></script>
-			  <script src="engine/skins/billing/core.js"></script>
+		      <script src="public/billing/highcharts.js"></script>
+		      <script src="public/billing/accessibility.js"></script>
+		      <script src="public/billing/jquery.slidereveal.min.js"></script>
+			  <script src="public/billing/core.js"></script>
 			  <script type="text/javascript">
 			  	jQuery(document).ready(function(){'.$JSmenu.'});
 			  </script>';

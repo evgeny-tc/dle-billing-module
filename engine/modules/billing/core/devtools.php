@@ -22,7 +22,11 @@ Class DevTools
     private function __clone()    {}
     private function __wakeup()   {}
 
-    public static function Start()
+    /**
+     * @return null
+     * @throws \Exception
+     */
+    public static function Start(): null
     {
         if ( empty(self::$instance) )
         {
@@ -171,46 +175,25 @@ Class DevTools
 
         # Подключение страницы
         #
-        if( file_exists( MODULE_PATH . '/controllers/user.' . $RealURL . '.php' ) )
-        {
-            require_once MODULE_PATH . '/controllers/user.' . $RealURL . '.php';
-        }
-        # Подключение плагина
-        #
-        elseif( file_exists( MODULE_PATH . '/plugins/' . $RealURL . '/user.main.php' ) )
-        {
-            require_once MODULE_PATH . '/plugins/' . $RealURL . '/user.main.php';
-        }
-        else
-        {
-            throw new \Exception(sprintf($this->lang['cabinet_controller_error'], $this->get_plugin));
-        }
+        $serviceName = ucfirst($RealURL);
 
-        $classControllerName = ucfirst($RealURL);
-
-        if( class_exists("\\Billing\\User\\Controller\\$classControllerName") )
+        if( class_exists("\\Billing\\Services\\User\\{$serviceName}") )
         {
-            $Cabinet = new ("\\Billing\\User\\Controller\\$classControllerName");
-        }
-        # todo: для совместимости
-        #
-        else if( class_exists('\\Billing\\USER') )
-        {
-            $Cabinet = new USER;
+            $service = new ("\\Billing\\Services\\User\\{$serviceName}");
         }
         else
         {
             throw new \Exception(sprintf($this->lang['cabinet_controller_class_error'], $this->get_plugin));
         }
 
-        if( in_array($this->get_method, get_class_methods($Cabinet) ) )
+        if( in_array($this->get_method, get_class_methods($service) ) )
         {
-            if( property_exists($Cabinet, 'DevTools') )
+            if( property_exists($service, 'DevTools') )
             {
-                $Cabinet->DevTools = $this;
+                $service->DevTools = $this;
             }
 
-            echo $Cabinet->{$this->get_method}( $arrParams );
+            echo $service->{$this->get_method}( $arrParams );
         }
         else
         {
@@ -223,6 +206,7 @@ Class DevTools
      * @param string $Content
      * @param bool $show_panel
      * @return string
+     * @throws \Exception
      */
     public function Show(string $Content, bool $show_panel = true ) : string
     {

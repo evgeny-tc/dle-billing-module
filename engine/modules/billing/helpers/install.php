@@ -40,37 +40,6 @@ $htaccess_set = "\n\t# billing\n\tRewriteRule ^([^/]+).html/(.*)(/?)+$ index.php
 #
 if( isset( $_POST['install'] ) or isset($_GET['install']) )
 {
-	# htaccess
-	#
-	if( is_writable( ".htaccess" ) )
-	{
-		if ( ! strpos( file_get_contents(".htaccess"), "# billing" ) )
-		{
-            $htaccess_array = file( ".htaccess" );
-
-            foreach ($htaccess_array as $num => $htrow)
-            {
-                if( str_contains($htrow, 'index.php?do=static&page=$1&seourl=$1'))
-                {
-                    $htaccess_array[$num] = "{$htrow}{$htaccess_set}";
-                }
-            }
-
-            file_put_contents( ".htaccess", $htaccess_array );
-		}
-	}
-	elseif ( ! strpos( file_get_contents(".htaccess"), "# billing" ) )
-	{
-		msg(
-            "error",
-            $_Lang['install_bad'],
-            "<div style=\"text-align: left\">" . $_Lang['install_error'] . "<pre><code>" . $htaccess_set . "</code></pre></div>",
-            [
-                "" => "<i class=\"fa fa-repeat\"></i> " . $_Lang['main_re']
-            ]
-        );
-	}
-
 	# Copy templates
 	#
     if( $_GET['install'] !== 'ignore' )
@@ -191,17 +160,6 @@ switch ($_GET['step'])
             $php_version = '<span style="color: green">' . phpversion() . '</span>';
         }
 
-        # htaccess
-        #
-        if( is_writable( ".htaccess" ) )
-        {
-            $write_htaccess = $_Lang['install_need']['yes'];
-        }
-        else
-        {
-            $write_htaccess = $_Lang['install_need']['file_close'];
-        }
-
         # /data/
         #
         if( is_writable( ENGINE_DIR . "/data/billing" ) )
@@ -232,15 +190,6 @@ switch ($_GET['step'])
                                     </td>
                                     <td class="col-xs-6 col-sm-6 col-md-5">
                                         {$php_version}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="col-xs-6 col-sm-6 col-md-7">
-                                        <h6 class="media-heading text-semibold">{$_Lang['install_need']['file']}</h6>
-                                        <span class="text-muted text-size-small hidden-xs">{$_Lang['install_need']['file_desc']}</span>
-                                    </td>
-                                    <td class="col-xs-6 col-sm-6 col-md-5">
-                                        {$write_htaccess}
                                     </td>
                                 </tr>
                                 <tr>
