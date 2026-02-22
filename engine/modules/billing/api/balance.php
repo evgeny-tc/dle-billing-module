@@ -95,8 +95,8 @@ Class Balance
     /**
      * Создать счет на оплату
      * @param int $userId - id
-     * @param string $userLogin - name
-     * @param string $userAnonymous - or user ip
+     * @param string $userLogin - or name
+     * @param string $userAnonymous - or ip
      * @param string $payment
      * @param float $sum_get
      * @param float $sum_pay
@@ -105,7 +105,15 @@ Class Balance
      * @return int
      * @throws BalanceException
      */
-    public function createInvoice(int $userId = 0, string $userLogin = '', string $userAnonymous = '', string $payment = '', float $sum_get = 0, float $sum_pay = 0, mixed $payer_info = '', string $handler = '') : int
+    public function createInvoice(
+        int $userId = 0,
+        string $userLogin = '',
+        string $userAnonymous = '',
+        string $payment = '',
+        float $sum_get = 0,
+        float $sum_pay = 0,
+        mixed $payer_info = '',
+        string $handler = '') : int
     {
         $payment = self::$global['DB']->safesql( $payment );
         $handler = self::$global['DB']->safesql( $handler );
@@ -254,16 +262,26 @@ Class Balance
      * @throws BalanceException
      * @throws \Exception
      */
-    public function Comment(int $userId = 0, string $userLogin = '', float $plus = 0, float $minus = 0, string $comment = '', int $plugin_id = 0, string $plugin_name = 'api', bool $pm = false, bool $email = false) : self
+    public function Comment(
+        int $userId = 0,
+        string $userLogin = '',
+        float $plus = 0,
+        float $minus = 0,
+        string $comment = '',
+        int $plugin_id = 0,
+        string $plugin_name = 'api',
+        bool $pm = false,
+        bool $email = false) : self
     {
         $getUser = $this->getUser($userId, $userLogin);
+        $balance_after = $getUser[self::getBalanceField()] + $plus - $minus;
         $currency = $this->Declension( $plus ?: $minus );
 
         $plugin_name = self::$global['DB']->safesql($plugin_name);
 
         self::$global['DB']->query( "INSERT INTO " . PREFIX . "_billing_history
-							(history_plugin, history_plugin_id, history_user_name, history_plus, history_minus, history_balance, history_currency, history_text, history_date) values
-							('{$plugin_name}', '{$plugin_id}', '{$getUser['name']}', '{$plus}', '{$minus}', '{$getUser[self::getBalanceField()]}', '{$currency}', '{$comment}', '" . self::$global['TIME'] . "')" );
+							(history_plugin, history_plugin_id, history_user_name, history_ip, history_agent_info, history_plus, history_minus, history_balance, history_currency, history_text, history_date) values
+							('{$plugin_name}', '{$plugin_id}', '{$getUser['name']}', '{$_SERVER['REMOTE_ADDR']}', '{$_SERVER['HTTP_USER_AGENT']}', '{$plus}', '{$minus}', '{$balance_after}', '{$currency}', '{$comment}', '" . self::$global['TIME'] . "')" );
 
         $userReportBalance = $getUser [self::getBalanceField()] + $plus - $minus;
 
@@ -282,24 +300,30 @@ Class Balance
 
         # Уведомления
         #
-        $buildAlert = (new Alert(userId: $userId, name: $userLogin))->loadTemplate('balance')->buildTemplate(
-            [
-                '{date}' => langdate( "j F Y  G:i", self::$global['TIME'] ),
-                '{login}' => $getUser['name'],
-                '{sum}'=> ( $plus ? "+{$plus} {$currency}" : "-{$plus} {$currency}" ),
-                '{comment}' => strip_tags($comment),
-                '{balance}' => \Billing\Api\Balance::Init()->Convert(value: $userReportBalance, separator_space: true, declension: true)
-            ]
-        );
-
         if( $pm )
         {
-            $buildAlert->pm();
+            (new Message(userId: $userId, name: $userLogin))->loadTemplate('balance')->buildTemplate(
+                [
+                    '{date}' => langdate( "j F Y  G:i", self::$global['TIME'] ),
+                    '{login}' => $getUser['name'],
+                    '{sum}'=> ( $plus ? "+{$plus} {$currency}" : "-{$plus} {$currency}" ),
+                    '{comment}' => strip_tags($comment),
+                    '{balance}' => \Billing\Api\Balance::Init()->Convert(value: $userReportBalance, separator_space: true, declension: true)
+                ]
+            );
         }
 
         if( $email )
         {
-            $buildAlert->email();
+            (new Email(userId: $userId, name: $userLogin))->loadTemplate('balance')->buildTemplate(
+                [
+                    '{date}' => langdate( "j F Y  G:i", self::$global['TIME'] ),
+                    '{login}' => $getUser['name'],
+                    '{sum}'=> ( $plus ? "+{$plus} {$currency}" : "-{$plus} {$currency}" ),
+                    '{comment}' => strip_tags($comment),
+                    '{balance}' => \Billing\Api\Balance::Init()->Convert(value: $userReportBalance, separator_space: true, declension: true)
+                ]
+            );
         }
 
         return $this;
@@ -310,7 +334,7 @@ Class Balance
      * @param mixed ...$hook_new_data
      * @return Balance
      */
-    function sendEvent(...$hook_new_data) : self
+    public function sendEvent(...$hook_new_data) : self
     {
         if( $this->hook_num <= self::MAX_HOOK_EVENTS )
         {
@@ -392,6 +416,11 @@ Class Balance
      */
     protected function getUser(int $userId = 0, string $userLogin = '') : array
     {
+        if( ( $userId and $userId == self::$global['USER']['user_id'] ) or ($userLogin and $userLogin == self::$global['USER']['name']) )
+        {
+            return self::$global['USER'];
+        }
+
         if( self::$buffer[md5($userId.$userLogin)] )
         {
             return self::$buffer[md5($userId.$userLogin)];

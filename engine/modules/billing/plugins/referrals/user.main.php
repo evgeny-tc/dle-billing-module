@@ -54,7 +54,7 @@ Class Referrals
 		$TplLineNull = $this->DevTools->ThemePregMatch( $Content, '~\[not_history\](.*?)\[/not_history\]~is' );
 		$TplLineDate = $this->DevTools->ThemePregMatch( $TplLine, '~\{date=(.*?)\}~is' );
 
-		$this->DevTools->LQuery->DbWhere(
+		$this->DevTools->LQuery->where(
             [
                 "history_plugin = '{s} ' " => 'referrals',
                 "history_user_name = '{s}' " => $this->DevTools->member_id['name']
@@ -67,7 +67,7 @@ Class Referrals
 		$PerPage = $this->DevTools->config['paging'];
 		$StartFrom = $GET['page'];
 
-		$this->DevTools->LQuery->parsPage($StartFrom, $PerPage);
+		$this->DevTools->LQuery->preparePagination($StartFrom, $PerPage);
 
 		$this->DevTools->LQuery->db->query( "SELECT * FROM " . USERPREFIX . "_billing_history
 												LEFT JOIN " . USERPREFIX . "_users ON " . USERPREFIX . "_billing_history.history_plugin_id = " . USERPREFIX . "_users.user_id

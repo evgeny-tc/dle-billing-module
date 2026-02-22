@@ -27,12 +27,14 @@ Class Transactions
      * @return string
      * @throws \Exception
      */
-    public function main( array $Get ) : string
+    public function mainPage( array $Get ) : string
 	{
 		if( isset($Get['user']) )
 		{
 			$_POST['search_login'] = $Get['user'];
 		}
+
+        $Get['page'] = intval($Get['page']) > 0 ? intval($Get['page']) : 1;
 
 		# Удалить
 		#
@@ -46,7 +48,7 @@ Class Transactions
 
 				if( ! $id ) continue;
 
-				$this->Dashboard->LQuery->DbHistoryRemoveByID( $id );
+				$this->Dashboard->LQuery->deleteHistory( $id );
 			}
 
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['history_max_remove_ok'], $PHP_SELF . "?mod=billing&c=transactions" );
@@ -99,17 +101,15 @@ Class Transactions
 			$_WhereData["history_date > '{s}'"] = strtotime( $_POST['search_date'] );
 			$_WhereData["history_date < '{s}'"] = strtotime( $_POST['search_date_to'] );
 
-			$this->Dashboard->LQuery->DbWhere( $_WhereData );
+			$this->Dashboard->LQuery->where( $_WhereData );
 
-			$PerPage = 100;
-			$Data = $this->Dashboard->LQuery->DbGetHistory( 1, $PerPage );
+			$Data = $this->Dashboard->LQuery->getHistory( 1, $this->Dashboard->config['paging'] );
 		}
 		else
 		{
-			$this->Dashboard->LQuery->DbWhere( array( "history_user_name = '{s}' " => $Get['user'] ) );
+			$this->Dashboard->LQuery->where( ["history_user_name = '{s}' " => $Get['user']] );
 
-			$PerPage = 25;
-			$Data = $this->Dashboard->LQuery->DbGetHistory( $Get['page'], $PerPage );
+			$Data = $this->Dashboard->LQuery->getHistory( $Get['page'], $this->Dashboard->config['paging'] );
 		}
 
 		$Content = $Get['user'] ? $this->Dashboard->MakeMsgInfo( "<a href='?mod=billing&c=transactions' title='{$this->Dashboard->lang['remove']}' class='btn bg-danger btn-sm btn-raised position-left legitRipple' style='vertical-align: middle;'><i class='fa fa-repeat'></i> " . $Get['user'] . "</a> <span style='vertical-align: middle;'>{$this->Dashboard->lang['info_login']}</span>", "icon-user", "blue") : "";
@@ -128,7 +128,7 @@ Class Transactions
             ]
         );
 
-		$NumData = $this->Dashboard->LQuery->DbGetHistoryNum();
+		$NumData = $this->Dashboard->LQuery->getHistoryCount();
 
 		foreach( $Data as $Value )
 		{
@@ -164,7 +164,7 @@ Class Transactions
                 (new Paging())->setRows($NumData)
                     ->setCurrentPage($Get['page'])
                     ->setUrl("?mod=billing&c=transactions&p=" . ( $Get['user'] ? "user/{$Get['user']}/" : "" ) . "page/{p}")
-                    ->setPerPage($PerPage)
+                    ->setPerPage($this->Dashboard->config['paging'])
                     ->parse(),
                 $this->Dashboard->MakeButton('mass_remove', $this->Dashboard->lang['remove'], 'bg-danger')
 			);
@@ -244,11 +244,11 @@ Class Transactions
      * @param int $id
      * @return string
      */
-    public function slider_Info( int $id ) : string
+    public function sliderInfoAjax( int $id ) : string
     {
         global $user_group;
 
-        $transaction = \Billing\DB\Transaction::getById($id);
+        $transaction = $this->Dashboard->LQuery->getTransactionById($id);
 
         if( ! $transaction )
         {
@@ -257,15 +257,20 @@ Class Transactions
                 $this->Dashboard->lang['slider_transaction']['not_found'],
                 'warning billing-ajax-slider',
                 false
-            );;
+            );
         }
+
+        $sum = $transaction['history_plus'] > 0  ? "<span class=\"color-green\">+{$transaction['history_plus']} {$transaction['history_currency']}</span>"
+            : "<span class=\"color-red\">-{$transaction['history_minus']} {$transaction['history_currency']}</span>";
+
+        $content = "<div class='billing-transaction-sum'>{$sum}</div>";
+        $content .= "<div class='billing-transaction-desc'>{$transaction['history_text']}</div>";
 
         $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['id'], field: $transaction['history_id'] );
         $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['date'], field: $this->Dashboard->ThemeChangeTime( $transaction['history_date'] ));
         $this->Dashboard->ThemeAddStr(
             title: $this->Dashboard->lang['slider_transaction']['sum'],
-            field: $transaction['history_plus'] > 0  ? "<span class=\"color-green\">+{$transaction['history_plus']} {$transaction['history_currency']}</span>"
-                                                     : "<span class=\"color-red\">-{$transaction['history_minus']} {$transaction['history_currency']}</span>"
+            field: $sum
         );
         $this->Dashboard->ThemeAddStr(
             title: $this->Dashboard->lang['slider_transaction']['balance'],
@@ -275,10 +280,11 @@ Class Transactions
                         declension: true
                     )
         );
+        $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['user'], field: $this->Dashboard->ThemeInfoUser( $transaction['name'] ) );
         $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['ip'], field: $transaction['history_ip'] );
         $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['agent_info'], field: $transaction['history_agent_info'] );
 
-        $content = $this->Dashboard->PanelTabs(
+        $content .= $this->Dashboard->PanelTabs(
             tabs: [
                 [
                     'id' => 'main',
@@ -300,7 +306,7 @@ Class Transactions
                     'content' => $this->Dashboard->ThemeParserStr()
                 ]
             ],
-            footer: "<div style='padding: 10px;'>{$transaction['history_text']}</div>",
+            footer: "<div style='padding: 10px;'>" . ( $transaction['history_text'] ?: $this->Dashboard->lang['slider_transaction']['no_desc'] ) . "</div>",
             slider: true,
             header_added_class: 'tab_header_green'
         );
@@ -308,7 +314,6 @@ Class Transactions
         if( $transaction['user_id'] )
         {
             $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['id'], field: $transaction['user_id'] );
-            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['login'], field: $this->Dashboard->ThemeInfoUser( $transaction['name'] ) );
             $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['group'], field: $user_group[$transaction['user_group']]['group_name'] );
             $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['email'], field: $transaction['email'] );
             $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['ip'], field: $transaction['logged_ip'] );
@@ -339,7 +344,7 @@ Class Transactions
             tabs: [
                 [
                     'id' => 'user',
-                    'title' => $this->Dashboard->lang['slider_transaction']['user'],
+                    'title' => $transaction['fullname'] ?: $this->Dashboard->lang['slider_transaction']['user'],
                     'content' => $this->Dashboard->ThemeParserStr()
                 ]
             ],
@@ -347,8 +352,6 @@ Class Transactions
             slider: true,
             header_added_class: 'tab_header_grey'
         );
-
-        #$content .= "<pre>".print_r($transaction, 1)."</pre>";
 
         return $content;
     }

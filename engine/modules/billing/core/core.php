@@ -179,11 +179,10 @@ trait Core
             throw new BalanceException($this->lang['register_pay_payed_invoice']);
         }
 
-        Query::Init()->updateInvoice(
-            id: $Invoice['invoice_id'],
-            invoice_paysys: $Invoice['invoice_paysys'],
-            invoice_date_pay: $this->_TIME,
-            invoice_payer_requisites: $payerRequisites
+        $this->LQuery->updateInvoice(
+            invoiceId: $Invoice['invoice_id'],
+            paymentSystem: $Invoice['invoice_paysys'],
+            payerRequisites: $payerRequisites
         );
 
         # есть обработчик
@@ -325,11 +324,17 @@ trait Core
     /**
      * Время и дата
      * @param int $time
+     * @param string $custom_format
      * @return string
      */
-    public function ThemeChangeTime( int $time ) : string
+    public function ThemeChangeTime( int $time, string $custom_format = '' ) : string
     {
         date_default_timezone_set( $this->dle['date_adjust'] );
+
+        if( $custom_format )
+        {
+            return langdate( $custom_format, $time );
+        }
 
         $ndate = date('j.m.Y', $time);
         $ndate_time = date('H:i', $time);

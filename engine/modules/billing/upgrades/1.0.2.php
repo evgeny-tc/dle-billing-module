@@ -19,6 +19,29 @@ $tableSchema = [
     "ALTER TABLE `" . USERPREFIX . "_billing_history` ADD `history_agent_info` varchar(256) NOT NULL DEFAULT '' AFTER `history_ip`;"
 ];
 
+$urls = [
+    [
+        'key' => "custom.billing",
+        'seo' => "/billing.html/{service}/",
+        'real' => "/index.php?do=static&page=billing&seourl=billing&route={service}"
+    ],
+    [
+        'key' => "custom.billing_method",
+        'seo' => "/billing.html/{service}/{method}/",
+        'real' => "/index.php?do=static&page=billing&seourl=billing&route={service}/{method}"
+    ],
+    [
+        'key' => "custom.billling_params",
+        'seo' => "/billing.html/{service}/{method}/{param_name}/{param_value}/",
+        'real' => "/index.php?do=static&page=billing&seourl=billing&route={service}/{method}/{param_name}/{param_value}"
+    ],
+    [
+        'key' => "custom.billing.billling_params_2",
+        'seo' => "/billing.html/{service}/{method}/{param_name}/{param_value}/{param_name_2}/{param_value_2}/",
+        'real' => "/index.php?do=static&page=billing&seourl=billing&route={service}/{method}/{param_name}/{param_value}/{param_name_2}/{param_value_2}"
+    ]
+];
+
 if( isset($_REQUEST['install']) )
 {
     foreach($tableSchema as $sqlquery)
@@ -26,7 +49,27 @@ if( isset($_REQUEST['install']) )
         $this->Dashboard->LQuery->db->query($sqlquery);
     }
 
+    # url
+    #
+    foreach ($urls as $url)
+    {
+        $seo_key = DLEUrl::AddRule($url['key'], $url['seo'], $url['real']);
+    }
+
     $this->Dashboard->SaveConfig("config", $newConfig );
+
+    if (DLEUrl::CheckRoutes() !== null)
+    {
+        msg(
+            "error",
+            $this->Dashboard->lang['error'],
+            "<div style=\"text-align: left\">" . $this->Dashboard->lang['error_url'] . "</div>",
+            [
+                '?mod=friendlyurl' => $this->Dashboard->lang['error_url_check']
+            ]
+        );
+    }
+
     $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['upgrade_ok'] . $_version, '?mod=billing' );
 }
 
@@ -36,6 +79,9 @@ $Content = $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['upgrade_tit
 
 $Content .= "<div class='quote' style='margin: 10px'><b>" . $this->Dashboard->lang['upgrade_wsql'] . "</b>
     <pre>" . implode("\n", $tableSchema) . "</pre>
+</div>";
+$Content .= "<div class='quote' style='margin: 10px'><b>" . $this->Dashboard->lang['upgrade_rules'] . "</b>
+    <pre>" . print_r($urls, 1) . "</pre>
 </div>";
 
 $Content .= $this->Dashboard->ThemePadded( $this->Dashboard->MakeButton("install", $this->Dashboard->lang['main_next'], "blue") );

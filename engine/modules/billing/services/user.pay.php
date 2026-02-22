@@ -15,8 +15,14 @@ use \Billing\IPayment;
 
 Class Pay
 {
+    /**
+     * @var DevTools
+     */
     public DevTools $DevTools;
 
+    /**
+     * @var array
+     */
     private array $PaymentsArray = [];
 
     /**
@@ -42,47 +48,52 @@ Class Pay
         {
             $this->DevTools->CheckHash( $_POST['billingHash'] );
 
-            $this->DevTools->LQuery->DbWhere(
+            $this->DevTools->LQuery->where(
                 [
                     "invoice_user_name = '{s}' " => $this->DevTools->member_id['name'],
                     "invoice_date_pay = '0' " => 1
                 ]
             );
 
-            if( $this->DevTools->config['invoice_max_num'] and $this->DevTools->LQuery->DbGetInvoiceNum() >= $this->DevTools->config['invoice_max_num'] )
+            if( $this->DevTools->config['invoice_max_num'] and $this->DevTools->LQuery->getInvoicesCount() >= $this->DevTools->config['invoice_max_num'] )
             {
                 return $this->DevTools->ThemeMsg( $this->DevTools->lang['pay_error_title'], sprintf( $this->DevTools->lang['invoice_max_num'], $this->DevTools->config['invoice_max_num'] ) );
             }
 
-            if( ! $_ConvertSum = $this->DevTools->API->Convert( $_POST['billingPaySum'] ) )
+            if( ! $_ConvertSum = \Billing\Api\Balance::Init()->Convert( $_POST['billingPaySum'] ) )
             {
                 throw new \Exception($this->DevTools->lang['pay_summa_error']);
             }
 
-            $_InvoiceID = $this->DevTools->LQuery->DbCreatInvoice(
-                payment_name: '',
-                username: $this->DevTools->member_id['name'],
+            $invoiceId = \Billing\Api\Balance::Init()->checkDouble()->createInvoice(
+                userId: $this->DevTools->member_id['user_id'],
                 sum_get: $_ConvertSum,
                 sum_pay: $_ConvertSum
             );
 
             $dataMail = [
-                '{id}' => $_InvoiceID,
+                '{id}' => $invoiceId,
                 '{login}' => $this->DevTools->member_id['name'],
-                '{sum_get}' => $_ConvertSum . ' ' . $this->DevTools->API->Declension( $_ConvertSum ),
-                '{link}' => $this->DevTools->dle['http_home_url'] . $this->DevTools->config['page'] . '.html/pay/waiting/id/' . $_InvoiceID
+                '{sum_get}' => $_ConvertSum . ' ' . \Billing\Api\Balance::Init()->Declension( $_ConvertSum ),
+                '{link}' => $this->DevTools->dle['http_home_url'] . $this->DevTools->config['page'] . '.html/pay/waiting/id/' . $invoiceId
             ];
 
             if( $this->DevTools->config['mail_paynew_pm'] )
             {
-                $this->DevTools->API->Alert( "new", $dataMail, $this->DevTools->member_id['user_id'] );
+                (new \Billing\Api\Email(userId: $this->DevTools->member_id['user_id']))
+                    ->loadTemplate('new')
+                    ->buildTemplate($dataMail)
+                    ->send();
             }
             if( $this->DevTools->config['mail_paynew_email'] )
             {
-                $this->DevTools->API->Alert( "new", $dataMail, 0, $this->DevTools->member_id['email'] );
+                (new \Billing\Api\Message(userId: $this->DevTools->member_id['user_id']))
+                    ->loadTemplate('new')
+                    ->buildTemplate($dataMail)
+                    ->send();
             }
 
-            header( 'Location: /' . $this->DevTools->config['page'].'.html/pay/waiting/id/' . $_InvoiceID );
+            header( 'Location: /' . $this->DevTools->config['page'].'.html/pay/waiting/id/' . $invoiceId );
 
             return '';
         }
@@ -91,9 +102,9 @@ Class Pay
         #
         $Tpl = $this->DevTools->ThemeLoad( 'pay/start' );
 
-        $GetSum = $GET['sum'] ? $this->DevTools->API->Convert( $GET['sum'] ) : $this->DevTools->config['sum'];
+        $GetSum = $GET['sum'] ? \Billing\Api\Balance::Init()->Convert( $GET['sum'] ) : $this->DevTools->config['sum'];
 
-        $this->DevTools->ThemeSetElement( "{module.get.currency}", $this->DevTools->API->Declension( $GetSum ) );
+        $this->DevTools->ThemeSetElement( "{module.get.currency}", \Billing\Api\Balance::Init()->Declension( floatval($GetSum) ) );
         $this->DevTools->ThemeSetElement( "{module.currency}", $this->DevTools->config['currency'] );
         $this->DevTools->ThemeSetElement( "{module.format}", $this->DevTools->config['format'] == 'int' ? 0 : 2 );
         $this->DevTools->ThemeSetElement( "{get.sum}", $GetSum );
@@ -131,7 +142,7 @@ Class Pay
 
         $this->PaymentsArray = $this->DevTools->Payments();
 
-        $Invoice = $this->DevTools->LQuery->DbGetInvoiceByID( $GET['id'] );
+        $Invoice = $this->DevTools->LQuery->getInvoiceById( $GET['id'] );
 
         if( ! $Invoice or $this->DevTools->checkUser( $Invoice['invoice_user_name'] ) === false )
         {
@@ -144,7 +155,7 @@ Class Pay
             'title' => $this->DevTools->lang['title_short'],
             'config' => [
                 'title' => $this->DevTools->lang['title_short'],
-                'currency' => $this->DevTools->API->Declension($Invoice['invoice_pay']),
+                'currency' => \Billing\Api\Balance::Init()->Declension($Invoice['invoice_pay']),
                 'convert' => 1
             ]
         ];
@@ -173,7 +184,7 @@ Class Pay
         $this->DevTools->ThemeSetElement( "{invoice.pay.currency}",  $this->PaymentsArray[$Invoice['invoice_paysys']]['config']['currency']  );
 
         $this->DevTools->ThemeSetElement( "{invoice.get}", $Invoice['invoice_get'] );
-        $this->DevTools->ThemeSetElement( "{invoice.get.currency}", $this->DevTools->API->Declension( $Invoice['invoice_pay'] ) );
+        $this->DevTools->ThemeSetElement( "{invoice.get.currency}", \Billing\Api\Balance::Init()->Declension( $Invoice['invoice_pay'] ) );
 
         if( $Invoice['invoice_payer_info'] )
         {
@@ -256,7 +267,7 @@ Class Pay
                 $this->DevTools->ThemeSetElement( "{coupon}", $couponData['coupon_key'] );
 
                 $this->DevTools->ThemeSetElement( "{old.invoice.get}", $Invoice['invoice_get'] );
-                $this->DevTools->ThemeSetElement( "{old.invoice.get.currency}", $this->DevTools->API->Declension( $Invoice['invoice_get'] ) );
+                $this->DevTools->ThemeSetElement( "{old.invoice.get.currency}", \Billing\Api\Balance::Init()->Declension( $Invoice['invoice_get'] ) );
 
                 if( $couponData['coupon_type'] == '1' )
                 {
@@ -270,8 +281,8 @@ Class Pay
                 if( $Invoice['invoice_get'] <= 0 )
                     $Invoice['invoice_get'] = 1;
 
-                $this->DevTools->ThemeSetElement( "{invoice.get}", $this->DevTools->API->Convert(money:$Invoice['invoice_get'], number_format_f: true) );
-                $this->DevTools->ThemeSetElement( "{invoice.get.currency}", $this->DevTools->API->Declension( $Invoice['invoice_get'] ) );
+                $this->DevTools->ThemeSetElement( "{invoice.get}", \Billing\Api\Balance::Init()->Convert(money:$Invoice['invoice_get'], number_format_f: true) );
+                $this->DevTools->ThemeSetElement( "{invoice.get.currency}", \Billing\Api\Balance::Init()->Declension( $Invoice['invoice_get'] ) );
             }
             else
             {
@@ -287,7 +298,7 @@ Class Pay
             {
                 $this->DevTools->CheckHash( $_POST['billingHash'] );
 
-                $this->DevTools->LQuery->parsVar( $_POST['billingPayment'], '~[^a-z|0-9|\-|.]*~is' );
+                $this->DevTools->LQuery->sanitize( $_POST['billingPayment'], '~[^a-z|0-9|\-|.]*~is' );
 
                 $_Payment = $this->PaymentsArray[$_POST['billingPayment']]['config'];
 
@@ -295,7 +306,7 @@ Class Pay
 
                 if($_Payment['convert'])
                 {
-                    $Invoice['invoice_pay'] = $this->DevTools->API->Convert($Invoice['invoice_get'] * $_Payment['convert'], $_Payment['format']);
+                    $Invoice['invoice_pay'] = \Billing\Api\Balance::Init()->Convert($Invoice['invoice_get'] * $_Payment['convert'], $_Payment['format']);
                 }
 
                 # Есть обработчик
@@ -318,26 +329,42 @@ Class Pay
                             throw new \Exception($this->DevTools->lang['coupon_use_error']);
                         }
 
-                        $resultPay = $this->DevTools->API->MinusMoney(
-                            $this->DevTools->member_id['name'],
-                            $Invoice['invoice_get'],
-                            $logData[0],
-                            $pluginHandler ?? 'null',
-                            $logData[1]
-                        );
-
-                        if( $resultPay and $this->DevTools->invoiceRegisterPay( $Invoice, $this->DevTools->member_id['name'] ) )
+                        try
                         {
-                            if( $_GET['modal'] )
-                            {
-                                $this->DevTools->ThemeSetElement( '[modal]', '' );
-                                $this->DevTools->ThemeSetElement( "[/modal]", '' );
-                            }
-                            else
-                                $this->DevTools->ThemeSetElementBlock( 'modal', '' );
+                            \Billing\Api\Balance::Init()->Transaction()->Comment(
+                                userLogin: $this->DevTools->member_id['name'],
+                                minus: $Invoice['invoice_get'],
+                                comment: $logData[0],
+                                plugin_id: $logData[1],
+                                plugin_name: $pluginHandler ?? 'null',
+                                pm: (bool)$this->config['mail_payok_pm'],
+                                email: (bool)$this->config['mail_payok_email']
+                            )->From(
+                                userLogin: $this->DevTools->member_id['name'],
+                                sum: $Invoice['invoice_get']
+                            )->sendEvent()->Commit();
 
-                            return $this->DevTools->Show(
-                                $this->DevTools->ThemeLoad( 'pay/success' )
+                            if( $this->DevTools->invoiceRegisterPay( $Invoice, $this->DevTools->member_id['name'] ) )
+                            {
+                                if( $_GET['modal'] )
+                                {
+                                    $this->DevTools->ThemeSetElement( '[modal]', '' );
+                                    $this->DevTools->ThemeSetElement( "[/modal]", '' );
+                                }
+                                else
+                                {
+                                    $this->DevTools->ThemeSetElementBlock( 'modal', '' );
+                                }
+
+                                return $this->DevTools->Show(
+                                    $this->DevTools->ThemeLoad( 'pay/success' )
+                                );
+                            }
+                        }
+                        catch (\BalanceException $e)
+                        {
+                            throw new \Exception(
+                                $e->getMessage()
                             );
                         }
 
@@ -357,7 +384,7 @@ Class Pay
                             $this->DevTools->lang['pay_minimum_error'],
                             $_Payment['title'],
                             $_Payment['minimum'],
-                            $this->DevTools->API->Declension( $_Payment['minimum'] )
+                            \Billing\Api\Balance::Init()->Declension( $_Payment['minimum'] )
                         )
                     );
                 }
@@ -368,7 +395,7 @@ Class Pay
                             $this->DevTools->lang['pay_max_error'],
                             $_Payment['title'],
                             $_Payment['max'],
-                            $this->DevTools->API->Declension( $_Payment['max'] )
+                            \Billing\Api\Balance::Init()->Declension( $_Payment['max'] )
                         )
                     );
                 }
@@ -384,7 +411,7 @@ Class Pay
 
                     if( $_coupon and $this->DevTools->LQuery->useCoupon($couponData, $Invoice) )
                     {
-                        $this->DevTools->LQuery->DbInvoiceUpdate(
+                        $this->DevTools->LQuery->updateInvoice(
                             invoice_id: $GET['id'],
                             wait: true,
                             invoice_pay: $Invoice['invoice_pay']
@@ -400,8 +427,8 @@ Class Pay
                             $GET['id'],
                             $this->PaymentsArray[$Invoice['invoice_paysys']]['config'],
                             $Invoice,
-                            $this->DevTools->API->Declension( $Invoice['invoice_get'] ),
-                            sprintf( $this->DevTools->lang['pay_desc'], $this->DevTools->member_id['name'], $Invoice['invoice_get'], $this->DevTools->API->Declension( $Invoice['invoice_get'] ) )
+                            \Billing\Api\Balance::Init()->Declension( $Invoice['invoice_get'] ),
+                            sprintf( $this->DevTools->lang['pay_desc'], $this->DevTools->member_id['name'], $Invoice['invoice_get'], \Billing\Api\Balance::Init()->Declension( $Invoice['invoice_get'] ) )
                         );
 
                     if( $_GET['modal'] )
@@ -433,8 +460,8 @@ Class Pay
 
         @http_response_code(200);
 
-        $secretKey = $this->DevTools->LQuery->parsVar( $GET['key'], '~[^a-z|0-9|\-|.]*~is' );
-        $getPayment = $this->DevTools->LQuery->parsVar( $GET['payment'], '~[^a-z|0-9|\-|.]*~is' );
+        $secretKey = $this->DevTools->LQuery->sanitize( $GET['key'], '~[^a-z|0-9|\-|.]*~is' );
+        $getPayment = $this->DevTools->LQuery->sanitize( $GET['payment'], '~[^a-z|0-9|\-|.]*~is' );
 
         $this->PaymentsArray = $this->DevTools->Payments();
 
@@ -496,7 +523,7 @@ Class Pay
 
             # .. данные квитанции
             #
-            $Invoice = $this->DevTools->LQuery->DbGetInvoiceByID( $getInvoiceID );
+            $Invoice = $this->DevTools->LQuery->getInvoiceById( $getInvoiceID );
 
             if( ! $Invoice )
             {
@@ -520,7 +547,7 @@ Class Pay
 
             if( ! $InfoPay['coupon']['coupon_id'] )
             {
-                $Invoice['invoice_pay'] = $this->DevTools->API->Convert($Invoice['invoice_pay'] * $this->PaymentsArray[$getPayment]['config']['convert'], $this->PaymentsArray[$getPayment]['config']['format']);
+                $Invoice['invoice_pay'] = \Billing\Api\Balance::Init()->Convert($Invoice['invoice_pay'] * $this->PaymentsArray[$getPayment]['config']['convert'], $this->PaymentsArray[$getPayment]['config']['format']);
             }
 
             # .. проверка параметров запроса пс
@@ -533,7 +560,7 @@ Class Pay
 
                 if( $this->DevTools->invoiceRegisterPay( $Invoice, $payerRequisites ) )
                 {
-                    $this->logging( 10, $Invoice['invoice_get'] . ' ' . $this->DevTools->API->Declension( $Invoice['invoice_get'] ) );
+                    $this->logging( 10, $Invoice['invoice_get'] . ' ' . \Billing\Api\Balance::Init()->Declension( $Invoice['invoice_get'] ) );
                     $this->logging( 14 );
 
                     echo $Payment->check_ok( $DATA );

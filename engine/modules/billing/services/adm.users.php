@@ -19,7 +19,7 @@ Class Users
     /**
      * @throws BalanceException
      */
-    public function main() : string
+    public function mainPage() : string
 	{
 		global $user_group;
 
@@ -59,7 +59,7 @@ Class Users
 					{
 						if( $_Do )
 						{
-                            \Billing\Api\Balance::Init()->Comment(
+                            \Billing\Api\Balance::Init()->Transaction()->Comment(
                                 userLogin: $login,
                                 plus: $_Sum,
                                 comment: $_Comment,
@@ -70,13 +70,13 @@ Class Users
                             )->To(
                                 userLogin: $login,
                                 sum: $_Sum
-                            )->sendEvent();
+                            )->sendEvent()->Commit();
 						}
 						else
 						{
-                            \Billing\Api\Balance::Init()->Comment(
+                            \Billing\Api\Balance::Init()->Transaction()->Comment(
                                 userLogin: $login,
-                                plus: $_Sum,
+                                minus: $_Sum,
                                 comment: $_Comment,
                                 plugin_id: $this->Dashboard->member_id['user_id'],
                                 plugin_name: 'users',
@@ -85,7 +85,7 @@ Class Users
                             )->From(
                                 userLogin: $login,
                                 sum: $_Sum
-                            )->sendEvent();
+                            )->sendEvent()->Commit();
 						}
 					}
 				}
@@ -170,15 +170,15 @@ Class Users
 
 			$_WhereData["name LIKE '%{s}%' or email LIKE '%{s}%'"] = $_POST['search_name'];
 
-			$this->Dashboard->LQuery->DbWhere( $_WhereData );
+			$this->Dashboard->LQuery->where( $_WhereData );
 
-			$Data = $this->Dashboard->LQuery->DbSearchUsers();
+			$Data = $this->Dashboard->LQuery->searchUsers();
 		}
 		else
 		{
-			$this->Dashboard->LQuery->DbWhere( ["{$this->Dashboard->config['fname']} > 0 " => 1] );
+			$this->Dashboard->LQuery->where( ["{$this->Dashboard->config['fname']} > 0 " => 1] );
 
-			$Data = $this->Dashboard->LQuery->DbSearchUsers( 10 );
+			$Data = $this->Dashboard->LQuery->searchUsers( 10 );
 		}
 
 		# Список пользователей
@@ -314,7 +314,7 @@ Class Users
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['users_summa'],
 			$this->Dashboard->lang['users_summa_desc'],
-			"<input name=\"edit_summa\" class=\"form-control\" type=\"text\" style=\"width: 20%\"> " . $this->Dashboard->API->Declension( 10 )
+			"<input name=\"edit_summa\" class=\"form-control\" type=\"text\" style=\"width: 20%\"> " . \Billing\Api\Balance::Init()->Declension( 10 )
 		);
 
 		$this->Dashboard->ThemeAddStr(
@@ -346,7 +346,7 @@ Class Users
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['users_summa'],
 			$this->Dashboard->lang['users_summa_desc'],
-			"<input name=\"edit_summa_group\" class=\"form-control\" style=\"width: 20%\" type=\"text\"> " . $this->Dashboard->API->Declension( 10 )
+			"<input name=\"edit_summa_group\" class=\"form-control\" style=\"width: 20%\" type=\"text\"> " . \Billing\Api\Balance::Init()->Declension( 10 )
 		);
 
 		$tabs[] = [

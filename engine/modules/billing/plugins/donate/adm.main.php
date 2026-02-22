@@ -22,8 +22,9 @@ Class Donate extends PluginActions
     /**
      * @param array $Get
      * @return string
+     * @throws \Exception
      */
-    public function main( array $Get ) : string
+    public function mainPage( array $Get ) : string
 	{
         $this->checkInstall();
 
@@ -155,8 +156,9 @@ Class Donate extends PluginActions
 
     /**
      * @return void
+     * @throws \Exception
      */
-    public function install() : void
+    public function installPage() : void
     {
         $this->Dashboard->CheckHash();
 

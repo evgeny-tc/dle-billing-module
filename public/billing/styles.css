@@ -632,6 +632,12 @@ p.bt_catalog_desc
     color: red;
 }
 
+.color-grey
+{
+    color: grey;
+    opacity: 0.9;
+}
+
 .tab_header_green
 {
     background-color: #44956b !important;
@@ -640,4 +646,24 @@ p.bt_catalog_desc
 .tab_header_grey
 {
     background-color: #5d5d5d !important;
+}
+
+.tab_header_blue
+{
+    background-color: #434951 !important;
+}
+
+.billing-transaction-sum
+{
+    text-align: center;
+    padding: 40px 20px 10px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.billing-transaction-desc
+{
+    text-align: center;
+    color: grey;
+    font-size: 12px;
 }

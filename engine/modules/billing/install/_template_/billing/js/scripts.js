@@ -53,7 +53,7 @@ function BillingJS( hash )
 
 			ShowLoading('');
 
-			$.post("/engine/ajax/controller.php?mod=billing", { plugin: plugin, params: params, hash: this.hash }, function(result)
+			$.post("index.php?controller=ajax&mod=billing", { plugin: plugin, params: params, hash: this.hash }, function(result)
 			{
 				HideLoading('');
 

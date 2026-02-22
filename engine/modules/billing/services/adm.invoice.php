@@ -29,9 +29,11 @@ Class Invoice
      * @return string
      * @throws BalanceException
      */
-    public function main( array $Get = [] ) : string
+    public function mainPage( array $Get = [] ) : string
 	{
-		$listPayments = $this->Dashboard->Payments();
+        $Get['page'] = intval($Get['page']) > 0 ? (int)$Get['page'] : 1;
+
+		$listPayments = $this->getPayments();
 
         # pay from balance
         #
@@ -63,36 +65,28 @@ Class Invoice
                     # Удалить
                     #
                     case 'remove':
-
-                        $this->Dashboard->LQuery->DbInvoiceRemove( $id );
-
+                        $this->Dashboard->LQuery->deleteInvoice( $id );
                         break;
 
                     # Статус -> оплачено
                     #
                     case 'ok':
-
-                        $this->Dashboard->LQuery->DbInvoiceUpdate( $id );
-
+                        $this->Dashboard->LQuery->updateInvoice( $id );
                         break;
 
                     # Статус -> не оплачено
                     #
                     case 'no':
-
-                        $this->Dashboard->LQuery->DbInvoiceUpdate( $id, true );
-
+                        $this->Dashboard->LQuery->updateInvoice( $id, true );
                         break;
 
                     # Статус -> оплачено + зачислить платеж
                     #
                     case 'ok_pay':
-
                         $this->Dashboard->invoiceRegisterPay(
-                            $this->Dashboard->LQuery->DbGetInvoiceByID( $id ),
+                            $this->Dashboard->LQuery->getInvoiceById( $id ),
                             'admin'
                         );
-
                         break;
                 }
 			}
@@ -108,14 +102,14 @@ Class Invoice
         #
         if( $this->Dashboard->config['invoice_time'] )
         {
-            $this->Dashboard->LQuery->DbWhere(
+            $this->Dashboard->LQuery->where(
                 [
                     "invoice_date_creat < {s}" => $this->Dashboard->_TIME - ( $this->Dashboard->config['invoice_time'] * 60 ),
                     "invoice_date_pay = '0' " => 1
                 ]
             );
 
-            $this->Dashboard->LQuery->DbInvoicesRemove();
+            $this->Dashboard->LQuery->deleteInvoices();
         }
 
 		$this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_4'] );
@@ -183,24 +177,24 @@ Class Invoice
 				$_WhereData["invoice_date_pay = '0'"] = 1;
 			}
 
-			$this->Dashboard->LQuery->DbWhere( $_WhereData );
+			$this->Dashboard->LQuery->where( $_WhereData );
 
 			$PerPage = 100;
-			$Data = $this->Dashboard->LQuery->DbGetInvoice( 1, $PerPage );
+			$Data = $this->Dashboard->LQuery->getInvoices( 1, $PerPage );
 		}
 		else
 		{
-			$this->Dashboard->LQuery->DbWhere( ["invoice_user_name = '{s}' " => $Get['user']]);
+			$this->Dashboard->LQuery->where( ["invoice_user_name = '{s}' " => $Get['user']]);
 
 			$PerPage = 30;
-			$Data = $this->Dashboard->LQuery->DbGetInvoice( $Get['page'], $PerPage );
+			$Data = $this->Dashboard->LQuery->getInvoices( $Get['page'], $PerPage );
 		}
 
-		$NumData = $this->Dashboard->LQuery->DbGetInvoiceNum();
+		$NumData = $this->Dashboard->LQuery->getInvoicesCount();
 
 		$this->Dashboard->ThemeAddTR(
             [
-                '<th width="1%">#</th>',
+                '<th width="5%">#</th>',
                 '<th>'.$this->Dashboard->lang['invoice_str_payok'].'</th>',
                 '<th>'.$this->Dashboard->lang['invoice_str_get'].'</th>',
                 '<th>'.$this->Dashboard->lang['history_date'].'</th>',
@@ -223,24 +217,10 @@ Class Invoice
                     $Value['invoice_user_name'] ? $this->Dashboard->ThemeInfoUser( $Value['invoice_user_name'] ) : $this->Dashboard->lang['history_user_null'],
                     '<span style="text-align: center">' .
                     ( $Value['invoice_date_pay']
-                        ? '<span class="label bt_lable_green" onClick="BillingJS.openDialog( \'#invoice_' . $Value['invoice_id'] . '\' ); return false">' . $this->Dashboard->ThemeChangeTime( $Value['invoice_date_pay'] ) . '</span>'
-                        : '<span class="label bt_lable_blue" onClick="BillingJS.openDialog( \'#invoice_' . $Value['invoice_id'] . '\' ); return false">' . $this->Dashboard->lang['refund_wait'] . '</span>' ) .
+                        ? '<span class="label bt_lable_green" onClick="BillingJS.openSlide( \'ajax.invoiceInfo\', {\'id\': '.$Value['invoice_id'].' } ); return false">' . $this->Dashboard->ThemeChangeTime( $Value['invoice_date_pay'] ) . '</span>'
+                        : '<span class="label bt_lable_blue" onClick="BillingJS.openSlide( \'ajax.invoiceInfo\', {\'id\': '.$Value['invoice_id'].' } ); return false">' . $this->Dashboard->lang['refund_wait'] . '</span>' ) .
                     '</span>',
-                    '<span class="settingsb">' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['invoice_id']) . '</span>
-                        <div id="invoice_' . $Value['invoice_id'] . '" title="' . $this->Dashboard->lang['history_search_oper'] . $Value['invoice_id'] . '" style="display:none">
-                                <p>
-                                    <b>' . $this->Dashboard->lang['072_payer_info'] . '</b>
-                                    ' . ( @unserialize($Value['invoice_payer_info']) !== false ? '<pre>' . print_r(unserialize($Value['invoice_payer_info']), 1) . '</pre>' : $Value['invoice_payer_info'] ) . '
-                                </p>
-                                <p>
-                                    <b>' . $this->Dashboard->lang['076_handler'] . '</b>
-                                    ' . $Value['invoice_handler'] . '
-                                </p>
-                                ' . ( $Value['invoice_payer_requisites'] ? '<p>
-                                        <b>' . $this->Dashboard->lang['072_req'] . '</b>
-                                        ' . $Value['invoice_payer_requisites'] . '
-                                    </p>' : '' ) . '
-                            </div>'
+                    '<span class="settingsb">' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['invoice_id']) . '</span>'
                 ]
             );
 		}
@@ -357,4 +337,190 @@ Class Invoice
 
 		return $Content;
 	}
+
+    /**
+     * Информация о платеже в слайдере
+     * @param int $id
+     * @return string
+     */
+    public function sliderInfoAjax( int $id ) : string
+    {
+        global $user_group;
+
+        $invoice = $this->Dashboard->LQuery->getInvoiceById($id);
+
+        if( ! $invoice )
+        {
+            return $this->Dashboard->getAlertMsg(
+                $this->Dashboard->lang['error'],
+                $this->Dashboard->lang['slider_invoice']['not_found'],
+                'warning billing-ajax-slider',
+                false
+            );
+        }
+
+        $listPayments = $this->getPayments();
+
+        $sum_get = \Billing\Api\Balance::Init()->Convert(value: $invoice['invoice_get'], separator_space: true, declension: true);
+
+        if( $invoice['invoice_date_pay'] > 0 )
+        {
+            $content = "<div class='billing-transaction-sum'>
+                            <span class='color-green'>{$sum_get}</span>
+                        </div>";
+            $content .= "<div class='billing-transaction-desc'>{$this->Dashboard->ThemeChangeTime( $invoice['invoice_date_pay'] )}</div>";
+        }
+        else
+        {
+            $content = "<div class='billing-transaction-sum'>
+                            <span class='color-grey'>{$sum_get}</span>
+                        </div>";
+            $content .= "<div class='billing-transaction-desc'>{$this->Dashboard->lang['statistics_dashboard_to_pay']}</div>";
+        }
+
+        $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['id'], field: $invoice['invoice_id'] );
+        $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_invoice']['date_create'], field: $this->Dashboard->ThemeChangeTime( $invoice['invoice_date_creat'] ));
+        $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_invoice']['sum_get'], field: $sum_get );
+
+        if( $invoice['invoice_paysys'] ) {
+            $this->Dashboard->ThemeAddStr(
+                title: $this->Dashboard->lang['slider_invoice']['payment'],
+                field: $this->Dashboard->ThemeInfoBilling($listPayments[$invoice['invoice_paysys']])
+            );
+        }
+
+        $content .= $this->Dashboard->PanelTabs(
+            tabs: [
+                [
+                    'id' => 'main',
+                    'title' => $this->Dashboard->lang['slider_invoice']['title'],
+                    'content' => $this->Dashboard->ThemeParserStr()
+                ]
+            ],
+            slider: true
+        );
+
+        # О платеже
+        #
+        if( $invoice['invoice_date_pay'] )
+        {
+            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_invoice']['date_pay'], field: $this->Dashboard->ThemeChangeTime( $invoice['invoice_date_pay'] ));
+            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_invoice']['sum_pay'], field: $invoice['invoice_pay'] . '&nbsp;' . $listPayments[$invoice['invoice_paysys']]['config']['currency']);
+            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_invoice']['payer_info'], field: $invoice['invoice_payer_info']);
+            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_invoice']['payer_requisites'], field: $invoice['invoice_payer_requisites']);
+
+            $content .= $this->Dashboard->PanelTabs(
+                tabs: [
+                    [
+                        'id' => 'payment',
+                        'title' => $this->Dashboard->lang['slider_invoice']['about_pay'],
+                        'content' => $this->Dashboard->ThemeParserStr()
+                    ]
+                ],
+                slider: true,
+                header_added_class: 'tab_header_green'
+            );
+        }
+
+        # Пользователь
+        #
+        if( ! $invoice['invoice_user_anonymous'] and $invoice['user_id'] > 0 )
+        {
+            $this->Dashboard->ThemeAddStr(
+                title: $this->Dashboard->lang['slider_transaction']['user'],
+                field: $this->Dashboard->ThemeInfoUser( $invoice['name'] )
+            );
+            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['id'], field: $invoice['user_id'] );
+            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['group'], field: $user_group[$invoice['user_group']]['group_name'] );
+            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['email'], field: $invoice['email'] );
+            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['ip'], field: $invoice['logged_ip'] );
+            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['reg'], field: $this->Dashboard->ThemeChangeTime( $invoice['reg_date'] ) );
+            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_transaction']['last_visit'], field: $this->Dashboard->ThemeChangeTime( $invoice['lastdate'] ) );
+            $this->Dashboard->ThemeAddStr(
+                title: $this->Dashboard->lang['slider_transaction']['now_balance'],
+                field: \Billing\Api\Balance::Init()->Convert(
+                    value: $invoice['user_balance'],
+                    separator_space: true,
+                    declension: true
+                )
+            );
+
+            $info_user = '';
+
+            if( $invoice['banned'] == 'yes' )
+            {
+                $info_user = "<span class=\"text-danger\">" . $this->Dashboard->lang['slider_transaction']['user_ban'] . "</span>";
+            }
+        }
+        else if( $invoice['invoice_user_anonymous'] )
+        {
+            $this->Dashboard->ThemeAddStr(
+                title: $this->Dashboard->lang['slider_transaction']['user'],
+                field: $invoice['invoice_user_name']
+            );
+
+            $info_user = $this->Dashboard->lang['slider_invoice']['user_anonymous'];
+        }
+        else
+        {
+            $info_user = $this->Dashboard->lang['statistics_users_error'];
+        }
+
+        $content .= $this->Dashboard->PanelTabs(
+            tabs: [
+                [
+                    'id' => 'user',
+                    'title' => $invoice['fullname'] ?: $this->Dashboard->lang['slider_transaction']['user'],
+                    'content' => $this->Dashboard->ThemeParserStr()
+                ]
+            ],
+            footer: "<div style='padding: 10px;'>{$info_user}</div>",
+            slider: true,
+            header_added_class: 'tab_header_grey'
+        );
+
+        # Из плагина
+        #
+        if( $invoice['invoice_handler'] )
+        {
+            $content .= $this->Dashboard->PanelTabs(
+                tabs: [
+                    [
+                        'id' => 'user',
+                        'title' => $this->Dashboard->lang['slider_invoice']['handler'],
+                        'content' => $this->Dashboard->ThemeParserStr()
+                    ]
+                ],
+                footer: "<div style='padding: 10px;'><pre>" . print_r($invoice['invoice_handler'], 1) . "</pre></div>",
+                slider: true,
+                header_added_class: 'tab_header_blue'
+            );
+        }
+
+        //todo: btns
+
+        return $content;
+    }
+
+    /**
+     * @return array
+     */
+    private function getPayments() : array
+    {
+        $listPayments = $this->Dashboard->Payments();
+
+        # pay from balance
+        #
+        $listPayments['balance'] = [
+            'title' => $this->Dashboard->lang['title_short'],
+            'config' => [
+                'status' => $this->Dashboard->config['status'],
+                'title' => $this->Dashboard->lang['title_short'],
+                'currency' => \Billing\Api\Balance::Init()->Declension(1),
+                'convert' => 1
+            ]
+        ];
+
+        return $listPayments;
+    }
 }

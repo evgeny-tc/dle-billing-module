@@ -36,7 +36,7 @@ Class Invoice
 
             $Delete_id = intval($_POST['invoice_delete']);
 
-            $Del = $this->DevTools->LQuery->DbGetInvoiceByID( $Delete_id );
+            $Del = $this->DevTools->LQuery->getInvoiceById( $Delete_id );
 
             if( ! $Del['invoice_id'] OR $Del['invoice_user_name'] != $this->DevTools->member_id['name'] )
             {
@@ -47,19 +47,21 @@ Class Invoice
                 throw new \Exception($this->DevTools->lang['invoice_paid_error']);
             }
 
-            $this->DevTools->LQuery->DbInvoiceRemove( $Delete_id );
+            $this->DevTools->LQuery->deleteInvoice( $Delete_id );
         }
 
         # Удалить старые квитанции
         #
         if( $this->DevTools->config['invoice_time'] )
         {
-            $this->DevTools->LQuery->DbWhere( array(
-                "invoice_date_creat < {s}" => $this->DevTools->_TIME - ( $this->DevTools->config['invoice_time'] * 60 ),
-                "invoice_date_pay = '0' " => 1
-            ));
+            $this->DevTools->LQuery->where(
+                [
+                    "invoice_date_creat < {s}" => $this->DevTools->_TIME - ( $this->DevTools->config['invoice_time'] * 60 ),
+                    "invoice_date_pay = '0' " => 1
+                ]
+            );
 
-            $this->DevTools->LQuery->DbInvoicesRemove();
+            $this->DevTools->LQuery->deleteInvoices();
         }
 
         $Content = $this->DevTools->ThemeLoad( "invoice" );
@@ -70,7 +72,7 @@ Class Invoice
         $TplLineNull = $this->DevTools->ThemePregMatch( $Content, '~\[not_invoice\](.*?)\[/not_invoice\]~is' );
         $TplLineDate = $this->DevTools->ThemePregMatch( $TplLine, '~\{creat-date=(.*?)\}~is' );
 
-        $this->DevTools->LQuery->DbWhere(
+        $this->DevTools->LQuery->where(
             [
                 "invoice_user_name = '{s}' " => $this->DevTools->member_id['name']
             ]
@@ -78,8 +80,8 @@ Class Invoice
 
         # SQL
         #
-        $Data = $this->DevTools->LQuery->DbGetInvoice( $GET['page'], $this->DevTools->config['paging'] );
-        $NumData = $this->DevTools->LQuery->DbGetInvoiceNum();
+        $Data = $this->DevTools->LQuery->getInvoices( $GET['page'], $this->DevTools->config['paging'] );
+        $NumData = $this->DevTools->LQuery->getInvoicesCount();
 
         foreach( $Data as $Value )
         {

@@ -21,7 +21,7 @@ Class Coupons
      * @return string
      * @throws \Exception
      */
-    public function main( array $GET = [] ) : string
+    public function mainPage( array $GET = [] ) : string
     {
         # Удалить отмеченные
         #
@@ -100,7 +100,7 @@ Class Coupons
         #
         $this->Dashboard->ThemeAddTR(
             [
-                '<th width="1%">#</th>',
+                '<th width="5%">#</th>',
                 '<th>' . $this->Dashboard->lang['coupons']['list']['key'] . '</th>',
                 '<th>' . $this->Dashboard->lang['coupons']['list']['value'] . '</th>',
                 '<th>' . $this->Dashboard->lang['coupons']['list']['time'] . '</th>',
@@ -225,6 +225,9 @@ Class Coupons
         return $Content;
     }
 
+    /**
+     * @return string
+     */
     private function generate() : string
     {
         $chars = 'ABDEFGHKNQRSTYZ23456789';
@@ -232,10 +235,16 @@ Class Coupons
         return substr($chars, rand(1, strlen($chars)) - 1, 1);
     }
 
+    /**
+     * @param int $time
+     * @return string
+     */
     public static function dateStatus(int $time) : string
     {
         if( $time < time() )
+        {
             return '<font color="red"> ' . date("d.m.Y H:i", $time) . '</font>';
+        }
 
         return date("d.m.Y H:i", $time);
     }

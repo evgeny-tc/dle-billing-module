@@ -51,4 +51,4 @@
        </form>
     </div>
 
-<a href="#" class="billingFormShowModal-{uniqid}">Заполнить форму</a>
+<a href="#" onCLick="return false;" class="billingFormShowModal-{uniqid}">Заполнить форму</a>

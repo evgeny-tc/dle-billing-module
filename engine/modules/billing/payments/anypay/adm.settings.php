@@ -13,6 +13,10 @@ Class AnyPay implements IPayment
 {
 	public string $doc = 'https://dle-billing.ru/doc/payments/anypay';
 
+    /**
+     * @param array $config
+     * @return array
+     */
 	public function Settings( array $config ) : array
 	{
 		$Form = [];

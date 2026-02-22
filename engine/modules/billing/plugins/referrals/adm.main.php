@@ -23,8 +23,9 @@ Class Referrals extends PluginActions
     /**
      * @param array $GET
      * @return string
+     * @throws \Exception
      */
-    public function main( array $GET ) : string
+    public function mainPage( array $GET ) : string
 	{
         $this->checkInstall();
 
@@ -282,8 +283,9 @@ HTML;
     /**
      * Процесс установки
      * @return void
+     * @throws \Exception
      */
-    public function install() : void
+    public function installPage() : void
     {
         $this->Dashboard->CheckHash();
 
@@ -350,8 +352,9 @@ HTML;
 
     /**
      * @return void
+     * @throws \Exception
      */
-    public function uninstall() : void
+    public function uninstallPage() : void
     {
         $this->Dashboard->CheckHash();
 

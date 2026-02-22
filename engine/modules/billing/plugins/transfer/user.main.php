@@ -112,7 +112,7 @@ Class Transfer
                 );
             }
 
-            $_SearchUser = $this->DevTools->LQuery->DbSearchUserByName( htmlspecialchars( trim( $_POST['bs_user_name'] ), ENT_COMPAT, $this->DevTools->config_dle['charset'] ) );
+            $_SearchUser = $this->DevTools->LQuery->findUserByName( htmlspecialchars( trim( $_POST['bs_user_name'] ), ENT_COMPAT, $this->DevTools->config_dle['charset'] ) );
 
             if( ! $_SearchUser['name'] )
 			{
@@ -182,15 +182,15 @@ Class Transfer
 		$TplLineNull = $this->DevTools->ThemePregMatch( $Content, '~\[not_history\](.*?)\[/not_history\]~is' );
 		$TplLineDate = $this->DevTools->ThemePregMatch( $TplLine, '~\{date=(.*?)\}~is' );
 
-		$this->DevTools->LQuery->DbWhere(
+		$this->DevTools->LQuery->where(
             [
                 "history_plugin = '{s} ' "=>'transfer',
                 "history_user_name = '{s}' " => $this->DevTools->member_id['name']
             ]
         );
 
-		$Data = $this->DevTools->LQuery->DbGetHistory( $GET['page'], $this->DevTools->config['paging'] );
-		$NumData = $this->DevTools->LQuery->DbGetHistoryNum();
+		$Data = $this->DevTools->LQuery->getHistory( $GET['page'], $this->DevTools->config['paging'] );
+		$NumData = $this->DevTools->LQuery->getHistoryCount();
 
 		foreach( $Data as $Value )
 		{

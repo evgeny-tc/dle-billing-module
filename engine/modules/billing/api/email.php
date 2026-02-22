@@ -4,43 +4,42 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2024
+ * @copyright     Copyright (c) 2012-2026
  */
-
 namespace Billing\Api;
 
 /**
- * Отправка уведомление (пм и email)
+ * Работа с email
  * @api
  */
-Class Alert
+Class Email
 {
     /**
      * Контакты пользователя
      * @var array
      */
-    private array $UserConnect = [];
+    protected array $UserConnect = [];
 
     /**
      * @var string
      */
-    private string $message_title = '';
+    protected string $message_title = '';
 
     /**
      * @var string
      */
-    private string $message_body = '';
+    protected string $message_body = '';
 
     /**
      * @var mixed
      */
-    private mixed $lastResult;
+    protected mixed $lastResult;
 
     /**
      * dle
      * @var array
      */
-    private array $global = [];
+    protected array $global = [];
 
     /**
      * @throws \Exception
@@ -179,14 +178,13 @@ Class Alert
 
     /**
      * Личные сообщения на сайте
+     * @deprecated
      * @throws \Exception
-     *
      * @api
      */
-    public function pm(?string $from = '', ?int $time = 0) : self
+    public function pm(?string $from = '') : self
     {
         $from = $from ? $this->global['db']->safesql( $from ) : $this->global['billing']['admin'];
-        $time = $time ?: $this->global['time'];
 
         $this->lastResult = [];
 
@@ -196,7 +194,7 @@ Class Alert
         {
             $this->global['db']->query( "INSERT INTO " . PREFIX . "_pm
 											(subj, text, user, user_from, date, pm_read, folder) VALUES
-											('{$this->message_title}', '{$this->message_body}', '{$user['user_id']}', '{$from}', '{$time}', '0', 'inbox')" );
+											('{$this->message_title}', '{$this->message_body}', '{$user['user_id']}', '{$from}', '{$this->global['time']}', '0', 'inbox')" );
 
             $this->lastResult[$user['user_id']] = $this->global['db']->insert_id();
 
@@ -210,9 +208,9 @@ Class Alert
 
     /**
      * Отправить email
-     * @return Alert
+     * @return self
      */
-    public function email() : self
+    public function send() : self
     {
         $this->lastResult = [];
 
@@ -237,7 +235,7 @@ Class Alert
     }
 
     /**
-     * Найти пользователя
+     * Получатели
      * @return array
      */
     protected function getUsersQuery() : array
@@ -270,5 +268,15 @@ Class Alert
         }
 
         return $_return;
+    }
+
+    /**
+     * Отправитель
+     * @param string $name
+     * @return array
+     */
+    protected function getUserSender(string $name) : array
+    {
+        return $this->global['db']->super_query( "SELECT user_id, email FROM " . USERPREFIX . "_users WHERE name = '{$name}'" );
     }
 }

@@ -7,9 +7,13 @@
  * @copyright     Copyright (c) 2012-2024
  */
 
+use Billing\BalanceException;
+
 const BILLING_MODULE = TRUE;
 const MODULE_PATH = ENGINE_DIR . "/modules/billing";
 const MODULE_DATA = ENGINE_DIR . "/data/billing";
+
+require_once MODULE_PATH . '/helpers/autoloader.php';
 
 try
 {
@@ -24,8 +28,7 @@ try
 
     # Admin actions
     #
-    if( $show_form_id = intval( $_POST['show_form_id'] )
-        and $member_id['user_group'] == 1 )
+    if( $show_form_id = intval( $_POST['show_form_id'] ) and $member_id['user_group'] == 1 )
     {
         $db->query( "UPDATE " . USERPREFIX . "_billing_forms SET form_show='1' WHERE form_create_id='{$show_form_id}'" );
 
@@ -97,6 +100,7 @@ try
     # valid datas
     #
     if( isset($_Theme['input']) and is_array($_Theme['input']) )
+    {
         foreach ($_Theme['input'] as $field_name => $valid_params )
         {
             $fieldValid = billingFormParseValid($valid_params);
@@ -133,6 +137,7 @@ try
 
             $_Save[$field_name] = $Data[$field_name];
         }
+    }
 
     $_Save['params'] = $arHash;
 
@@ -158,23 +163,27 @@ try
     #
     if( $arHash['price'] = floatval($arHash['price']) )
     {
-        $LQuery 	= new Billing\Database( $db, $_ConfigBilling['fname'], $_TIME );
-
-        $invoice_id = $LQuery->DbCreatInvoice(
-            '',
-            $userUid,
-            $arHash['price'],
-            $arHash['price'],
-            [
-                'billing' => [
-                    'from_balance' => $payFromBalance
+        try
+        {
+            $invoice_id = \Billing\Api\Balance::Init()->checkDouble()->createInvoice(
+                userLogin: $userUid,
+                userAnonymous: intval( $member_id['user_id'] ) == 0,
+                sum_get: $arHash['price'],
+                payer_info:  [
+                    'billing' => [
+                        'from_balance' => $payFromBalance
+                    ],
+                    'params' => [
+                        'form_id' => $create_form_id
+                    ]
                 ],
-                'params' => [
-                    'form_id' => $create_form_id
-                ]
-            ],
-            'forms:pay'
-        );
+                handler: 'forms:pay'
+            );
+        }
+        catch (BalanceException $e)
+        {
+            throw new \Exception($e->getMessage());
+        }
 
         billing_ok(
             [

@@ -38,14 +38,16 @@ Class Log
         $TplLineNull = $this->DevTools->ThemePregMatch( $Content, '~\[not_history\](.*?)\[/not_history\]~is' );
         $TplLineDate = $this->DevTools->ThemePregMatch( $TplLine, '~\{date=(.*?)\}~is' );
 
-        $this->DevTools->LQuery->DbWhere( array(
-            "history_user_name = '{s}' " => $this->DevTools->member_id['name']
-        ));
+        $this->DevTools->LQuery->where(
+            [
+                "history_user_name = '{s}' " => $this->DevTools->member_id['name']
+            ]
+        );
 
         # SQL
         #
-        $Data = $this->DevTools->LQuery->DbGetHistory( $GET['page'], $this->DevTools->config['paging'] );
-        $NumData = $this->DevTools->LQuery->DbGetHistoryNum();
+        $Data = $this->DevTools->LQuery->getHistory( $GET['page'], $this->DevTools->config['paging'] );
+        $NumData = $this->DevTools->LQuery->getHistoryCount();
 
         foreach( $Data as $Value )
         {
