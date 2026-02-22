@@ -127,7 +127,6 @@ Class DevTools
             }
         }
 
-        //todo: api 2.0
         $this->LQuery 	= new Database( $db, $this->config['fname'], $_TIME );
 
         $this->dle 		= $config;

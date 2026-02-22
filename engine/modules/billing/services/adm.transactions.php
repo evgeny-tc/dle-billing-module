@@ -103,15 +103,13 @@ Class Transactions
 
 			$this->Dashboard->LQuery->where( $_WhereData );
 
-			$PerPage = 100;
-			$Data = $this->Dashboard->LQuery->getHistory( 1, $PerPage );
+			$Data = $this->Dashboard->LQuery->getHistory( 1, $this->Dashboard->config['paging'] );
 		}
 		else
 		{
 			$this->Dashboard->LQuery->where( ["history_user_name = '{s}' " => $Get['user']] );
 
-			$PerPage = 25;
-			$Data = $this->Dashboard->LQuery->getHistory( $Get['page'], $PerPage );
+			$Data = $this->Dashboard->LQuery->getHistory( $Get['page'], $this->Dashboard->config['paging'] );
 		}
 
 		$Content = $Get['user'] ? $this->Dashboard->MakeMsgInfo( "<a href='?mod=billing&c=transactions' title='{$this->Dashboard->lang['remove']}' class='btn bg-danger btn-sm btn-raised position-left legitRipple' style='vertical-align: middle;'><i class='fa fa-repeat'></i> " . $Get['user'] . "</a> <span style='vertical-align: middle;'>{$this->Dashboard->lang['info_login']}</span>", "icon-user", "blue") : "";
@@ -166,7 +164,7 @@ Class Transactions
                 (new Paging())->setRows($NumData)
                     ->setCurrentPage($Get['page'])
                     ->setUrl("?mod=billing&c=transactions&p=" . ( $Get['user'] ? "user/{$Get['user']}/" : "" ) . "page/{p}")
-                    ->setPerPage($PerPage)
+                    ->setPerPage($this->Dashboard->config['paging'])
                     ->parse(),
                 $this->Dashboard->MakeButton('mass_remove', $this->Dashboard->lang['remove'], 'bg-danger')
 			);
@@ -250,7 +248,7 @@ Class Transactions
     {
         global $user_group;
 
-        $transaction = \Billing\DB\Transaction::getById($id);
+        $transaction = $this->Dashboard->LQuery->getTransactionById($id);
 
         if( ! $transaction )
         {

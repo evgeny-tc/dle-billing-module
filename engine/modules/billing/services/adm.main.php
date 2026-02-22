@@ -148,11 +148,11 @@ Class Main
             );
         }
 
-		$tabs[] = array(
+		$tabs[] = [
             'id' => 'plugins',
             'title' => $this->Dashboard->lang['tab_3'],
             'content' => $this->Dashboard->ThemeParserTable()
-        );
+        ];
 
 		$Content = $this->Dashboard->PanelTabs( $tabs );
 		$Content .= $this->Dashboard->ThemeEchoFoother();

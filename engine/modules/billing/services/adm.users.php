@@ -70,7 +70,7 @@ Class Users
                             )->To(
                                 userLogin: $login,
                                 sum: $_Sum
-                            )->Commit()->sendEvent();
+                            )->sendEvent()->Commit();
 						}
 						else
 						{
@@ -85,7 +85,7 @@ Class Users
                             )->From(
                                 userLogin: $login,
                                 sum: $_Sum
-                            )->Commit()->sendEvent();
+                            )->sendEvent()->Commit();
 						}
 					}
 				}

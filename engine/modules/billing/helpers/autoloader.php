@@ -19,11 +19,6 @@ spl_autoload_register(function ($class)
         $class = str_replace('Billing\\Api\\', '', $class);
         $file = MODULE_PATH . '/api/' . $clearPath($class) .'.php';
     }
-    else if( str_contains($class, 'Billing\\DB\\') )
-    {
-        $class = str_replace('Billing\\DB\\', '', $class);
-        $file = MODULE_PATH . '/database/' . $clearPath($class) .'.db.php';
-    }
     else if( str_contains($class, 'Billing\\Services\\Admin\\') )
     {
         $class = str_replace('Billing\\Services\\Admin\\', '', $class);

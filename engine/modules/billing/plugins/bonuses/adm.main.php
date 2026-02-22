@@ -32,8 +32,9 @@ Class Bonuses extends PluginActions
     /**
      * @param array $Get
      * @return string
+     * @throws \Exception
      */
-	public function main( array $Get ) : string
+	public function mainPage( array $Get ) : string
 	{
 		$this->checkInstall();
 

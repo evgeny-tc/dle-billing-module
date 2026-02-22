@@ -333,6 +333,21 @@ class Database
         return $history;
     }
 
+    public function getTransactionById(int $id): ?array
+    {
+        if ($id <= 0) {
+            return null;
+        }
+
+        return $this->db->super_query(
+            "SELECT *, `user_data`.*
+                    FROM " . USERPREFIX . "_billing_history `transaction`
+                    LEFT JOIN " . USERPREFIX . "_users `user_data`
+                        ON user_data.name = transaction.history_user_name
+             WHERE history_id = " . $id
+        ) ?: null;
+    }
+
     /**
      * Delete transaction by ID
      * @param int $historyId
@@ -358,7 +373,10 @@ class Database
         }
 
         return $this->db->super_query(
-            "SELECT * FROM " . USERPREFIX . "_billing_invoice 
+            "SELECT *, `user_data`.*
+                    FROM " . USERPREFIX . "_billing_invoice `invoice`
+                    LEFT JOIN " . USERPREFIX . "_users `user_data`
+                        ON user_data.name = invoice.invoice_user_name
              WHERE invoice_id = " . $id
         ) ?: null;
     }

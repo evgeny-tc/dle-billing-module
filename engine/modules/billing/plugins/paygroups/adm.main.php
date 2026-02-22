@@ -32,8 +32,9 @@ Class Paygroups extends PluginActions
     /**
      * @param array $params
      * @return string
+     * @throws \Exception
      */
-    public function main( array $params ) : string
+    public function mainPage( array $params ) : string
 	{
         $this->checkInstall();
 
@@ -233,8 +234,9 @@ Class Paygroups extends PluginActions
 
     /**
      * @return void
+     * @throws \Exception
      */
-    public function install() : void
+    public function installPage() : void
     {
         $this->Dashboard->CheckHash();
 
@@ -259,8 +261,9 @@ Class Paygroups extends PluginActions
 
     /**
      * @return void
+     * @throws \Exception
      */
-    public function unistall() : void
+    public function unistallPage() : void
     {
         $this->Dashboard->CheckHash();
 

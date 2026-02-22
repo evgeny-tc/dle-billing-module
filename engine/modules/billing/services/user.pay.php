@@ -329,26 +329,42 @@ Class Pay
                             throw new \Exception($this->DevTools->lang['coupon_use_error']);
                         }
 
-                        $resultPay = \Billing\Api\Balance::Init()->MinusMoney(
-                            $this->DevTools->member_id['name'],
-                            $Invoice['invoice_get'],
-                            $logData[0],
-                            $pluginHandler ?? 'null',
-                            $logData[1]
-                        );
-
-                        if( $resultPay and $this->DevTools->invoiceRegisterPay( $Invoice, $this->DevTools->member_id['name'] ) )
+                        try
                         {
-                            if( $_GET['modal'] )
-                            {
-                                $this->DevTools->ThemeSetElement( '[modal]', '' );
-                                $this->DevTools->ThemeSetElement( "[/modal]", '' );
-                            }
-                            else
-                                $this->DevTools->ThemeSetElementBlock( 'modal', '' );
+                            \Billing\Api\Balance::Init()->Transaction()->Comment(
+                                userLogin: $this->DevTools->member_id['name'],
+                                minus: $Invoice['invoice_get'],
+                                comment: $logData[0],
+                                plugin_id: $logData[1],
+                                plugin_name: $pluginHandler ?? 'null',
+                                pm: (bool)$this->config['mail_payok_pm'],
+                                email: (bool)$this->config['mail_payok_email']
+                            )->From(
+                                userLogin: $this->DevTools->member_id['name'],
+                                sum: $Invoice['invoice_get']
+                            )->sendEvent()->Commit();
 
-                            return $this->DevTools->Show(
-                                $this->DevTools->ThemeLoad( 'pay/success' )
+                            if( $this->DevTools->invoiceRegisterPay( $Invoice, $this->DevTools->member_id['name'] ) )
+                            {
+                                if( $_GET['modal'] )
+                                {
+                                    $this->DevTools->ThemeSetElement( '[modal]', '' );
+                                    $this->DevTools->ThemeSetElement( "[/modal]", '' );
+                                }
+                                else
+                                {
+                                    $this->DevTools->ThemeSetElementBlock( 'modal', '' );
+                                }
+
+                                return $this->DevTools->Show(
+                                    $this->DevTools->ThemeLoad( 'pay/success' )
+                                );
+                            }
+                        }
+                        catch (\BalanceException $e)
+                        {
+                            throw new \Exception(
+                                $e->getMessage()
                             );
                         }
 

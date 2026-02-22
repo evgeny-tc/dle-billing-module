@@ -21,7 +21,7 @@ Class Refund extends PluginActions
      * @return string
      * @throws BalanceException
      */
-    public function main( array $Get ) : string
+    public function mainPage( array $Get ) : string
 	{
         $this->checkInstall();
 

@@ -47,8 +47,9 @@ Class Forms extends PluginActions
      * Главная
      * @param array $GET
      * @return string
+     * @throws \Exception
      */
-	public function main( array $GET ) : string
+	public function mainPage( array $GET ) : string
 	{
         $this->checkInstall();
 
@@ -99,6 +100,7 @@ Class Forms extends PluginActions
      * @param string $key
      * @param int $page
      * @return string
+     * @throws \Exception
      */
     private function Forms(string $key = '', int $page) : string
     {
@@ -200,11 +202,11 @@ Class Forms extends PluginActions
             {
                 if( $row['invoice_date_pay'] )
                 {
-                    $show_data[] = '<font color="green" class="tip" style="white-space: nowrap" title="' . $this->Dashboard->ThemeChangeTime( $row['invoice_date_pay'] ) . '">' . $row['form_price'] . ' ' . $this->Dashboard->API->Declension( $row['form_price'] ) . '</font>';
+                    $show_data[] = '<font color="green" class="tip" style="white-space: nowrap" title="' . $this->Dashboard->ThemeChangeTime( $row['invoice_date_pay'] ) . '">' . $row['form_price'] . ' ' . \Billing\Api\Balance::Init()->Declension( $row['form_price'] ) . '</font>';
                 }
                 else
                 {
-                    $show_data[] = '<font color="red" class="tip" style="white-space: nowrap" title="' . $this->_Lang['table']['wait'] . '">' . $row['form_price'] . ' ' . $this->Dashboard->API->Declension( $row['form_price'] ) . '</font>';
+                    $show_data[] = '<font color="red" class="tip" style="white-space: nowrap" title="' . $this->_Lang['table']['wait'] . '">' . $row['form_price'] . ' ' . \Billing\Api\Balance::Init()->Declension( $row['form_price'] ) . '</font>';
                 }
             }
 
@@ -458,7 +460,7 @@ HTML;
         $this->Dashboard->ThemeAddStr(
             $this->_Lang['tag_gen']['price'],
             $this->_Lang['tag_gen']['price_desc'],
-            "<input id=\"phGenFormPrice\" onkeyup=\"fGenForm()\" class=\"form-control\" type=\"text\" size=\"14\" value=\"10.00\" style=\"width: 20%\"> " . $this->Dashboard->API->Declension( 10 )
+            "<input id=\"phGenFormPrice\" onkeyup=\"fGenForm()\" class=\"form-control\" type=\"text\" size=\"14\" value=\"10.00\" style=\"width: 20%\"> " . \Billing\Api\Balance::Init()->Declension( 10 )
         );
 
         $this->Dashboard->ThemeAddStr(
@@ -516,8 +518,9 @@ HTML;
     /**
      * Установка
      * @return void
+     * @throws \Exception
      */
-    public function install() : void
+    public function installPage() : void
 	{
         $this->Dashboard->CheckHash();
 
@@ -554,7 +557,11 @@ HTML;
         );
     }
 
-    public function uninstall() : void
+    /**
+     * @return void
+     * @throws \Exception
+     */
+    public function uninstallPage() : void
     {
         $this->Dashboard->CheckHash();
 

@@ -347,7 +347,7 @@ Class Invoice
     {
         global $user_group;
 
-        $invoice = \Billing\DB\Invoice::getById($id);
+        $invoice = $this->Dashboard->LQuery->getInvoiceById($id);
 
         if( ! $invoice )
         {
@@ -496,6 +496,8 @@ Class Invoice
                 header_added_class: 'tab_header_blue'
             );
         }
+
+        //todo: btns
 
         return $content;
     }

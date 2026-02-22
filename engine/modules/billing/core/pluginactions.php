@@ -16,7 +16,7 @@ Class PluginActions
     /**
      * @throws \Exception
      */
-    public function install() : void
+    public function installPage() : void
     {
         $this->Dashboard->CheckHash();
 
@@ -37,7 +37,7 @@ Class PluginActions
     /**
      * @throws \Exception
      */
-    public function uninstall() : void
+    public function uninstallPage() : void
     {
         $this->Dashboard->CheckHash();
 
@@ -50,7 +50,7 @@ Class PluginActions
         );
     }
 
-    public function update() : void
+    public function updatePage() : void
     {
         $config =  $this->Dashboard->LoadConfig( $this->Dashboard->controller );
 

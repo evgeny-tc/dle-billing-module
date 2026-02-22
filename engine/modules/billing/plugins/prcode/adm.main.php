@@ -35,8 +35,9 @@ Class Prcode extends PluginActions
     /**
      * @param array $GET
      * @return string
+     * @throws \Exception
      */
-	public function main( array $GET ) : string
+	public function mainPage( array $GET ) : string
 	{
         $this->checkInstall();
 
@@ -248,8 +249,9 @@ Class Prcode extends PluginActions
     /**
      * Процесс установки
      * @return void
+     * @throws \Exception
      */
-    public function install() : void
+    public function installPage() : void
     {
         $this->Dashboard->CheckHash();
 
@@ -288,6 +290,7 @@ Class Prcode extends PluginActions
 
     /**
      * @return void
+     * @throws \Exception
      */
     public function uninstall() : void
     {

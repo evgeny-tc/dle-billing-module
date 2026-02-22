@@ -100,7 +100,7 @@ Class Coupons
         #
         $this->Dashboard->ThemeAddTR(
             [
-                '<th width="1%">#</th>',
+                '<th width="5%">#</th>',
                 '<th>' . $this->Dashboard->lang['coupons']['list']['key'] . '</th>',
                 '<th>' . $this->Dashboard->lang['coupons']['list']['value'] . '</th>',
                 '<th>' . $this->Dashboard->lang['coupons']['list']['time'] . '</th>',

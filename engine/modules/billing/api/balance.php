@@ -105,7 +105,15 @@ Class Balance
      * @return int
      * @throws BalanceException
      */
-    public function createInvoice(int $userId = 0, string $userLogin = '', string $userAnonymous = '', string $payment = '', float $sum_get = 0, float $sum_pay = 0, mixed $payer_info = '', string $handler = '') : int
+    public function createInvoice(
+        int $userId = 0,
+        string $userLogin = '',
+        string $userAnonymous = '',
+        string $payment = '',
+        float $sum_get = 0,
+        float $sum_pay = 0,
+        mixed $payer_info = '',
+        string $handler = '') : int
     {
         $payment = self::$global['DB']->safesql( $payment );
         $handler = self::$global['DB']->safesql( $handler );
@@ -254,7 +262,16 @@ Class Balance
      * @throws BalanceException
      * @throws \Exception
      */
-    public function Comment(int $userId = 0, string $userLogin = '', float $plus = 0, float $minus = 0, string $comment = '', int $plugin_id = 0, string $plugin_name = 'api', bool $pm = false, bool $email = false) : self
+    public function Comment(
+        int $userId = 0,
+        string $userLogin = '',
+        float $plus = 0,
+        float $minus = 0,
+        string $comment = '',
+        int $plugin_id = 0,
+        string $plugin_name = 'api',
+        bool $pm = false,
+        bool $email = false) : self
     {
         $getUser = $this->getUser($userId, $userLogin);
         $balance_after = $getUser[self::getBalanceField()] + $plus - $minus;
@@ -283,24 +300,30 @@ Class Balance
 
         # Уведомления
         #
-        $buildAlert = (new Alert(userId: $userId, name: $userLogin))->loadTemplate('balance')->buildTemplate(
-            [
-                '{date}' => langdate( "j F Y  G:i", self::$global['TIME'] ),
-                '{login}' => $getUser['name'],
-                '{sum}'=> ( $plus ? "+{$plus} {$currency}" : "-{$plus} {$currency}" ),
-                '{comment}' => strip_tags($comment),
-                '{balance}' => \Billing\Api\Balance::Init()->Convert(value: $userReportBalance, separator_space: true, declension: true)
-            ]
-        );
-
         if( $pm )
         {
-            $buildAlert->pm();
+            (new Message(userId: $userId, name: $userLogin))->loadTemplate('balance')->buildTemplate(
+                [
+                    '{date}' => langdate( "j F Y  G:i", self::$global['TIME'] ),
+                    '{login}' => $getUser['name'],
+                    '{sum}'=> ( $plus ? "+{$plus} {$currency}" : "-{$plus} {$currency}" ),
+                    '{comment}' => strip_tags($comment),
+                    '{balance}' => \Billing\Api\Balance::Init()->Convert(value: $userReportBalance, separator_space: true, declension: true)
+                ]
+            );
         }
 
         if( $email )
         {
-            $buildAlert->email();
+            (new Email(userId: $userId, name: $userLogin))->loadTemplate('balance')->buildTemplate(
+                [
+                    '{date}' => langdate( "j F Y  G:i", self::$global['TIME'] ),
+                    '{login}' => $getUser['name'],
+                    '{sum}'=> ( $plus ? "+{$plus} {$currency}" : "-{$plus} {$currency}" ),
+                    '{comment}' => strip_tags($comment),
+                    '{balance}' => \Billing\Api\Balance::Init()->Convert(value: $userReportBalance, separator_space: true, declension: true)
+                ]
+            );
         }
 
         return $this;
@@ -311,7 +334,7 @@ Class Balance
      * @param mixed ...$hook_new_data
      * @return Balance
      */
-    function sendEvent(...$hook_new_data) : self
+    public function sendEvent(...$hook_new_data) : self
     {
         if( $this->hook_num <= self::MAX_HOOK_EVENTS )
         {

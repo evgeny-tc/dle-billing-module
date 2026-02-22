@@ -26,7 +26,7 @@ $blank = [
 	'start' => "log/main/page/1",
     'start_admin' => "main/main",
 	'format' => "float",
-	'version' => "0.9.5",
+	'version' => "1.0.2",
 	'urls' => "refund-cashback"
 ];
 
@@ -34,7 +34,28 @@ $blank['currency'] = $_Lang['currency'];
 $blank['admin'] = $member_id['name'];
 $blank['secret'] = genCode();
 
-$htaccess_set = "\n\t# billing\n\tRewriteRule ^([^/]+).html/(.*)(/?)+$ index.php?do=static&page=$1&seourl=$1&route=$2 [QSA]\n";
+$urls = [
+    [
+        'key' => "custom.billing",
+        'seo' => "/billing.html/{service}/",
+        'real' => "/index.php?do=static&page=billing&seourl=billing&route={service}"
+    ],
+    [
+        'key' => "custom.billing_method",
+        'seo' => "/billing.html/{service}/{method}/",
+        'real' => "/index.php?do=static&page=billing&seourl=billing&route={service}/{method}"
+    ],
+    [
+        'key' => "custom.billling_params",
+        'seo' => "/billing.html/{service}/{method}/{param_name}/{param_value}/",
+        'real' => "/index.php?do=static&page=billing&seourl=billing&route={service}/{method}/{param_name}/{param_value}"
+    ],
+    [
+        'key' => "custom.billing.billling_params_2",
+        'seo' => "/billing.html/{service}/{method}/{param_name}/{param_value}/{param_name_2}/{param_value_2}/",
+        'real' => "/index.php?do=static&page=billing&seourl=billing&route={service}/{method}/{param_name}/{param_value}/{param_name_2}/{param_value_2}"
+    ]
+];
 
 # Процесс установки
 #
@@ -127,6 +148,25 @@ if( isset( $_POST['install'] ) or isset($_GET['install']) )
 	{
 		msg( "error", $_Lang['install_bad'], "<div style=\"text-align: left\">" . $_Lang['install_error_config'] . "<pre><code>" . str_replace('<', '&lt;', $saveConfigFile) . "</code></pre></div>", array( "" => "<i class=\"fa fa-repeat\"></i> " . $_Lang['main_re']) );
 	}
+
+    # url
+    #
+    foreach ($urls as $url)
+    {
+        $seo_key = DLEUrl::AddRule($url['key'], $url['seo'], $url['real']);
+    }
+
+    if (DLEUrl::CheckRoutes() !== null)
+    {
+        msg(
+            "error",
+            $this->Dashboard->lang['error'],
+            "<div style=\"text-align: left\">" . $this->Dashboard->lang['error_url'] . "</div>",
+            [
+                '?mod=friendlyurl' => $this->Dashboard->lang['error_url_check']
+            ]
+        );
+    }
 
     msg(
         "success",

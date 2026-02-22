@@ -179,11 +179,10 @@ trait Core
             throw new BalanceException($this->lang['register_pay_payed_invoice']);
         }
 
-        Query::Init()->updateInvoice(
-            id: $Invoice['invoice_id'],
-            invoice_paysys: $Invoice['invoice_paysys'],
-            invoice_date_pay: $this->_TIME,
-            invoice_payer_requisites: $payerRequisites
+        $this->LQuery->updateInvoice(
+            invoiceId: $Invoice['invoice_id'],
+            paymentSystem: $Invoice['invoice_paysys'],
+            payerRequisites: $payerRequisites
         );
 
         # есть обработчик
