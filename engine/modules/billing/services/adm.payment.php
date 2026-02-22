@@ -21,10 +21,11 @@ Class Payment
     /**
      * @param array $Get
      * @return string
+     * @throws \Exception
      */
-    public function main( array $Get ) : string
+    public function mainPage( array $Get ) : string
     {
-        $Name = $this->Dashboard->LQuery->parsVar( $Get['billing'], "/[^a-zA-Z0-9\s]/" );
+        $Name = $this->Dashboard->LQuery->sanitize( $Get['billing'], "/[^a-zA-Z0-9\s]/" );
 
         # Сохранить
         #
@@ -103,7 +104,7 @@ Class Payment
         $this->Dashboard->ThemeAddStr(
             $this->Dashboard->lang['payment_convert_text'],
             $this->Dashboard->lang['payment_convert_text_desc'],
-            \Billing\Api\Balance::Init()->Convert( 1 ) . "&nbsp;" . \Billing\Api\Balance::Init()->Declension( 1 ) . " = <input autocomplete=\"off\" name=\"save_con[convert]\" class=\"form-control\" type=\"number\" value=\"" . $Payment['convert'] ."\"  style=\"width: 90px\" required> <span class='payment_currency_name'></span>"
+            \Billing\Api\Balance::Init()->Convert( 1 ) . "&nbsp;" . \Billing\Api\Balance::Init()->Declension( 1 ) . " = <input autocomplete=\"off\" name=\"save_con[convert]\" step='0.001' class=\"form-control\" type=\"number\" value=\"" . $Payment['convert'] ."\"  style=\"width: 90px\" required> <span class='payment_currency_name'></span>"
         );
 
         $tabs[] = [

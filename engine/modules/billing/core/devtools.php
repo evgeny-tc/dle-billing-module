@@ -75,12 +75,6 @@ Class DevTools
     public string $get_method = '';
 
     /**
-     * Connect api module
-     * @var object
-     */
-    public object $API;
-
-    /**
      * Helper sql
      * @var object
      */
@@ -135,7 +129,6 @@ Class DevTools
 
         //todo: api 2.0
         $this->LQuery 	= new Database( $db, $this->config['fname'], $_TIME );
-        $this->API 		= new API( $db, $member_id, $this->config, $_TIME );
 
         $this->dle 		= $config;
         $this->member_id = $member_id;
@@ -197,7 +190,7 @@ Class DevTools
         }
         else
         {
-            throw new \Exception(sprintf($this->lang['cabinet_metod_error'], $this->get_plugin, $this->get_method));
+            throw new \Exception(sprintf($this->lang['cabinet_method_error'], $this->get_plugin, $this->get_method));
         }
     }
 

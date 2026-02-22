@@ -103,7 +103,7 @@ Class Refund
             {
                 $transactionRefund = \Billing\Api\Balance::Init()->Transaction();
 
-                $refundId = $this->DevTools->LQuery->DbCreatRefund(
+                $refundId = $this->DevTools->LQuery->createRefund(
                     $this->DevTools->member_id['name'],
                     $_Money,
                     $_MoneyCommission,
@@ -154,25 +154,31 @@ Class Refund
 		$TplLineNull = $this->DevTools->ThemePregMatch( $Content, '~\[not_history\](.*?)\[/not_history\]~is' );
 		$TplLineDate = $this->DevTools->ThemePregMatch( $TplLine, '~\{date=(.*?)\}~is' );
 
-		$this->DevTools->LQuery->DbWhere(
+		$this->DevTools->LQuery->where(
             [
                 "refund_user = '{s}' " => $this->DevTools->member_id['name']
             ]
         );
 
-		$Data = $this->DevTools->LQuery->DbGetRefund( $GET['page'], $this->DevTools->config['paging'] );
-		$NumData = $this->DevTools->LQuery->DbGetRefundNum();
+		$Data = $this->DevTools->LQuery->getRefunds( $GET['page'], $this->DevTools->config['paging'] );
+		$NumData = $this->DevTools->LQuery->getRefundsCount();
 
 		foreach( $Data as $Value )
 		{
 			$TimeLine = $TplLine;
 
             if( $Value['refund_date_return'] )
+            {
                 $refund_status = "<font color=\"green\">".$this->DevTools->lang['refund_ok'] . ": " . $this->DevTools->ThemeChangeTime( $Value['refund_date_return'], $TplLineDate ) . "</a>";
+            }
             else if( $Value['refund_date_cancel'] )
+            {
                 $refund_status = "<font color=\"grey\">".$this->DevTools->lang['refund_cancel'] . ": " . $this->DevTools->ThemeChangeTime( $Value['refund_date_cancel'], $TplLineDate ) . "</a>";
+            }
             else
+            {
                 $refund_status = $this->DevTools->lang['refund_wait'];
+            }
 
 			$params = [
                 '{date=' . $TplLineDate . '}' => $this->DevTools->ThemeChangeTime( $Value['refund_date'], $TplLineDate ),

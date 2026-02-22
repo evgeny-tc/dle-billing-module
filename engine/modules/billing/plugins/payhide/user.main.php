@@ -56,7 +56,11 @@ Class Payhide
 		$TplLineNull = $this->DevTools->ThemePregMatch( $Content, '~\[not_history\](.*?)\[/not_history\]~is' );
 		$TplLineDate = $this->DevTools->ThemePregMatch( $TplLine, '~\{date=(.*?)\}~is' );
 
-		$this->DevTools->LQuery->DbWhere( array( "payhide_user = '{s}' " => $this->DevTools->member_id['name'] ) );
+		$this->DevTools->LQuery->where(
+            [
+                "payhide_user = '{s}' " => $this->DevTools->member_id['name']
+            ]
+        );
 
 		$Data = $this->db_get_payhide( $GET['page'], $this->DevTools->config['paging'] );
 		$NumData = $this->db_get_payhide_num();
@@ -191,7 +195,7 @@ Class Payhide
 
 		# Проверка на повторную оплату
 		#
-		$this->DevTools->LQuery->DbWhere(
+		$this->DevTools->LQuery->where(
             [
                 "payhide_user ='{s}' " => $userUid,
                 "payhide_tag ='{$Get['key']}' " => 1,

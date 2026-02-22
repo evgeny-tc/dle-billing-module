@@ -22,6 +22,9 @@ Class Statistics
 
     private array $_Querys = [];
 
+    /**
+     *
+     */
     public function __construct()
     {
         session_start();
@@ -121,7 +124,7 @@ HTML;
      * Main page
      * @return string
      */
-    public function main() : string
+    public function mainPage() : string
     {
         $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
 
@@ -149,7 +152,7 @@ HTML;
      * Payments page
      * @return string
      */
-    public function billings() : string
+    public function billingsPage() : string
     {
         $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
 
@@ -179,7 +182,7 @@ HTML;
      * Total page
      * @return string
      */
-    public function board() : string
+    public function boardPage() : string
     {
         $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
 
@@ -263,7 +266,7 @@ HTML;
      * Статистика по плагинам
      * @return string
      */
-    public function plugins() : string
+    public function pluginsPage() : string
     {
         $this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_5'] );
 
@@ -313,23 +316,23 @@ HTML;
     /**
      * Статистика пользователя
      * @param $GET
-     * @return string|void
+     * @return string
      */
-    public function users( $GET ) : string
+    public function usersPage( $GET ) : string
     {
         if( isset( $_POST['search_btn'] ) )
         {
-            header( 'Location: /' . $this->Dashboard->dle['admin_path'] . '?mod=billing&c=statistics&m=users&p=user/' . $this->Dashboard->LQuery->parsVar( $_POST['search_user'] ) );
+            header( 'Location: /' . $this->Dashboard->dle['admin_path'] . '?mod=billing&c=statistics&m=users&p=user/' . $this->Dashboard->LQuery->sanitize( $_POST['search_user'] ) );
 
             return '';
         }
         else if( $GET['user'] )
         {
-            $Result = $this->Dashboard->LQuery->DbSearchUserByName( $this->Dashboard->LQuery->parsVar( $GET['user'] ) );
+            $Result = $this->Dashboard->LQuery->findUserByName( $this->Dashboard->LQuery->sanitize( $GET['user'] ) );
         }
         else
         {
-            $Result = $this->Dashboard->LQuery->DbSearchUserByName( $this->Dashboard->member_id['name'] );
+            $Result = $this->Dashboard->LQuery->findUserByName( $this->Dashboard->member_id['name'] );
         }
 
         if( ! $Result['user_id'] )
@@ -430,7 +433,7 @@ HTML;
      * Clear page
      * @return string
      */
-    public function clean() : string
+    public function cleanPage() : string
     {
         $GetPluginsArray = $this->Dashboard->Plugins();
         $GetPluginsArray['pay']['title'] = $this->Dashboard->lang['statistics_pay'];
@@ -570,9 +573,9 @@ HTML;
 
     /**
      * Используемые способы пополнения баланса
-     * @param $sql
-     * @param $sqlNull
-     * @return mixed|string
+     * @param string $sql
+     * @param string $sqlNull
+     * @return string
      */
     private function DrawPaymentsStatUp( string $sql, string $sqlNull ) : string
     {
@@ -685,8 +688,8 @@ HTML;
 
     /**
      * Рост привлеченных средств
-     * @param $sql
-     * @return mixed|string
+     * @param string $sql
+     * @return string
      */
     private function DrawPaymentsExp( string $sql ) : string
     {
@@ -768,7 +771,7 @@ HTML;
 
     /**
      * График изменения дохода
-     * @param $query_main
+     * @param string $query_main
      * @return string
      */
     private function DrawChartMain( string $query_main ) : string
@@ -978,7 +981,7 @@ HTML;
 
     /**
      * Объем расходов и доходов пользователей
-     * @param $sql
+     * @param string $sql
      * @return string
      */
     private function DrawPluginsCosts( string $sql ) : string
@@ -1053,7 +1056,7 @@ HTML;
 
     /**
      * Группа пользователя
-     * @param $userInfo
+     * @param array $userInfo
      * @return string
      */
     private function UserGroup( array $userInfo ) : string

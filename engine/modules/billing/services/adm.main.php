@@ -19,9 +19,9 @@ Class Main
      * Главная страница
      * @return string
      */
-	public function main() : string
-	{
-		$this->Dashboard->ThemeEchoHeader();
+	public function mainPage() : string
+    {
+        $this->Dashboard->ThemeEchoHeader();
 
 		# Вкладка №1
 		#
@@ -85,15 +85,15 @@ Class Main
         $sectionPayments = [];
 
 		foreach ($this->Dashboard->Payments() as $name => $info )
-		{
-			$sectionPayments[] = [
+        {
+            $sectionPayments[] = [
                 'icon' => 'public/billing/payments/' . $name . '.png',
                 'link' => '?mod=billing&c=payment&p=billing/' . $name,
                 'title' => $info['title'],
                 'desc' => $info['desc'],
                 'on' => isset($info['config']['status']) ?? 0
             ];
-		}
+        }
 
 		$tabs[] = [
             'id' => 'payments',
@@ -106,7 +106,7 @@ Class Main
         $this->Dashboard->ThemeAddTR( $this->Dashboard->lang['plugins_table_head'] );
 
 		foreach ($this->Dashboard->Plugins() as $name => $info )
-		{
+        {
             $status_btn = '<a onClick="if( ! confirm(\'' . $this->Dashboard->lang['plugins_table_status']['confirm'] . '\') ) return false" href="?mod=billing&c=' . $name . '&m=uninstall&user_hash=' . $this->Dashboard->hash . '" class="btn bg-danger btn-sm btn-raised legitRipple">' . $this->Dashboard->lang['plugins_table_status']['delete'] . '</a>';
 
             # not install
@@ -140,32 +140,31 @@ Class Main
                     "<a href='?mod=billing&c={$name}'>{$info['title']}</a><br><span style='color: grey; font-size: 12px'>{$info['desc']}</span>",
                     "<a href='{$info['link']}' target='_blank'>{$info['author']}</a>",
                     $info['config']['version'] ? (
-                        version_compare($info['version'], $info['config']['version']) > 0 ? '<font color="red" class="tip" title="' . $this->Dashboard->lang['plugins_table_status']['need_update'] . ' ' . $info['version'] . '">' . $info['config']['version'] . '</font>' : '<font color="green">' . $info['config']['version'] . '</font>'
+                    version_compare($info['version'], $info['config']['version']) > 0 ? '<font color="red" class="tip" title="' . $this->Dashboard->lang['plugins_table_status']['need_update'] . ' ' . $info['version'] . '">' . $info['config']['version'] . '</font>' : '<font color="green">' . $info['config']['version'] . '</font>'
                     ) : $info['version'],
                     $status_plugin,
                     $status_btn
                 ]
             );
-		}
+        }
 
 		$tabs[] = array(
-				'id' => 'plugins',
-				'title' => $this->Dashboard->lang['tab_3'],
-				'content' => $this->Dashboard->ThemeParserTable()
-		);
+            'id' => 'plugins',
+            'title' => $this->Dashboard->lang['tab_3'],
+            'content' => $this->Dashboard->ThemeParserTable()
+        );
 
 		$Content = $this->Dashboard->PanelTabs( $tabs );
 		$Content .= $this->Dashboard->ThemeEchoFoother();
 
 		return $Content;
 	}
-
     /**
      * Настройки модуля
      * @return string
      * @throws \Exception
      */
-	public function settings() : string
+	public function settingsPage() : string
 	{
 		# Сохранить
 		#
@@ -400,8 +399,9 @@ Class Main
     /**
      * Журнал интеграций
      * @return string
+     * @throws \Exception
      */
-	public function log() : string
+	public function logPage() : string
 	{
 		# Очистить
 		#
@@ -484,7 +484,7 @@ Class Main
     /**
      * @return void
      */
-    public function exportlog() : void
+    public function exportlogPage() : void
     {
         $data = [];
 
@@ -508,7 +508,10 @@ Class Main
         die;
     }
 
-    public function info() : void
+    /**
+     * @return void
+     */
+    public function infoPage() : void
     {
         msg(
             "success",

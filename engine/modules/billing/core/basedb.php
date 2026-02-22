@@ -10,7 +10,7 @@
 namespace Billing;
 
 /**
- * БД для orm
+ * БД
  */
 Class BaseDB
 {

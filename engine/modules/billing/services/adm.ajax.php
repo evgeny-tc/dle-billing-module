@@ -24,7 +24,7 @@ Class Ajax
      * @return string
      * @throws \Exception
      */
-    public function transactionInfo(array $get) : string
+    public function transactionInfoPage(array $get) : string
     {
         $this->Dashboard->CheckHash();
 
@@ -33,7 +33,27 @@ Class Ajax
 
         return $this->Dashboard->ajaxResponse(
             [
-                'data' => $service->slider_Info( (int)$_POST['params']['id'] )
+                'data' => $service->sliderInfoAjax( (int)$_POST['params']['id'] )
+            ]
+        );
+    }
+
+    /**
+     * Информация о транзакции
+     * @param array $get
+     * @return string
+     * @throws \Exception
+     */
+    public function invoiceInfoPage(array $get) : string
+    {
+        $this->Dashboard->CheckHash();
+
+        $service = new \Billing\Services\Admin\Invoice();
+        $service->Dashboard = $this->Dashboard;
+
+        return $this->Dashboard->ajaxResponse(
+            [
+                'data' => $service->sliderInfoAjax( (int)$_POST['params']['id'] )
             ]
         );
     }
@@ -42,7 +62,7 @@ Class Ajax
      * Поиск пользователей
      * @return string
      */
-    public function searchUser() : string
+    public function searchUserPage() : string
     {
         if( preg_match( "/[\||\<|\>]/", $_GET['term'] ) )
         {

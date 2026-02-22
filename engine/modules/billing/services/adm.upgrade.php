@@ -18,7 +18,7 @@ Class Upgrade
     /**
      * @throws \Exception
      */
-    public function main() : void
+    public function mainPage() : void
 	{
 		$List = opendir( MODULE_PATH . '/upgrades/' );
 

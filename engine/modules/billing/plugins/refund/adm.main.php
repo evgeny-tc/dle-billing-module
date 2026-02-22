@@ -54,19 +54,19 @@ Class Refund extends PluginActions
 
 				if( $RemoveAct == "ok" )
 				{
-					$this->Dashboard->LQuery->DbRefundStatus( $remove_id, $this->Dashboard->_TIME );
+					$this->Dashboard->LQuery->updateRefundStatus( $remove_id, $this->Dashboard->_TIME );
 				}
 				else if( $RemoveAct == "wait" )
 				{
-					$this->Dashboard->LQuery->DbRefundStatus( $remove_id );
+					$this->Dashboard->LQuery->updateRefundStatus( $remove_id );
 				}
 				else if( $RemoveAct == "remove" )
 				{
-					$this->Dashboard->LQuery->DbRefundRemore( $remove_id );
+					$this->Dashboard->LQuery->deleteRefund( $remove_id );
 				}
 				else if( $RemoveAct == "back" )
 				{
-					$getRefundItem = $this->Dashboard->LQuery->DbGetRefundById( $remove_id );
+					$getRefundItem = $this->Dashboard->LQuery->getRefundById( $remove_id );
 
                     if( ! intval($getRefundItem['refund_date_return']) and ! intval($getRefundItem['refund_date_cancel']) )
                     {
@@ -83,7 +83,7 @@ Class Refund extends PluginActions
                             sum: floatval($getRefundItem['refund_summa'])
                         );
 
-                        $this->Dashboard->LQuery->DbRefundCancel( $remove_id );
+                        $this->Dashboard->LQuery->cancelRefund( $remove_id );
                     }
 				}
 			}
@@ -155,20 +155,20 @@ Class Refund extends PluginActions
 			$_WhereData["refund_date > '{s}'"] = strtotime( $_POST['search_date'] );
 			$_WhereData["refund_date < '{s}'"] = strtotime( $_POST['search_date_to'] );
 
-			$this->Dashboard->LQuery->DbWhere( $_WhereData );
+			$this->Dashboard->LQuery->where( $_WhereData );
 
             $PerPage = 100;
-			$Data = $this->Dashboard->LQuery->DbGetRefund( 1, $PerPage );
+			$Data = $this->Dashboard->LQuery->getRefunds( 1, $PerPage );
 		}
 		else
 		{
-			$this->Dashboard->LQuery->DbWhere( array( "refund_user = '{s}' " => $Get['user'] ) );
+			$this->Dashboard->LQuery->where( ["refund_user = '{s}' " => $Get['user']] );
 
 			$PerPage = 30;
-			$Data = $this->Dashboard->LQuery->DbGetRefund( $Get['page'], $PerPage );
+			$Data = $this->Dashboard->LQuery->getRefunds( $Get['page'], $PerPage );
 		}
 
-		$NumData = $this->Dashboard->LQuery->DbGetRefundNum();
+		$NumData = $this->Dashboard->LQuery->getRefundsCount();
 
 		# Список запросов
 		#

@@ -46,6 +46,12 @@ Class Dashboard
 	 */
 	public array $dle = [];
 
+    /**
+     * Остальные конфиги
+     * @var array
+     */
+    public array $config = [];
+
 	/**
 	 * Пользователь
 	 * @var array
@@ -65,27 +71,13 @@ Class Dashboard
 	public int $_TIME;
 
 	/**
-	 * Config
-	 * @var array
-	 */
-	public array $config = [];
-
-	/**
 	 * Lang array
 	 * @var array
 	 */
 	public array $lang = [];
 
 	/**
-	 * Connect api module
-     * @deprecated
-	 * @var object
-	 */
-	public object $API;
-
-	/**
-	 * Helper sql
-     * @deprecated
+	 * Некоторые запросы к БД
 	 * @var object
 	 */
 	public object $LQuery;
@@ -139,15 +131,11 @@ Class Dashboard
 		$this->lang 	= file_exists(MODULE_PATH . '/lang/' . $selected_language . '/admin.php') ? include MODULE_PATH . '/lang/' . $selected_language . '/admin.php' : include MODULE_PATH . '/lang/admin.php';
 		$this->config 	= static::getConfig();
 
-        //TODO: models
 		$this->LQuery 	= new Database(
 			$db,
 			$this->config['fname'],
 			$_TIME
 		);
-
-		//TODO: v.2.0
-        $this->API 		= new API( $db, $member_id, $this->config, $_TIME );
 
 		$this->dle 		= $config;
 		$this->member_id = $member_id;
@@ -197,6 +185,8 @@ Class Dashboard
         {
             throw new \Exception($this->lang['main_error_controller']);
         }
+
+        $this->action .= 'Page';
 
 		if( in_array($this->action, get_class_methods($service) ) )
 		{
@@ -692,14 +682,14 @@ HTML;
 		$this->list_table[] = $array;
 	}
 
-	/**
-	 * Add row in setting lines
-	 * @param string $title
-	 * @param string $desc
-	 * @param string $field
-	 * @return void
-	 */
-	public function ThemeAddStr(string $title, string $desc = '', string $field = '') : void
+    /**
+     * Add row in setting lines
+     * @param string $title
+     * @param string $desc
+     * @param string|null $field
+     * @return void
+     */
+	public function ThemeAddStr(string $title, string $desc = '', ?string $field = '') : void
 	{
 		$this->str_table[] = [
             'title' => $title,
@@ -797,7 +787,7 @@ HTML;
 					<a href=\"#\" target=\"_blank\" data-toggle=\"dropdown\" data-original-title=\"". $this->lang['pay_name'] ."\" class=\"status-info tip\"><b>{$info['title']}</b></a>
 						<ul class=\"dropdown-menu text-left\">
 							<li>{$status}</li>
-							<li><a style=\"cursor: default\"> {$this->API->Convert( 1 )} {$this->API->Declension( 1 )} = {$info['config']['convert']} {$info['config']['currency']}</a></li>
+							<li><a style=\"cursor: default\"> " . \Billing\Api\Balance::Init()->Convert(1) . " " . \Billing\Api\Balance::Init()->Declension( $this->BalanceUser ) . " = {$info['config']['convert']} {$info['config']['currency']}</a></li>
 						</ul>
 				</div>";
 	}
