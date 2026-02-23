@@ -13,28 +13,55 @@ return new class extends Handler
 {
     private array $_Lang;
     private array $_Config;
-    
+
+    /**
+     *
+     */
     public function __construct()
     {
         $this->_Lang = DevTools::getLang('donate');
         $this->_Config = DevTools::getConfig('donate');
     }
-    
+
+    /**
+     * @param array $Invoice
+     * @return bool
+     */
     public function pay(array $Invoice) : bool
     {
         $InfoPay = unserialize($Invoice['invoice_payer_info']);
+
+        \Billing\Api\Balance::Init()->Transaction();
+
+        $comment = sprintf(
+            $this->_Lang['pay'],
+            '<a href="/user/' . urlencode( $Invoice['invoice_user_name'] ) . '">' . $Invoice['invoice_user_name'] . '</a>',
+            $InfoPay['params']['comment']
+        );
 
         # Комиссия
         #
         if( $this->_Config['percent'] )
         {
-            $Invoice['invoice_get'] -= ($Invoice['invoice_get'] / 100) * $this->_Config['percent'];
+            $sum_commission = ($Invoice['invoice_get'] / 100) * $this->_Config['percent'];
+
+            if( floatval($sum_commission) > 0 )
+            {
+                \Billing\Api\Balance::Init()->sendCommission(
+                    sum: $sum_commission,
+                    comment: $comment,
+                    plugin: 'donate',
+                    plugin_id: $InfoPay['params']['grouping']
+                );
+
+                $Invoice['invoice_get'] -= $sum_commission;
+            }
         }
 
         \Billing\Api\Balance::Init()->Comment(
             userLogin: $InfoPay['params']['login'],
             plus: $Invoice['invoice_get'],
-            comment: sprintf( $this->_Lang['pay'], '<a href="/user/' . urlencode( $Invoice['invoice_user_name'] ) . '">' . $Invoice['invoice_user_name'] . '</a>', $InfoPay['params']['comment'] ),
+            comment: $comment,
             plugin_id: $InfoPay['params']['grouping'],
             plugin_name: 'donate',
             pm: (bool)$this->_Config['alert_pm'],
@@ -43,6 +70,8 @@ return new class extends Handler
             userLogin: $InfoPay['params']['login'],
             sum: $Invoice['invoice_get']
         );
+
+        \Billing\Api\Balance::Init()->Commit();
 
         return true;
     }

@@ -9,7 +9,7 @@
 
 if( $login )
 {
-    include ENGINE_DIR . '/modules/billing/OutAPI.php';
+    require_once ENGINE_DIR . '/modules/billing/api/balance.php';
 
     $get_money = $db->super_query( "SELECT SUM(history_plus) as `sum`
                                                 FROM " . USERPREFIX . "_billing_history
@@ -17,9 +17,7 @@ if( $login )
                                                         and history_user_name = '" . $db->safesql( $login ) . "'
                                                         and history_plus > 0" );
 
-    echo $BillingAPI->Convert($get_money['sum']) . ( isset( $curr ) ? ' ' . $BillingAPI->Declension($get_money['sum']) : '' );
+    echo \Billing\Api\Balance::Init()->Convert($get_money['sum']) . ( isset( $curr ) ? ' ' . \Billing\Api\Balance::Init()->Declension($get_money['sum']) : '' );
 
     unset( $BillingAPI );
 }
-
-?>

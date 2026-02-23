@@ -60,7 +60,7 @@ try
 
     # Мин. сумма
     #
-    if( $get_sum < $_Config['min'] )
+    if( $get_sum < $_Config['min'] or $get_sum <= 0 )
     {
         billing_error( sprintf($_Lang['ajax_er4'], \Billing\Api\Balance::Init()->Convert( $_Config['min'] ), \Billing\Api\Balance::Init()->Declension( $_Config['min'] )) );
     }
@@ -70,28 +70,33 @@ try
     $get_comment = $db->safesql( strip_tags($get_comment) );
     $get_comment = substr($get_comment, 0, 128);
 
-    //todo: old
     $LQuery 	= new Billing\Database( $db, $_ConfigBilling['fname'], $_TIME );
 
     # Создать квитанцию
     #
-    $invoice_id = $LQuery->DbCreatInvoice(
-        '',
-        $member_id['name'] ?: $_SERVER['REMOTE_ADDR'],
-        $get_sum,
-        $get_sum,
-        [
-            'billing' => [
-                'from_balance' => 1
+    try
+    {
+        $invoice_id = \Billing\Api\Balance::Init()->checkDouble()->createInvoice(
+            userLogin: $member_id['name'] ?? $_SERVER['REMOTE_ADDR'],
+            userAnonymous: $member_id['name'] ? 0 : 1,
+            sum_get: $get_sum,
+            payer_info: [
+                'billing' => [
+                    'from_balance' => 1
+                ],
+                'params' => [
+                    'login' => $get_login,
+                    'grouping' => $get_group_id,
+                    'comment' => $get_comment
+                ]
             ],
-            'params' => [
-                'login' => $get_login,
-                'grouping' => $get_group_id,
-                'comment' => $get_comment
-            ]
-        ],
-        'donate:pay'
-    );
+            handler: 'donate:pay'
+        );
+    }
+    catch (\Billing\BalanceException $e)
+    {
+        billing_error( $e->getMessage() );
+    }
 
     billing_ok([
         'url' => "/{$_ConfigBilling['page']}.html/pay/waiting/id/{$invoice_id}"

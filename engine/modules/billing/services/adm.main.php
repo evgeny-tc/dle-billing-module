@@ -208,6 +208,12 @@ Class Main
 		);
 
 		$this->Dashboard->ThemeAddStr(
+			$this->Dashboard->lang['settings_commission'],
+			$this->Dashboard->lang['settings_commission_desc'],
+			$this->Dashboard->MakeICheck("save_con[commission]", $this->Dashboard->config['commission'])
+		);
+
+		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['settings_hide_menu'],
 			$this->Dashboard->lang['settings_hide_menu_desc'],
 			$this->Dashboard->MakeICheck("save_con[hide_menu]", $this->Dashboard->config['hide_menu'])
@@ -234,7 +240,7 @@ Class Main
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['settings_admin'],
 			$this->Dashboard->lang['settings_admin_desc'],
-			"<input name=\"save_con[admin]\" class=\"form-control\" type=\"text\" value=\"" . $this->Dashboard->config['admin'] ."\" style=\"width: 100%\">"
+			"<input name=\"save_con[admin]\" data-tokenfield=\"users\" data-limit=\"1\" autocomplete=\"off\" autocomplete=\"off\" class=\"form-control\" type=\"text\" value=\"" . $this->Dashboard->config['admin'] ."\" style=\"width: 100%\">"
 		);
 
 		$this->Dashboard->ThemeAddStr(

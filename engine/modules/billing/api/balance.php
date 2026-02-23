@@ -37,6 +37,11 @@ Class Balance
     const MAX_HOOK_EVENTS = 10;
 
     /**
+     * @var array
+     */
+    protected static array $buffer = [];
+
+    /**
      * Данные для события
      * @var array
      */
@@ -71,7 +76,10 @@ Class Balance
                 'USER' => $member_id,
                 'TIME' => $_TIME,
                 'DLE' => $config,
-                'BILLING' => $params
+                'BILLING' => $params,
+                'LANG' => file_exists( ENGINE_DIR . '/modules/billing/lang/api.php' )
+                            ? require ENGINE_DIR . '/modules/billing/lang/api.php'
+                            : []
             ];
 
             self::$instance->hook_num = 0;
@@ -405,8 +413,6 @@ Class Balance
         return $this;
     }
 
-    protected static array $buffer = [];
-
     /**
      * Найти пользователя
      * @param int $userId
@@ -491,6 +497,34 @@ Class Balance
         $cases = [2, 0, 1, 1, 1, 2];
 
         return $titles[ ($value % 100 > 4 && $value % 100 < 20) ? 2 : $cases[min($value % 10, 5)] ] ?? '';
+    }
+
+    /**
+     * Отправить коммиссию системному пользователю
+     * @param float $sum
+     * @param string $comment
+     * @param string $plugin
+     * @param int $plugin_id
+     * @return $this
+     * @throws BalanceException
+     */
+    public function sendCommission(float $sum, string $comment, string $plugin = '', int $plugin_id = 0) : self
+    {
+        if( self::$global['BILLING']['commission'] and $systemName = self::$global['BILLING']['admin'] )
+        {
+            $this->To(
+                userLogin: $systemName,
+                sum: $sum
+            )->Comment(
+                userLogin: $systemName,
+                plus: $sum,
+                comment: self::$global['LANG']['commission'] . $comment,
+                plugin_id: $plugin_id,
+                plugin_name: $plugin
+            );
+        }
+
+        return $this;
     }
 
     /**

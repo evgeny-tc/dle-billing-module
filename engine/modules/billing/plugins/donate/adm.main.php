@@ -74,13 +74,13 @@ Class Donate extends PluginActions
 		$this->Dashboard->ThemeAddStr(
 			$_Lang['create_min'],
 			$_Lang['create_min_desc'],
-			'<input name="save_con[min]" class="form-control" style="width: 20%" value="' . $_Config['min'] . '" type="text"> ' . $this->Dashboard->API->Declension( $_Config['min'] )
+			'<input name="save_con[min]" class="form-control" style="width: 20%" value="' . $_Config['min'] . '" type="text"> ' . \Billing\Api\Balance::Init()->Declension( $_Config['min'] )
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$_Lang['create_max'],
 			$_Lang['create_max_desc'],
-			'<input name="save_con[max]" class="form-control" style="width: 20%" value="' . $_Config['max'] . '" type="text"> ' . $this->Dashboard->API->Declension( $_Config['max'] )
+			'<input name="save_con[max]" class="form-control" style="width: 20%" value="' . $_Config['max'] . '" type="text"> ' . \Billing\Api\Balance::Init()->Declension( $_Config['max'] )
 		);
 
 		$this->Dashboard->ThemeAddStr(
@@ -123,7 +123,7 @@ Class Donate extends PluginActions
 		$this->Dashboard->ThemeAddStr(
 			$_Lang['create_all'],
 			$_Lang['create_all_desc'],
-			'<input id="create_all" onkeyup="DLE_Billing_Donate.Build()" class="form-control" style="width: 40%" type="text"> ' . $this->Dashboard->API->Declension( 5 )
+			'<input id="create_all" onkeyup="DLE_Billing_Donate.Build()" class="form-control" style="width: 40%" type="text"> ' . \Billing\Api\Balance::Init()->Declension( 5 )
 		);
 
 		$this->Dashboard->ThemeAddStr(

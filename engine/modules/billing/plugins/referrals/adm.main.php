@@ -65,7 +65,7 @@ Class Referrals extends PluginActions
                 $_saved[] = [
                     'plugin' => $this->clear($value['plugin']),
                     'desc' => $this->clear($value['desc']),
-                    'bonus' => $this->Dashboard->API->Convert($value['bonus']),
+                    'bonus' => \Billing\Api\Balance::Init()->Convert($value['bonus']),
                     'bonus_percent' => intval($value['bonus_percent']),
                     'act' => $_act,
                     'sum' => $this->clear($value['sum']),
@@ -209,13 +209,13 @@ Class Referrals extends PluginActions
 		$this->Dashboard->ThemeAddStr(
 			$_Lang['setting_3'],
 			$_Lang['setting_3_d'],
-			"<input name=\"save_con[bonus]\" style=\"width: 20%\" class=\"form-control\" type=\"text\" value=\"" . $_Config['bonus'] ."\"> " . $this->Dashboard->API->Declension( $_Config['bonus'] )
+			"<input name=\"save_con[bonus]\" style=\"width: 20%\" class=\"form-control\" type=\"text\" value=\"" . $_Config['bonus'] ."\"> " . \Billing\Api\Balance::Init()->Declension( $_Config['bonus'] )
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$_Lang['setting_4'],
 			$_Lang['setting_4_d'],
-			"<input name=\"save_con[bonus_reg]\" style=\"width: 20%\" class=\"form-control\" type=\"text\" value=\"" . $_Config['bonus_reg'] ."\"> " . $this->Dashboard->API->Declension( $_Config['bonus_reg'] )
+			"<input name=\"save_con[bonus_reg]\" style=\"width: 20%\" class=\"form-control\" type=\"text\" value=\"" . $_Config['bonus_reg'] ."\"> " . \Billing\Api\Balance::Init()->Declension( $_Config['bonus_reg'] )
 		);
 
 		$TabThird = $this->Dashboard->ThemeParserStr();

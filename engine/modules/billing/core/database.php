@@ -535,7 +535,7 @@ class Database
      * @param int $perPage
      * @return array
      */
-    private function preparePagination(int $page, int $perPage): array
+    public function preparePagination(int $page, int $perPage): array
     {
         $page = max(1, $page);
         $perPage = max(1, min(100, $perPage)); // Limit max per page to 100

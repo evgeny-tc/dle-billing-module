@@ -28,7 +28,7 @@ Class Referrals
     /**
      * @throws \Exception
      */
-    public function main(array $GET = [] )
+    public function main(array $GET = [] ) : string
 	{
 		# Проверка авторизации
 		#
