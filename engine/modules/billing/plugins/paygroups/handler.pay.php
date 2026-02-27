@@ -63,7 +63,7 @@ return new class extends Handler
             sprintf(
                 $this->_Lang['log'],
                 $user_group[$info['params']['group_id']]['group_name'] ) . ( $info['params']['type'] ? sprintf( $this->_Lang['time'], $info['params']['days'], langdate('d.m.Y G:i', $time_limit) ) : $this->_Lang['fulltime'] ),
-            $info['params']['post_id']
+            (int)$info['params']['group_id']
         ];
     }
 

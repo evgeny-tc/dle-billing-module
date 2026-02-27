@@ -643,7 +643,7 @@ HTML;
             return '';
         }
 
-        $table = "<table width=\"100%\" class=\"table table-normal table-hover {$added_table_class}\" ".( ( $id ) ? 'id="'.$id.'"':'' ).">";
+        $table = "<table width=\"100%\" class=\"table table-striped table-xs table-hover {$added_table_class}\" ".( ( $id ) ? 'id="'.$id.'"':'' ).">";
 
         foreach ($this->list_table as $iter => $row)
         {

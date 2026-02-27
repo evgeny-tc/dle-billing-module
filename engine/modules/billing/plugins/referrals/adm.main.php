@@ -82,7 +82,7 @@ Class Referrals extends PluginActions
 
 		$this->Dashboard->ThemeAddTR(
             [
-                '<td width="1%">#</td>',
+                '<td width="5%">#</td>',
                 '<td width="15%">' . $this->Dashboard->lang['history_date'] . '</td>',
                 '<td style="text-align: left">' . $_Lang['from'] . '</td>',
                 '<td width="15%">' . $_Lang['to'] . '</td>'
@@ -317,30 +317,15 @@ HTML;
         $moreInstall = '';
         $statusInstall = 'success';
 
-        # htaccess
+        # url
         #
-        if( is_writable( ".htaccess" ) )
-        {
-            if ( ! strpos( file_get_contents(".htaccess"), "# referrals" ) )
-            {
-                $htaccess_array = file( ".htaccess" );
-
-                foreach ($htaccess_array as $num => $htrow)
-                {
-                    if( str_contains($htrow, 'RewriteEngine On'))
-                    {
-                        $htaccess_array[$num] = "{$htrow}\t# referrals\n\tRewriteRule ^partner/(.*)(/?)+$ index.php?do=static&page=billing&seourl=billing&route=referrals/redirect&p=$1 [L]";
-                    }
-                }
-
-                file_put_contents( ".htaccess", $htaccess_array );
-            }
-        }
-        else
+        if( ! $seo_key = \DLEUrl::AddRule('billing.referrals', '/partner/{user_id}.html', '/index.php?do=static&page=billing&seourl=billing&route=referrals/redirect&p={user_id}') )
         {
             $statusInstall = 'warning';
             $moreInstall = $_Lang['install'];
         }
+
+        clear_cache();
 
         $this->Dashboard->ThemeMsg(
             $this->Dashboard->lang['plugin_install'],
@@ -362,6 +347,35 @@ HTML;
 
         $this->Dashboard->LQuery->db->query( "DROP TABLE IF EXISTS " . PREFIX . "_billing_referrals" );
 
+        \DLEUrl::DeleteRule('custom.billing.referrals');
+
+        clear_cache();
+
         $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['plugin_uninstall'], '?mod=billing' );
+    }
+
+    public function updatePage() : void
+    {
+        $config =  $this->Dashboard->LoadConfig( self::PLUGIN );
+
+        $List = opendir( MODULE_PATH . '/plugins/' . self::PLUGIN . '/upgrades/' );
+
+        while ( $name = readdir($List) )
+        {
+            if ( in_array($name, array(".", "..", "/", "index.php", ".htaccess")) ) continue;
+
+            if( substr($name, 0, (iconv_strlen($name)-4)) > $config['version'] )
+            {
+                include MODULE_PATH . '/plugins/' . self::PLUGIN . '/upgrades/' . $name;
+
+                return;
+            }
+        }
+
+        $this->Dashboard->ThemeMsg(
+            $this->Dashboard->lang['ok'],
+            $this->Dashboard->lang['plugin_update'],
+            '?mod=billing&c=' . self::PLUGIN
+        );
     }
 }

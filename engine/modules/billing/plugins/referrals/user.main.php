@@ -82,7 +82,7 @@ Class Referrals
 			$TimeLine = str_replace("{referral.name}", '<a href="/user/' . urlencode($Value['name']) . '">' . $Value['name'] . '</a>', $TimeLine );
 			$TimeLine = str_replace("{referral.desc}", $Value['history_text'], $TimeLine );
 			$TimeLine = str_replace("{referral.bonus}", $Value['history_plus'], $TimeLine );
-			$TimeLine = str_replace("{referral.bonus.currency}", $this->DevTools->API->Declension( $Value['history_plus'] ), $TimeLine );
+			$TimeLine = str_replace("{referral.bonus.currency}", \Billing\Api\Balance::Init()->Declension( $Value['history_plus'] ), $TimeLine );
 
 			$Line .= $TimeLine;
 		}
@@ -114,8 +114,14 @@ Class Referrals
 			$this->DevTools->ThemeSetElementBlock( "paging", "" );
 		}
 
-		if( $Line )	$this->DevTools->ThemeSetElementBlock( "not_history", "" );
-		else 		$this->DevTools->ThemeSetElementBlock( "not_history", $TplLineNull );
+		if( $Line )
+        {
+            $this->DevTools->ThemeSetElementBlock( "not_history", "" );
+        }
+		else
+        {
+            $this->DevTools->ThemeSetElementBlock( "not_history", $TplLineNull );
+        }
 
 		$this->DevTools->ThemeSetElementBlock( "history", $Line );
 
@@ -130,7 +136,7 @@ Class Referrals
 			$List[] = '<a href="/user/' . urlencode( $Value['ref_login'] ) . '">' . $Value['ref_login'] . '</a>';
 		}
 
-		$this->DevTools->ThemeSetElement( "{link}", $this->DevTools->dle['http_home_url'] . 'partner/' . $this->DevTools->member_id['name'] );
+		$this->DevTools->ThemeSetElement( "{link}", $this->DevTools->dle['http_home_url'] . 'partner/' . $this->DevTools->member_id['user_id'] . '.html' );
 		$this->DevTools->ThemeSetElement( "{list}", $List ? implode(', ', $List) : 'Пока пусто' );
 		$this->DevTools->ThemeSetElement( "{count}", count($List) );
 
@@ -144,9 +150,12 @@ Class Referrals
 	{
 		if( $_GET['p'] )
 		{
-			$Login = $this->DevTools->LQuery->db->safesql( $_GET['p'] );
+			$partner_id = intval( $_GET['p'] );
 
-			$_SESSION['myPartner'] = "$Login";
+            if( $partner_id )
+            {
+                $_SESSION['billing_partner_id'] = $partner_id;
+            }
 		}
 
 		header('Location: ' . $this->pluginConfig['link']);

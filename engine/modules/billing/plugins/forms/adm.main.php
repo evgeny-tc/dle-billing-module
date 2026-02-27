@@ -163,7 +163,7 @@ Class Forms extends PluginActions
         # Header
         #
         $moreColumns = [
-            '<td width="1%">#</td>',
+            '<td width="5%">#</td>',
             '<td>' . $this->_Lang['table']['user'] . '</td>',
             '<td>' . $this->_Lang['table']['time'] . '</td>',
         ];
@@ -177,7 +177,7 @@ Class Forms extends PluginActions
         {
             foreach ($theme_data['columns']  as $column => $column_name)
             {
-                $moreColumns[] = '<td style="white-space: nowrap">' . $column_name . '</td>';
+                $moreColumns[] = '<td>' . $column_name . '</td>';
             }
         }
 
@@ -192,8 +192,8 @@ Class Forms extends PluginActions
         {
             $show_data = [
                 $row['form_create_id'],
-                '<span style="white-space: nowrap">' . $this->Dashboard->ThemeInfoUser( $row['form_username'] ) . '</span>',
-                '<span style="white-space: nowrap">' . $this->Dashboard->ThemeChangeTime( $row['form_create'] ) . '</span>'
+                $this->Dashboard->ThemeInfoUser( $row['form_username'] ),
+                $this->Dashboard->ThemeChangeTime( $row['form_create'] )
             ];
 
             # Стоимость
@@ -220,7 +220,7 @@ Class Forms extends PluginActions
             {
                 foreach ($theme_data['columns']  as $column => $column_name)
                 {
-                    $show_data[] = '<span style="white-space: nowrap">' . $row['form_data'][$column] . '</span>';
+                    $show_data[] = '<span>' . $row['form_data'][$column] . '</span>';
                 }
             }
 
@@ -260,13 +260,13 @@ Class Forms extends PluginActions
 function billingShowForm(form_create_id, form_key = '')
 {
     BillingJS.openDialog('#dataForm-' + form_create_id, {width: 800});
-    
-    if( ! $(`.showForm[data-id="${form_create_id}"]`).hasClass('badge-success') )
+
+    if( ! $(`.showForm[data-id="`+form_create_id+`"]`).hasClass('badge-success') )
     {
         return;
     }
     
-    let formCounter = parseFloat($(`.formCounter[data-key="${form_key}"]`).html());
+    let formCounter = parseFloat($(`.formCounter[data-key="`+form_key+`"]`).html());
     
     formCounter -= 1;
     
@@ -274,12 +274,12 @@ function billingShowForm(form_create_id, form_key = '')
     
     if( formCounter <= 0 )
     {
-        $(`.formCounter[data-key="${form_key}"]`).remove();
+        $(`.formCounter[data-key="`+form_key+`"]`).remove();
     }
     
-    $(`.showForm[data-id="${form_create_id}"]`).removeClass('badge-success').addClass('badge-info');
+    $(`.showForm[data-id="`+form_create_id+`"]`).removeClass('badge-success').addClass('badge-info');
     
-    $.post("/engine/ajax/controller.php?mod=billing", { plugin: 'forms', hash: '{$this->Dashboard->hash}', show_form_id: form_create_id }, function(result)
+    $.post("/index.php?controller=ajax&mod=billing", { plugin: 'forms', hash: '{$this->Dashboard->hash}', show_form_id: form_create_id }, function(result)
 	{
 		console.log(result);
 	}, "json");

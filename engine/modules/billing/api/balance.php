@@ -285,6 +285,9 @@ Class Balance
         $balance_after = $getUser[self::getBalanceField()] + $plus - $minus;
         $currency = $this->Declension( $plus ?: $minus );
 
+        $comment = self::$global['DB']->safesql($comment);
+        $comment = addslashes( $comment );
+
         $plugin_name = self::$global['DB']->safesql($plugin_name);
 
         self::$global['DB']->query( "INSERT INTO " . PREFIX . "_billing_history

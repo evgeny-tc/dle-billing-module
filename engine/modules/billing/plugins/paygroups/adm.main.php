@@ -59,11 +59,10 @@ Class Paygroups extends PluginActions
             }
 
 			$_POST['save_con']['stop'] = implode(",", $_POST['save_stop']);
-
             $_POST['save_con']['version'] = parse_ini_file( MODULE_PATH . '/plugins/' . $this->Dashboard->controller . '/info.ini' )['version'];
 
-			$this->Dashboard->SaveConfig("plugin.paygroups", $_POST['save_con'], "plugin_config");
-			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
+			$this->Dashboard->SaveConfig("plugin.paygroups", $_POST['save_con']);
+			$this->Dashboard->ThemeMsg(title:  $this->Dashboard->lang['ok'], text: $this->Dashboard->lang['save_settings'], show_progress: true );
 		}
 
 		# Сохранить настройки группы

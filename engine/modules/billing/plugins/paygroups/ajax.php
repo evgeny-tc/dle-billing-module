@@ -49,10 +49,7 @@ try
         billing_error( $pluginLang['group_was_paid'] );
     }
 
-    # todo: old
-    #
     $LQuery = new Billing\Database( $db, $_ConfigBilling['fname'], $_TIME );
-
 
     # Цены
     #
@@ -113,7 +110,7 @@ try
 
         billing_ok([
             'invoice_id' => $invoice_id,
-            'url' => "/{$_ConfigBilling['page']}.html/pay/waiting/id/{$invoice_id}/&modal=1",
+            'url' => "/{$_ConfigBilling['page']}.html/pay/waiting/id/{$invoice_id}/?modal=1",
             'html' => sprintf($pluginLang['html_pay_wait'], "/{$_ConfigBilling['page']}.html/pay/waiting/id/{$invoice_id}")
         ]);
     }
@@ -194,4 +191,13 @@ try
 catch (Exception $e)
 {
     billing_error( $e->getMessage() );
+}
+
+function ThemePregMatch( $theme, $tag )
+{
+    $answer = [];
+
+    preg_match('~\[' . $tag . '\](.*?)\[/' . $tag . '\]~is', $theme, $answer);
+
+    return $answer[1];
 }

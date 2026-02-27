@@ -406,7 +406,6 @@ Class Invoice
         {
             $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_invoice']['date_pay'], field: $this->Dashboard->ThemeChangeTime( $invoice['invoice_date_pay'] ));
             $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_invoice']['sum_pay'], field: $invoice['invoice_pay'] . '&nbsp;' . $listPayments[$invoice['invoice_paysys']]['config']['currency']);
-            $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_invoice']['payer_info'], field: $invoice['invoice_payer_info']);
             $this->Dashboard->ThemeAddStr( title: $this->Dashboard->lang['slider_invoice']['payer_requisites'], field: $invoice['invoice_payer_requisites']);
 
             $content .= $this->Dashboard->PanelTabs(
@@ -417,6 +416,7 @@ Class Invoice
                         'content' => $this->Dashboard->ThemeParserStr()
                     ]
                 ],
+                footer: "<pre>{$this->parseData($invoice['invoice_payer_info'])}</pre>",
                 slider: true,
                 header_added_class: 'tab_header_green'
             );
@@ -491,7 +491,7 @@ Class Invoice
                         'content' => $this->Dashboard->ThemeParserStr()
                     ]
                 ],
-                footer: "<div style='padding: 10px;'><pre>" . print_r($invoice['invoice_handler'], 1) . "</pre></div>",
+                footer: "<div style='padding: 10px;'><pre>" . $this->parseData($invoice['invoice_handler']) . "</pre></div>",
                 slider: true,
                 header_added_class: 'tab_header_blue'
             );
@@ -500,6 +500,34 @@ Class Invoice
         //todo: btns
 
         return $content;
+    }
+
+    /**
+     * @param mixed $data
+     * @return string
+     */
+    private function parseData(mixed $data) : string
+    {
+        if( is_array($data) )
+        {
+            return print_r( $data, true );
+        }
+
+        $json_data = json_decode($data, true);
+
+        if( is_array( $json_data ) )
+        {
+            return print_r( $json_data, true );
+        }
+
+        $unserialize_data = unserialize($data);
+
+        if( is_array( $unserialize_data ) )
+        {
+            return print_r( $unserialize_data, true );
+        }
+
+        return "$data";
     }
 
     /**

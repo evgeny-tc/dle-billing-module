@@ -223,10 +223,14 @@ Array.prototype.clean = function(deleteValue)
 
 $(function()
 {
-	$('input[data-tokenfield="users"]').tokenfield({
-		autocomplete: {
-			source: '?mod=billing&c=ajax&m=searchUser'
-		},
-		showAutocompleteOnFocus: true
+	$('input[data-tokenfield="users"]').each(function() {
+		var $this = $(this);
+		$this.tokenfield({
+			autocomplete: {
+				source: '?mod=billing&c=ajax&m=searchUser'
+			},
+			showAutocompleteOnFocus: true,
+			limit: $this.data('limit') ? $this.data('limit') : 0
+		});
 	});
 });

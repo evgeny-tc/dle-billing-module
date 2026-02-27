@@ -4,7 +4,7 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2026
  */
 
 namespace Billing;
@@ -29,6 +29,11 @@ return new class extends Hooks
             return;
         }
 
+        if( floatval($plugin) <= 0 and floatval($minus) <= 0 )
+        {
+            return;
+        }
+
         $_List = file_exists(MODULE_DATA . '/plugin.referrals.list.dat') ? file(MODULE_DATA . '/plugin.referrals.list.dat') : false;
 
         $arList = is_string($_List[0]) ? unserialize($_List[0]) : [];
@@ -46,6 +51,8 @@ return new class extends Hooks
         {
             return;
         }
+
+        $_Lang = DevTools::getLang('referrals');
 
         # Вознаграждения
         #
@@ -77,10 +84,9 @@ return new class extends Hooks
                         $pay = true;
                     }
                 }
-
                 # Расход
                 #
-                if( $bonus['act'] == '-' and $minus > 0 )
+                else if( $bonus['act'] == '-' and $minus > 0 )
                 {
                     $_Sum = $minus;
 
@@ -96,6 +102,10 @@ return new class extends Hooks
                     {
                         $pay = true;
                     }
+                }
+                else
+                {
+                    continue;
                 }
 
                 # Размер вознаграждения
@@ -116,7 +126,7 @@ return new class extends Hooks
                     \Billing\Api\Balance::Init()->Comment(
                         userLogin: $_Partner['ref_from'],
                         plus: floatval($_Bonus),
-                        comment: $bonus['desc'],
+                        comment: sprintf($_Lang['to_history'], urlencode($user), $user, $bonus['desc']),
                         plugin_id: $_Partner['ref_user_id'],
                         plugin_name: 'referrals',
                         pm: (bool)$this->configPlugin['bonus3_alert_pm'],

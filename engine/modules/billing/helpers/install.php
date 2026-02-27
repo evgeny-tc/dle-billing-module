@@ -36,22 +36,22 @@ $blank['secret'] = genCode();
 
 $urls = [
     [
-        'key' => "custom.billing",
+        'key' => "billing",
         'seo' => "/billing.html/{service}/",
         'real' => "/index.php?do=static&page=billing&seourl=billing&route={service}"
     ],
     [
-        'key' => "custom.billing_method",
+        'key' => "billing.method",
         'seo' => "/billing.html/{service}/{method}/",
         'real' => "/index.php?do=static&page=billing&seourl=billing&route={service}/{method}"
     ],
     [
-        'key' => "custom.billling_params",
+        'key' => "billing.params",
         'seo' => "/billing.html/{service}/{method}/{param_name}/{param_value}/",
         'real' => "/index.php?do=static&page=billing&seourl=billing&route={service}/{method}/{param_name}/{param_value}"
     ],
     [
-        'key' => "custom.billing.billling_params_2",
+        'key' => "billing.params_2",
         'seo' => "/billing.html/{service}/{method}/{param_name}/{param_value}/{param_name_2}/{param_value_2}/",
         'real' => "/index.php?do=static&page=billing&seourl=billing&route={service}/{method}/{param_name}/{param_value}/{param_name_2}/{param_value_2}"
     ]
@@ -153,10 +153,12 @@ if( isset( $_POST['install'] ) or isset($_GET['install']) )
     #
     foreach ($urls as $url)
     {
-        $seo_key = DLEUrl::AddRule($url['key'], $url['seo'], $url['real']);
+        $seo_key = \DLEUrl::AddRule($url['key'], $url['seo'], $url['real']);
     }
 
-    if (DLEUrl::CheckRoutes() !== null)
+    clear_cache();
+
+    if (\DLEUrl::CheckRoutes() !== null)
     {
         msg(
             "error",
