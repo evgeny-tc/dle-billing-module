@@ -667,3 +667,8 @@ p.bt_catalog_desc
     color: grey;
     font-size: 12px;
 }
+
+.table-width-scroll th, td
+{
+    white-space: normal !important;
+}

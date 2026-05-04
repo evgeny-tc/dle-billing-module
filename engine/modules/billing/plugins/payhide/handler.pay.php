@@ -68,7 +68,7 @@ return new class extends Handler
 
         return [
             sprintf( $info['params']['title'] ?: $this->_Lang['balance_desc'], $info['params']['pagelink'] ),
-            $info['params']['payhide_post_id']
+            (int)$info['params']['post_id']
         ];
     }
 

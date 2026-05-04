@@ -4,8 +4,10 @@
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2023
+ * @copyright     Copyright (c) 2012-2026
  */
+
+$_Config = [];
 
 if( file_exists( ENGINE_DIR . "/data/billing/plugin.payhide.php" ) )
 {
@@ -14,7 +16,7 @@ if( file_exists( ENGINE_DIR . "/data/billing/plugin.payhide.php" ) )
 
 include DLEPlugins::Check( ENGINE_DIR . "/modules/billing/plugins/payhide/lang.php" );
 
-if( $_Config['status'] )
+if( isset($_Config['status']) and $_Config['status'] == '1' )
 {
 	$FormTPL = @file_get_contents( ROOT_DIR . "/templates/". $config['skin'] ."/billing/plugins/payhide/form.tpl" );
 
@@ -42,4 +44,3 @@ else
 {
 	echo $plugin_lang['form_off'];
 }
-?>

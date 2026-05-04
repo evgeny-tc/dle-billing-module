@@ -1,11 +1,13 @@
-<?php	if( ! defined( 'DATALIFEENGINE' ) ) die( "Hacking attempt!" );
+<?php
 /**
  * DLE Billing
  *
  * @link          https://github.com/evgeny-tc/dle-billing-module
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
- * @copyright     Copyright (c) 2012-2024
+ * @copyright     Copyright (c) 2012-2026
  */
+if( ! defined( 'DATALIFEENGINE' ) ) die( "Hacking attempt!" );
+
 if( ! defined('BILLING_MODULE') )
 {
     define("BILLING_MODULE", TRUE);
@@ -20,8 +22,6 @@ require_once MODULE_PATH . '/helpers/autoloader.php';
 \Billing\DevTools::isInstall(function (){
     header("Location: /index.php");
 });
-
-#require_once MODULE_PATH . '/helpers/api.php';
 
 try
 {

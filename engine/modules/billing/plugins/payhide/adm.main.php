@@ -58,7 +58,11 @@ Class Payhide extends PluginActions
 
 			$this->Dashboard->SaveConfig('plugin.payhide', $save_config);
 
-			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
+			$this->Dashboard->ThemeMsg(
+                title: $this->Dashboard->lang['ok'],
+                text: $this->Dashboard->lang['save_settings'],
+                show_progress: true
+            );
 		}
 
 		# Удаление
@@ -86,14 +90,14 @@ Class Payhide extends PluginActions
 		# 
 		$this->Dashboard->ThemeAddTR(
 			[
-				'<td width="1%">#</td>',
+				'<td width="5%">#</td>',
 				'<td>'.$this->Dashboard->lang['history_date'].'</td>',
 				'<td>'.$this->pluginLang['user'].'</td>',
 				'<td>'.$this->pluginLang['paypage'].'</td>',
 				'<td>'.$this->pluginLang['autor'].'</td>',
 				'<td>'.$this->pluginLang['summa'].'</td>',
 				'<td>'.$this->pluginLang['time'].'</td>',
-				'<td width="2%"><center><input class="icheck" type="checkbox" value="" name="massact_list[]" onclick="BillingJS.checkAll(this);$.uniform.update();" /></center></td>'
+				'<td width="5%"><center><input class="icheck" type="checkbox" value="" name="massact_list[]" onclick="BillingJS.checkAll(this);$.uniform.update();" /></center></td>'
 			]
 		);
 
@@ -131,9 +135,9 @@ Class Payhide extends PluginActions
                     $this->Dashboard->ThemeInfoUser( $Value['payhide_user'] ),
                     ($Value['payhide_post_id'] ? sprintf( $this->pluginLang['access_post'], $Value['payhide_pagelink'], $Value['title'] ) : sprintf( $this->pluginLang['access_page'], $Value['payhide_pagelink'] )) . $pay_description,
                     $Value['autor'] ? $this->Dashboard->ThemeInfoUser( $Value['autor'] ) : '',
-                    $Value['payhide_price'] . ' ' . $this->Dashboard->API->Declension( $Value['payhide_price'] ),
+                    $Value['payhide_price'] . ' ' . \Billing\Api\Balance::Init()->Declension( $Value['payhide_price'] ),
                     $Value['payhide_time'] ? ( ( $Value['payhide_time']>=$this->Dashboard->_TIME ) ? "<font color='green'>".$this->pluginLang['timeTo'].langdate( "j F Y  G:i", $Value['payhide_time'])."</font>": "<font color='red'>".$this->pluginLang['timeTo'].langdate( "j F Y  G:i", $Value['payhide_time'])."</font>" ) : $this->pluginLang['timeFull'],
-                    '<span class="settingsb">' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['payhide_id']) . '</span>'
+                    '<center>' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['payhide_id']) . '</center>'
                 ]
             );
 		}
@@ -249,7 +253,7 @@ Class Payhide extends PluginActions
 		$this->Dashboard->ThemeAddStr(
 			$this->pluginLang['tag_2'],
 			$this->pluginLang['tag_2d'],
-			"<input id=\"phGenFormPrice\" onkeyup=\"phGenForm()\" class=\"form-control\" type=\"text\" size=\"14\" value=\"10.00\" style=\"width: 20%\"> " . $this->Dashboard->API->Declension( 10 )
+			"<input id=\"phGenFormPrice\" onkeyup=\"phGenForm()\" class=\"form-control\" type=\"text\" size=\"14\" value=\"10.00\" style=\"width: 20%\"> " . \Billing\Api\Balance::Init()->Declension( 10 )
 		);
 
 		$this->Dashboard->ThemeAddStr(

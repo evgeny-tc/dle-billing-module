@@ -141,6 +141,18 @@ Class Transfer
                     sum: floatval($_Money)
                 );
 
+                # Комиссия
+                #
+                if( $_MoneyCommission > 0 )
+                {
+                    \Billing\Api\Balance::Init()->sendCommission(
+                        sum: $_MoneyCommission,
+                        comment: $this->DevTools->lang['transfer_commission_text'],
+                        plugin: 'transfer',
+                        plugin_id: intval($this->DevTools->member_id['user_id'])
+                    );
+                }
+
                 \Billing\Api\Balance::Init()->Comment(
                     userLogin: $_SearchUser['name'],
                     plus: floatval( $_Money - $_MoneyCommission ),

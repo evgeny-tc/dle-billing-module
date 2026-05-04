@@ -75,6 +75,7 @@ return [
     'refund_email_msg' => "Пользователь %s запросил вывод средств в размере %s %s на реквизиты %s.<br /><br />Подробнее - %s",
     'refund_ok_title' => "Запрос создан",
     'refund_ok_text' => "Ваш запрос  вывода средств создан. В ближайшее время его рассмотрит администратор. <br>",
+    'refund_commission_text' => "Вывод средств с баланса",
 
     /* Transfer */
     'transfer_error_get' => "Получатель не найден",
@@ -85,6 +86,7 @@ return [
     'transfer_log_from' => "Перевод средств от <a href=/user/%s>%s</a>",
     'transfer_log_text' => "Перевод для пользователя <a href=\"/user/%s\">%s</a> выполнен. Комиссия составила %s %s<br>",
     'transfer_msgOk' => "Перевод отправлен",
+    'transfer_commission_text' => "Перевод между пользователями",
 
     /* Bonus */
     'bonus_first_comment' => "Бонус первого пополнения баланса",

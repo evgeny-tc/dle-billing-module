@@ -281,7 +281,7 @@ Class Pay
                 if( $Invoice['invoice_get'] <= 0 )
                     $Invoice['invoice_get'] = 1;
 
-                $this->DevTools->ThemeSetElement( "{invoice.get}", \Billing\Api\Balance::Init()->Convert(money:$Invoice['invoice_get'], number_format_f: true) );
+                $this->DevTools->ThemeSetElement( "{invoice.get}", \Billing\Api\Balance::Init()->Convert($Invoice['invoice_get']) );
                 $this->DevTools->ThemeSetElement( "{invoice.get.currency}", \Billing\Api\Balance::Init()->Declension( $Invoice['invoice_get'] ) );
             }
             else
@@ -335,7 +335,7 @@ Class Pay
                                 userLogin: $this->DevTools->member_id['name'],
                                 minus: $Invoice['invoice_get'],
                                 comment: $logData[0],
-                                plugin_id: $logData[1],
+                                plugin_id: (int)$logData[1],
                                 plugin_name: $pluginHandler ?? 'null',
                                 pm: (bool)$this->config['mail_payok_pm'],
                                 email: (bool)$this->config['mail_payok_email']

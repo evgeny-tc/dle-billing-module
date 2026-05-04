@@ -751,18 +751,25 @@ HTML;
 	 */
 	public function ThemeInfoUserXfields() : array
 	{
-		$answer = array('' => "");
+        $list = [
+            '' => ''
+        ];
 
-		$xprofile = file("engine/data/xprofile.txt");
+        if( file_exists( ENGINE_DIR . '/data/userxfields.json' ) )
+        {
+            $data = file_get_contents( ENGINE_DIR . '/data/userxfields.json' );
+            $arData = json_decode( $data, true );
 
-		foreach($xprofile as $line)
-		{
-			$xfield = explode("|", $line);
+            if( is_array( $arData['fields'] ) )
+            {
+                foreach( $arData['fields'] as $key => $row )
+                {
+                    $list[$key] = $row['description'];
+                }
+            }
+        }
 
-			$answer[$xfield[0]] = $xfield[1];
-		}
-
-		return $answer;
+		return $list;
 	}
 
     /**
@@ -866,7 +873,7 @@ HTML;
 	{
 		global $is_loged_in, $skin_footer, $skin_not_logged_footer;
 
-		$skin_footer = preg_replace('~<div class=\"footer text-muted text-size-small\">\s+(.*?)\s+<\/div>~s', "<div class=\"footer text-muted text-size-small\">&copy 2025 <a href=\"https://dle-billing.ru/\" target=\"_blank\">dle-billing.ru</a></div>", $skin_footer);
+		$skin_footer = preg_replace('~<div class=\"footer text-muted text-size-small\">\s+(.*?)\s+<\/div>~s', "<div class=\"footer text-muted text-size-small\">&copy 2026 <a href=\"https://dle-billing.ru/\" target=\"_blank\">dle-billing.ru</a></div>", $skin_footer);
 
 		if( $is_loged_in )
         {

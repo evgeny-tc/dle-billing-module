@@ -33,7 +33,11 @@ Class Transfer extends PluginActions
 
 			$this->Dashboard->SaveConfig("plugin.transfer", $_POST['save_con']);
 
-			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
+			$this->Dashboard->ThemeMsg(
+                title: $this->Dashboard->lang['ok'],
+                text: $this->Dashboard->lang['save_settings'],
+                show_progress: true
+            );
 		}
 
 		$_Config = $this->Dashboard->LoadConfig( 'transfer' );
@@ -55,7 +59,7 @@ Class Transfer extends PluginActions
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['transfer_minimum'],
 			$this->Dashboard->lang['transfer_minimum_desc'],
-			"<input name=\"save_con[minimum]\" class=\"form-control\" type=\"text\" style=\"width: 20%\" value=\"" . $_Config['minimum'] ."\"> " . $this->Dashboard->API->Declension( $_Config['minimum'] )
+			"<input name=\"save_con[minimum]\" class=\"form-control\" type=\"text\" style=\"width: 20%\" value=\"" . $_Config['minimum'] ."\"> " . \Billing\Api\Balance::Init()->Declension( $_Config['minimum'] )
 		);
 
 		$this->Dashboard->ThemeAddStr(

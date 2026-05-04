@@ -1,0 +1,18 @@
+Array
+(
+    [billing] => Array
+        (
+            [from_balance] => 1
+        )
+
+    [params] => Array
+        (
+            [tag] => KFD
+            [post_id] => 1
+            [pagelink] => L2luZGV4LnBocD9uZXdzaWQ9MSNwYXktS0ZE
+            [endtime] => 1772286665
+            [post_autor] => admin
+            [title] => Доступ к новости
+        )
+
+)

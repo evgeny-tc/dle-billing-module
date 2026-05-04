@@ -88,19 +88,17 @@ Class Prcode
             $processActivate->From(
                 userLogin: $this->DevTools->member_id['name'],
                 sum: $_SearchPromoCode['prcode_sum']
-            )
-                ->Comment(
-                    userLogin: $this->DevTools->member_id['name'],
-                    plus: $_SearchPromoCode['prcode_sum'],
-                    comment: sprintf($this->pluginLang['ui_active_desc'], $PromoCode),
-                    plugin_id: $_SearchPromoCode['prcode_id'],
-                    plugin_name: static::PLUGIN
-                )
-                ->Commit();
+            )->Comment(
+                userLogin: $this->DevTools->member_id['name'],
+                minus: $_SearchPromoCode['prcode_sum'],
+                comment: sprintf($this->pluginLang['ui_active_desc'], $PromoCode),
+                plugin_id: $_SearchPromoCode['prcode_id'],
+                plugin_name: static::PLUGIN
+            )->Commit();
 
 			return $this->DevTools->ThemeMsg(
 				$this->pluginLang['ui_active_ok'],
-				sprintf($this->pluginLang['ui_active_ok_balance'], $_SearchPromoCode['prcode_sum'], $this->DevTools->API->Declension( $_SearchPromoCode['prcode_sum'] )),
+				sprintf($this->pluginLang['ui_active_ok_balance'], $_SearchPromoCode['prcode_sum'], \Billing\Api\Balance::Init()->Declension( $_SearchPromoCode['prcode_sum'] )),
                 static::PLUGIN
             );
 		}

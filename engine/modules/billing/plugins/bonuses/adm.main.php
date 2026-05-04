@@ -54,7 +54,11 @@ Class Bonuses extends PluginActions
             $_POST['save_con']['version'] = parse_ini_file( MODULE_PATH . '/plugins/' . $this->Dashboard->controller . '/info.ini' )['version'];
 
 			$this->Dashboard->SaveConfig("plugin.bonuses", $_POST['save_con']);
-			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
+			$this->Dashboard->ThemeMsg(
+                title: $this->Dashboard->lang['ok'],
+                text: $this->Dashboard->lang['save_settings'],
+                show_progress: true
+            );
 		}
 
 		# Tab 0
@@ -97,14 +101,14 @@ Class Bonuses extends PluginActions
 			$this->_Lang['sum'],
 			$this->_Lang['sum_desc'],
 			"<input name=\"save_con[f_sum]\" class=\"form-control\" style=\"width: 30%\" type=\"text\" value=\"" . $_Config['f_sum'] ."\"> " 
-				. $this->Dashboard->API->Declension( $_Config['f_sum'] )
+				. \Billing\Api\Balance::Init()->Declension( $_Config['f_sum'] )
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$this->_Lang['bonus'],
 			$this->_Lang['bonus_f_desc'],
 			"<input name=\"save_con[f_bonus_sum]\" class=\"form-control\" style=\"width: 30%\" type=\"text\" value=\"" . $_Config['f_bonus_sum'] ."\"> "
-				. $this->Dashboard->API->Declension( $_Config['f_bonus_sum'] )
+				. \Billing\Api\Balance::Init()->Declension( $_Config['f_bonus_sum'] )
 				. " / <input name=\"save_con[f_bonus_percent]\" class=\"form-control\" style=\"width: 50px\" type=\"text\" value=\"" . $_Config['f_bonus_percent'] ."\" /> %"
 	 	);
 
@@ -126,14 +130,14 @@ Class Bonuses extends PluginActions
 			$this->_Lang['sum'],
 			$this->_Lang['sum_s_desc'],
 			"<input name=\"save_con[s_sum]\" class=\"form-control\" style=\"width: 30%\" type=\"text\" value=\"" . $_Config['s_sum'] ."\"> " 
-				. $this->Dashboard->API->Declension( $_Config['s_sum'] )
+				. \Billing\Api\Balance::Init()->Declension( $_Config['s_sum'] )
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$this->_Lang['bonus'],
 			$this->_Lang['bonus_s_desc'],
 			"<input name=\"save_con[s_bonus_sum]\" class=\"form-control\" style=\"width: 30%\" type=\"text\" value=\"" . $_Config['s_bonus_sum'] ."\"> "
-				. $this->Dashboard->API->Declension( $_Config['s_bonus_sum'] )
+				. \Billing\Api\Balance::Init()->Declension( $_Config['s_bonus_sum'] )
 				. " / <input name=\"save_con[s_bonus_percent]\" class=\"form-control\" style=\"width: 50px\" type=\"text\" value=\"" . $_Config['s_bonus_percent'] ."\" /> %"
 		);
 
@@ -155,7 +159,7 @@ Class Bonuses extends PluginActions
 			$this->_Lang['bonus'],
 			$this->_Lang['bonus_t_desc'],
 			"<input name=\"save_con[t_bonus_sum]\" class=\"form-control\" style=\"width: 30%\" type=\"text\" value=\"" . $_Config['t_bonus_sum'] ."\"> " 
-				. $this->Dashboard->API->Declension( $_Config['t_bonus_sum'] )
+				. \Billing\Api\Balance::Init()->Declension( $_Config['t_bonus_sum'] )
 		);
 
 		$tabs[] = [
@@ -182,7 +186,7 @@ Class Bonuses extends PluginActions
 			$this->_Lang['active_sum'],
 			$this->_Lang['active_sum_desc'],
 			"<input name=\"save_con[active_min]\" class=\"form-control\" style=\"width: 30%\" type=\"text\" value=\"" . $_Config['active_min'] ."\"> "
-				. $this->Dashboard->API->Declension( $_Config['active_min'] )
+				. \Billing\Api\Balance::Init()->Declension( $_Config['active_min'] )
 		);
 
 		$this->Dashboard->ThemeAddStr(
@@ -215,7 +219,7 @@ Class Bonuses extends PluginActions
 			$this->_Lang['bonus'],
 			$this->_Lang['bonus_f_desc'],
 			"<input name=\"save_con[viewfull_sum]\" class=\"form-control\" style=\"width: 30%\" type=\"text\" value=\"" . $_Config['viewfull_sum'] ."\"> "
-				. $this->Dashboard->API->Declension( $_Config['viewfull_sum'] )
+				. \Billing\Api\Balance::Init()->Declension( $_Config['viewfull_sum'] )
 	 	);
 
 		$tabs[] = [
@@ -236,7 +240,7 @@ Class Bonuses extends PluginActions
 			$this->_Lang['bonus'],
 			$this->_Lang['tab6_desc'],
 			"<input name=\"save_con[activesite_sum]\" class=\"form-control\" style=\"width: 30%\" type=\"text\" value=\"" . $_Config['activesite_sum'] ."\"> "
-				. $this->Dashboard->API->Declension( $_Config['activesite_sum'] )
+				. \Billing\Api\Balance::Init()->Declension( $_Config['activesite_sum'] )
 	 	);
 
 		$this->Dashboard->ThemeAddStr(

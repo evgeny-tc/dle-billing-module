@@ -473,17 +473,24 @@ class Database
     {
         $this->where = '';
 
-        foreach ($conditions as $field => $value) {
-            if ($value === '' || $value === null) {
+        foreach ($conditions as $field => $value)
+        {
+            $value = trim($value);
+
+            if ($value === '')
+            {
                 continue;
             }
 
             $value = $this->sanitize($value);
             $condition = str_replace('{s}', $value, $field);
 
-            if (empty($this->where)) {
+            if (empty($this->where))
+            {
                 $this->where = "WHERE {$condition}";
-            } else {
+            }
+            else
+            {
                 $this->where .= " AND {$condition}";
             }
         }

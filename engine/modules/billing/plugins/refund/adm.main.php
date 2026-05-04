@@ -25,6 +25,9 @@ Class Refund extends PluginActions
 	{
         $this->checkInstall();
 
+        $Get['page'] = intval($Get['page']) > 0 ? $Get['page'] : 1;
+        $PerPage = $this->Dashboard->config['paging'];
+
 		# Сохранить настройки
 		#
 		if( isset( $_POST['save'] ) )
@@ -34,7 +37,11 @@ Class Refund extends PluginActions
             $_POST['save_con']['version'] = parse_ini_file( MODULE_PATH . '/plugins/' . $this->Dashboard->controller . '/info.ini' )['version'];
 
 			$this->Dashboard->SaveConfig("plugin.refund", $_POST['save_con']);
-			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
+			$this->Dashboard->ThemeMsg(
+                title: $this->Dashboard->lang['ok'],
+                text: $this->Dashboard->lang['save_settings'],
+                show_progress: true
+            );
 		}
 
 		# Глобальное редактирование
@@ -68,19 +75,22 @@ Class Refund extends PluginActions
 				{
 					$getRefundItem = $this->Dashboard->LQuery->getRefundById( $remove_id );
 
-                    if( ! intval($getRefundItem['refund_date_return']) and ! intval($getRefundItem['refund_date_cancel']) )
+                    if( ! intval($getRefundItem['refund_date_return'])
+                        and ! intval($getRefundItem['refund_date_cancel']) )
                     {
+                        $sum = floatval($getRefundItem['refund_summa']) - floatval($getRefundItem['refund_commission']);
+
                         \Billing\Api\Balance::Init()->Comment(
                             userLogin: $getRefundItem['refund_user'],
-                            minus: floatval($getRefundItem['refund_summa']),
+                            plus: $sum,
                             comment: str_replace("{remove_id}", $remove_id, $this->Dashboard->lang['refund_back']),
                             plugin_id: $remove_id,
                             plugin_name: 'refund',
                             pm: true,
                             email: true
-                        )->From(
+                        )->To(
                             userLogin: $getRefundItem['refund_user'],
-                            sum: floatval($getRefundItem['refund_summa'])
+                            sum: $sum
                         );
 
                         $this->Dashboard->LQuery->cancelRefund( $remove_id );
@@ -91,7 +101,7 @@ Class Refund extends PluginActions
 			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['refund_act'], "?mod=billing&c=refund" );
 		}
 
-        $Content = '';
+//        $Content = '';
 
 		# Настройки
 		#
@@ -101,14 +111,14 @@ Class Refund extends PluginActions
 
 		$this->Dashboard->ThemeAddTR(
             [
-                '<th width="1%"><b>#</b></th>',
+                '<th width="5%"><b>#</b></th>',
                 '<th>'.$this->Dashboard->lang['refund_summa'].'</th>',
                 '<th>'.$this->Dashboard->lang['refund_commision_list'].'</th>',
                 '<th>'.$this->Dashboard->lang['refund_requisites'].'</th>',
                 '<th>'.$this->Dashboard->lang['history_date'].'</th>',
                 '<th>'.$this->Dashboard->lang['history_user'].'</th>',
                 '<th>'.$this->Dashboard->lang['status'].'</th>',
-                '<th><span class="settingsb"><input type="checkbox" class="icheck" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></span></th>'
+                '<th width="5%"><span class="settingsb"><input type="checkbox" class="icheck" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></span></th>'
             ]
         );
 
@@ -157,14 +167,12 @@ Class Refund extends PluginActions
 
 			$this->Dashboard->LQuery->where( $_WhereData );
 
-            $PerPage = 100;
 			$Data = $this->Dashboard->LQuery->getRefunds( 1, $PerPage );
 		}
 		else
 		{
 			$this->Dashboard->LQuery->where( ["refund_user = '{s}' " => $Get['user']] );
 
-			$PerPage = 30;
 			$Data = $this->Dashboard->LQuery->getRefunds( $Get['page'], $PerPage );
 		}
 
@@ -175,17 +183,23 @@ Class Refund extends PluginActions
 		foreach( $Data as $Value )
 		{
             if( $Value['refund_date_return'] )
+            {
                 $refund_status = "<font color=\"green\">".$this->Dashboard->lang['refund_act_ok'] . ": " . langdate( "j F Y  G:i", $Value['refund_date_return']) . "</a>";
+            }
             else if( $Value['refund_date_cancel'] )
+            {
                 $refund_status = "<font color=\"grey\">".$this->Dashboard->lang['refund_date_cancel'] . ": " . langdate( "j F Y  G:i", $Value['refund_date_cancel']) . "</a>";
+            }
             else
+            {
                 $refund_status = "<font color=\"red\">".$this->Dashboard->lang['refund_wait']."</a>";
+            }
 
 			$this->Dashboard->ThemeAddTR( 
                 [
                     $Value['refund_id'],
-                    $this->Dashboard->API->Convert( $Value['refund_summa']-$Value['refund_commission'] )." ".$this->Dashboard->API->Declension(($Value['refund_summa']-$Value['refund_commission']) ),
-                    $this->Dashboard->API->Convert( $Value['refund_commission'] )." ".$this->Dashboard->API->Declension( $Value['refund_commission'] ),
+                    \Billing\Api\Balance::Init()->Convert( $Value['refund_summa']-$Value['refund_commission'] )." ".\Billing\Api\Balance::Init()->Declension(($Value['refund_summa']-$Value['refund_commission']) ),
+                    \Billing\Api\Balance::Init()->Convert( $Value['refund_commission'] )." ".\Billing\Api\Balance::Init()->Declension( $Value['refund_commission'] ),
                     $Value['refund_requisites'],
                     $this->Dashboard->ThemeChangeTime( $Value['refund_date']),
                     $this->Dashboard->ThemeInfoUser( $Value['refund_user'] ),
@@ -282,14 +296,14 @@ HTML;
             'content' => $this->Dashboard->ThemeParserStr()
         ];
 
-		if( isset( $_POST['search_btn'] ) )
-		{
-			$Content .= $this->Dashboard->MakeMsgInfo(
-				$this->Dashboard->lang['search_info'],
-				"icon-search",
-				"blue"
-			);
-		}
+//		if( isset( $_POST['search_btn'] ) )
+//		{
+//			$Content .= $this->Dashboard->MakeMsgInfo(
+//				$this->Dashboard->lang['search_info'],
+//				"icon-search",
+//				"blue"
+//			);
+//		}
 
 		# Форма с настройками
 		#
@@ -315,7 +329,7 @@ HTML;
 			$this->Dashboard->lang['refund_minimum'],
 			$this->Dashboard->lang['refund_minimum_desc'],
 			"<input name=\"save_con[minimum]\" class=\"form-control\" type=\"text\" style=\"width:20%\" value=\"" . $_Config['minimum'] ."\"> "
-			. $this->Dashboard->API->Declension( $_Config['minimum'] )
+			. \Billing\Api\Balance::Init()->Declension( $_Config['minimum'] )
 		);
 
 		$this->Dashboard->ThemeAddStr(
@@ -335,11 +349,11 @@ HTML;
 							   $this->Dashboard->MakeButton("save", $this->Dashboard->lang['save'], "green")
 						   );
 
-		$tabs[] = array(
-				'id' => 'settings',
-				'title' => $this->Dashboard->lang['main_settings'],
-				'content' => $ContentSettings
-		);
+		$tabs[] = [
+            'id' => 'settings',
+            'title' => $this->Dashboard->lang['main_settings'],
+            'content' => $ContentSettings
+        ];
 
 		$Content = $this->Dashboard->PanelPlugin('plugins/refund' );
 

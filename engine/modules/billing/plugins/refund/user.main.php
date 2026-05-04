@@ -61,9 +61,9 @@ Class Refund
 			$this->DevTools->CheckHash( $_POST['bs_hash'] );
 
 			$_Requisites = $this->DevTools->LQuery->db->safesql( $_POST['bs_requisites'] );
-			$_Money = $this->DevTools->API->Convert( $_POST['bs_summa'] );
+			$_Money = \Billing\Api\Balance::Init()->Convert( $_POST['bs_summa'] );
 
-			$_MoneyCommission = $this->DevTools->API->Convert( ( $_Money / 100 ) * (float) $this->pluginСonfig['com'] );
+			$_MoneyCommission = \Billing\Api\Balance::Init()->Convert( ( $_Money / 100 ) * (float) $this->pluginСonfig['com'] );
 
 			if( ! $_Money )
 			{
@@ -73,7 +73,7 @@ Class Refund
             if( $_Money < $this->pluginСonfig['minimum'] )
 			{
                 throw new \Exception(
-                    sprintf( $this->DevTools->lang['refund_error_minimum'], $this->pluginСonfig['minimum'], $this->DevTools->API->Declension( $this->pluginСonfig['minimum'] ) )
+                    sprintf( $this->DevTools->lang['refund_error_minimum'], $this->pluginСonfig['minimum'], \Billing\Api\Balance::Init()->Declension( $this->pluginСonfig['minimum'] ) )
                 );
 			}
 
@@ -87,16 +87,16 @@ Class Refund
                 throw new \Exception($this->DevTools->lang['refund_error_balance']);
 			}
 
-			$_Money = $this->DevTools->API->Convert( $_POST['bs_summa'] );
+			$_Money = \Billing\Api\Balance::Init()->Convert( $_POST['bs_summa'] );
 
             # .. email уведомление
             #
             if( $this->pluginСonfig['email'] )
             {
-                (new \Billing\Api\Alert(email: $this->pluginСonfig['email']))
+                (new \Billing\Api\Email(email: $this->pluginСonfig['email']))
                     ->setTitle( $this->DevTools->lang['refund_email_title'] )
-                    ->setBody( sprintf( $this->DevTools->lang['refund_email_msg'], $this->DevTools->member_id['name'], $_Money, $this->DevTools->API->Declension($_Money), $_Requisites, $this->DevTools->dle['http_home_url'] . $this->DevTools->dle['admin_path'] . "?mod=billing&c=refund" ) )
-                    ->email();
+                    ->setBody( sprintf( $this->DevTools->lang['refund_email_msg'], $this->DevTools->member_id['name'], $_Money, \Billing\Api\Balance::Init()->Declension($_Money), $_Requisites, $this->DevTools->dle['http_home_url'] . $this->DevTools->dle['admin_path'] . "?mod=billing&c=refund" ) )
+                    ->send();
             }
 
             try
@@ -112,6 +112,16 @@ Class Refund
 
                 if( $refundId )
                 {
+                    if( $_MoneyCommission > 0 )
+                    {
+                        \Billing\Api\Balance::Init()->sendCommission(
+                            sum: $_MoneyCommission,
+                            comment: $this->DevTools->lang['refund_commission_text'],
+                            plugin: 'refund',
+                            plugin_id: $refundId
+                        );
+                    }
+
                     $transactionRefund->Comment(
                         userLogin: $this->DevTools->member_id['name'],
                         minus: floatval($_Money),
@@ -142,7 +152,7 @@ Class Refund
 
 		$this->DevTools->ThemeSetElement( "{requisites}", $this->xfield( $this->pluginСonfig['requisites'] ) );
 		$this->DevTools->ThemeSetElement( "{minimum}", $this->pluginСonfig['minimum'] );
-		$this->DevTools->ThemeSetElement( "{minimum.currency}", $this->DevTools->API->Declension( $this->pluginСonfig['minimum'] ) );
+		$this->DevTools->ThemeSetElement( "{minimum.currency}", \Billing\Api\Balance::Init()->Declension( $this->pluginСonfig['minimum'] ) );
 		$this->DevTools->ThemeSetElement( "{commission}", intval( $this->pluginСonfig['com'] ) );
 
 		# Список запросов
@@ -184,9 +194,9 @@ Class Refund
                 '{date=' . $TplLineDate . '}' => $this->DevTools->ThemeChangeTime( $Value['refund_date'], $TplLineDate ),
                 '{refund.requisites}' => $Value['refund_requisites'],
                 '{refund.commission}' => $Value['refund_commission'],
-                '{refund.commission.currency}' => $this->DevTools->API->Declension( $Value['refund_commission'] ),
+                '{refund.commission.currency}' => \Billing\Api\Balance::Init()->Declension( $Value['refund_commission'] ),
                 '{refund.sum}' => $Value['refund_summa'],
-                '{refund.sum.currency}' => $this->DevTools->API->Declension( $Value['refund_summa'] ),
+                '{refund.sum.currency}' => \Billing\Api\Balance::Init()->Declension( $Value['refund_summa'] ),
                 '{refund.status}' => $refund_status
             ];
 

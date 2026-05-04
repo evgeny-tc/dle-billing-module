@@ -71,7 +71,7 @@ Class Payhide
 
 			$params = [
                 '{date=' . $TplLineDate . '}' => $this->DevTools->ThemeChangeTime( $Value['payhide_date'], $TplLineDate ),
-                '{price}' => $Value['payhide_price'] . ' ' . $this->DevTools->API->Declension( $Value['payhide_price'] )
+                '{price}' => $Value['payhide_price'] . ' ' . \Billing\Api\Balance::Init()->Declension( $Value['payhide_price'] )
             ];
 
 			if( $Value['payhide_time'] )
@@ -169,7 +169,7 @@ Class Payhide
      * Страница оплаты
      * @param array $DATA
      * @return string
-     * @throws BalanceException
+     * @throws BalanceException|\Exception
      */
 	public function pay( array $DATA = [] ) : string
 	{
@@ -244,81 +244,26 @@ Class Payhide
         }
         catch (BalanceException $e)
         {
-            exit( $this->model(
+            exit( $this->modalContent(
                 $this->pluginLang['error'],
                 $e->getMessage()
             ));
         }
 
-		header("Location: /{$this->DevTools->config['page']}.html/pay/waiting/id/{$invoice_id}/&modal=1");
+		header("Location: /{$this->DevTools->config['page']}.html/pay/waiting/id/{$invoice_id}/?modal=1");
 
 		echo $this->DevTools->Show( sprintf( $this->pluginLang['pay_message'], "/{$this->DevTools->config['page']}.html/pay/waiting/id/{$invoice_id}/&modal=1" ) );
 
 		exit;
 	}
 
-	# Оплата с личного баланса
-	#
-	private function pay_balance( $Data ) : void
-	{
-		# Недостаточно средств
-		#
-		if( $this->DevTools->BalanceUser < $Data['price'] )
-		{
-			exit( $this->model(
-				$this->pluginLang['error'],
-				sprintf(
-					 $this->pluginLang['need_money'],
-					 $this->DevTools->API->Convert( $Data['price'] - $this->DevTools->BalanceUser ),
-					 $this->DevTools->API->Convert( $Data['price'] - $this->DevTools->BalanceUser ),
-					 $this->DevTools->API->Declension( $Data['price'] )
-			    )
-			));
-		}
-
-		# Процент автору статьи
-		#
-		if( $Data['post_autor'] and $this->pluginСonfig['percent'])
-		{
-			$Partner = $this->DevTools->API->Convert( ( $Data['price'] / 100 ) * $this->pluginСonfig['percent'] );
-
-			$this->DevTools->API->PlusMoney(
-				$Data['post_autor'],
-				$Partner,
-				sprintf( $this->pluginLang['balance_log'], $Data['pagelink'], urlencode( $this->DevTools->member_id['name'] ), $this->DevTools->member_id['name'] ),
-				'payhide',
-				$Data['post_id']
-			);
-		}
-
-		# Оплата
-		#
-		$this->DevTools->API->MinusMoney(
-			$this->DevTools->member_id['name'],
-			$Data['price'],
-			sprintf( $this->pluginLang['balance_desc'], $Data['pagelink'] ),
-			'payhide',
-			$Data['post_id']
-		);
-
-		$this->DevTools->LQuery->db->query( "INSERT INTO " . USERPREFIX . "_billing_payhide
-												(payhide_user, payhide_pagelink, payhide_price, payhide_date, payhide_tag, payhide_post_id, payhide_time)
-												values ('" . $this->DevTools->member_id['name'] . "',
-														'" . $Data['pagelink'] . "',
-														'" . $Data['price'] . "',
-														'" . $this->DevTools->_TIME . "',
-														'" . $Data['key'] . "',
-														'" . $Data['post_id'] . "',
-														'" . $Data['endtime'] . "')" );
-		exit( $this->model(
-			$this->pluginLang['replay'],
-			sprintf( $this->pluginLang['balance_ok'], $Data['pagelink'] )
-		));
-	}
-
-	# Загрузить шаблон окна оплаты
-	#
-	private function model( $title, $text )
+    /**
+     * Загрузить шаблон окна оплаты
+     * @param $title
+     * @param $text
+     * @return array|false|string|string[]|void
+     */
+	private function modalContent( $title, $text )
 	{
 		$Content = file_get_contents( ROOT_DIR . "/templates/" . $this->DevTools->dle['skin'] . "/billing/plugins/payhide/modal.tpl" ) or die( $this->DevTools->lang['cabinet_theme_error'] . "modal.tpl" );
 
@@ -328,9 +273,12 @@ Class Payhide
 		return $Content;
 	}
 
-	# Расшифровать параметры платежа
-	#
-	private function decode( $encoded )
+    /**
+     * Расшифровать параметры платежа
+     * @param $encoded
+     * @return array
+     */
+	private function decode( $encoded ) : array
 	{
 		$GetArray = array();
 		$strofsym = "qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM=";

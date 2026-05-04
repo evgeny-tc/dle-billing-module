@@ -32,6 +32,7 @@ Class Invoice
     public function mainPage( array $Get = [] ) : string
 	{
         $Get['page'] = intval($Get['page']) > 0 ? (int)$Get['page'] : 1;
+        $PerPage = $this->Dashboard->config['paging'];
 
 		$listPayments = $this->getPayments();
 
@@ -179,14 +180,12 @@ Class Invoice
 
 			$this->Dashboard->LQuery->where( $_WhereData );
 
-			$PerPage = 100;
 			$Data = $this->Dashboard->LQuery->getInvoices( 1, $PerPage );
 		}
 		else
 		{
 			$this->Dashboard->LQuery->where( ["invoice_user_name = '{s}' " => $Get['user']]);
 
-			$PerPage = 30;
 			$Data = $this->Dashboard->LQuery->getInvoices( $Get['page'], $PerPage );
 		}
 

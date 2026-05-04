@@ -460,7 +460,7 @@ Class Main
                         $this->Dashboard->lang['logger_do_' . $_Log[0]],
                         (
                         strlen( $_Log[2] ) > 20
-                            ? '<a href="#" onClick="logShowDialogByID( \'#log_' . $log_id . '\' ); return false">' . mb_substr( strip_tags( $_Log[2] ), 0, 40, $this->Dashboard->dle['charset'] ) . '..</a>'
+                            ? '<a href="#" onClick="BillingJS.openDialog( \'#log_' . $log_id . '\' ); return false">' . mb_substr( strip_tags( $_Log[2] ), 0, 40, $this->Dashboard->dle['charset'] ) . '..</a>'
                             : $_Log[2]
                         ) . '<div id="log_' . $log_id . '" title="' . $this->Dashboard->lang['logger_text_4'] . '" style="display:none">
 							<pre>' . $_Log[2] . '</pre>

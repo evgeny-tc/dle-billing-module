@@ -28,6 +28,7 @@ return new class extends Hooks
      * @param string|null $plugin
      * @param int|null $plugin_id
      * @return void
+     * @throws BalanceException
      */
     public function pay( string $user, ?float $plus, ?float $minus, float $balance, ?string $desc, ?string $plugin = '', ?int $plugin_id = 0 ) : void
 	{

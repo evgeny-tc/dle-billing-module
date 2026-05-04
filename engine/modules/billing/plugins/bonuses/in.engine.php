@@ -36,18 +36,9 @@ try
         throw new \Exception('off');
     }
 
-    //todo: api2.0
-    require_once ENGINE_DIR . '/modules/billing/OutAPI.php';
-
-    if( ! isset($pluginConfig['bonus3_alert_pm']) )
-    {
-        $BillingAPI->alert_pm = false;
-    }
-
-    if( ! isset($pluginConfig['bonus3_alert_main']) )
-    {
-        $BillingAPI->alert_main = false;
-    }
+    require_once ENGINE_DIR . '/modules/billing/api/email.php';
+    require_once ENGINE_DIR . '/modules/billing/api/message.php';
+    require_once ENGINE_DIR . '/modules/billing/api/balance.php';
 
     # Просмотр новости
     #
@@ -71,12 +62,17 @@ try
 
             if( ! $checkBonus['history_id'] )
             {
-                $BillingAPI->PlusMoney(
-                    $member_id['name'],
-                    floatval($pluginConfig['viewfull_sum']),
-                    sprintf( $pluginLang['bonus_view'], $searchPost['title'] ),
-                    'bonus_fullstory',
-                    $newsid
+                \Billing\Api\Balance::Init()->Comment(
+                    userLogin: $member_id['name'],
+                    plus: floatval($pluginConfig['viewfull_sum']),
+                    comment: sprintf( $pluginLang['bonus_view'], $searchPost['title'] ),
+                    plugin_id: $newsid,
+                    plugin_name: 'bonus_fullstory',
+                    pm: $pluginConfig['bonus3_alert_pm'] == '1',
+                    email: $pluginConfig['bonus3_alert_main'] == '1'
+                )->To(
+                    userLogin: $member_id['name'],
+                    sum: floatval($pluginConfig['viewfull_sum'])
                 );
             }
         }
@@ -105,11 +101,16 @@ try
 
             if( $_TIME > ( $checkBonus['history_date'] + (($pluginConfig['activesite_intv'] * 60)-1) ) )
             {
-                $BillingAPI->PlusMoney(
-                    $member_id['name'],
-                    floatval($pluginConfig['activesite_sum']),
-                    $pluginLang['tab6_in_story'],
-                    'bonuseshour'
+                \Billing\Api\Balance::Init()->Comment(
+                    userLogin: $member_id['name'],
+                    plus: floatval($pluginConfig['activesite_sum']),
+                    comment: $pluginLang['tab6_in_story'],
+                    plugin_name: 'bonuseshour',
+                    pm: $pluginConfig['bonus3_alert_pm'] == '1',
+                    email: $pluginConfig['bonus3_alert_main'] == '1'
+                )->To(
+                    userLogin: $member_id['name'],
+                    sum: floatval($pluginConfig['activesite_sum'])
                 );
             }
 
@@ -133,11 +134,16 @@ try
 
             if( $_TIME > ( $checkBonus['history_date'] + 86400 ) )
             {
-                $BillingAPI->PlusMoney(
-                    $member_id['name'],
-                    floatval($pluginConfig['t_bonus_sum']),
-                    $pluginLang['info'],
-                    'bonusesday'
+                \Billing\Api\Balance::Init()->Comment(
+                    userLogin: $member_id['name'],
+                    plus: floatval($pluginConfig['t_bonus_sum']),
+                    comment: $pluginLang['info'],
+                    plugin_name: 'bonusesday',
+                    pm: $pluginConfig['bonus3_alert_pm'] == '1',
+                    email: $pluginConfig['bonus3_alert_main'] == '1'
+                )->To(
+                    userLogin: $member_id['name'],
+                    sum: floatval($pluginConfig['t_bonus_sum'])
                 );
 
                 SetCookie("billing_plugins_bonus_day", $_TIME + 24 * 3600, strtotime("+1 day"));

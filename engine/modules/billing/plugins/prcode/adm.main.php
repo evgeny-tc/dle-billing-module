@@ -53,7 +53,11 @@ Class Prcode extends PluginActions
 
 			$this->Dashboard->SaveConfig('plugin.prcode', $_POST['save_con']);
 
-			$this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['save_settings'] );
+			$this->Dashboard->ThemeMsg(
+                title: $this->Dashboard->lang['ok'],
+                text: $this->Dashboard->lang['save_settings'],
+                show_progress: true
+            );
 		}
 
 		# Удалить отмеченные
@@ -85,8 +89,8 @@ Class Prcode extends PluginActions
 			$_Answer = '';
 
 			$_Theme = $this->Dashboard->LQuery->db->safesql( $_POST['get_theme'] );
-			$_Sum = $this->Dashboard->API->Convert( $_POST['get_sum'] );
-			$_Declension = $this->Dashboard->API->Declension( $_POST['get_sum'] );
+			$_Sum = \Billing\Api\Balance::Init()->Convert( $_POST['get_sum'] );
+			$_Declension = \Billing\Api\Balance::Init()->Declension( $_POST['get_sum'] );
 
 			for( $n = 1; $n <= intval( $_POST['get_num'] ); $n ++ )
 			{
@@ -118,12 +122,12 @@ Class Prcode extends PluginActions
 		#
 		$this->Dashboard->ThemeAddTR(
             [
-                '<td width="1%">#</td>',
+                '<td width="5%">#</td>',
                 '<td>' . $this->_Lang['ap_code'] . '</td>',
                 '<td>' . $this->_Lang['ap_sum'] . '</td>',
                 '<td>' . $this->_Lang['ap_active'] . '</td>',
                 '<td>' . $this->_Lang['ap_time_active'] . '</td>',
-                '<td width="2%"><center><input type="checkbox" class="icheck" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></center></td>'
+                '<td width="5%"><center><input type="checkbox" class="icheck" value="" name="massact_list[]" onclick="BillingJS.checkAll(this)" /></center></td>'
             ]
         );
 
@@ -149,10 +153,10 @@ Class Prcode extends PluginActions
                 [
                     $Value['prcode_id'],
                     $Value['prcode_active_user'] ? '<span style="text-decoration:line-through">' . $Value['prcode_tag'] . '</span>' : $Value['prcode_tag'],
-                    $Value['prcode_sum'] . ' ' . $this->Dashboard->API->Declension( $Value['prcode_sum'] ),
+                    $Value['prcode_sum'] . ' ' . \Billing\Api\Balance::Init()->Declension( $Value['prcode_sum'] ),
                     $Value['prcode_active_user'] ? $this->Dashboard->ThemeInfoUser( $Value['prcode_active_user'] ) : '',
                     $Value['prcode_active_user'] ? $this->Dashboard->ThemeChangeTime( $Value['prcode_active_date'] ) : '',
-                    '<span class="settingsb">' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['prcode_id']) . '</span>'
+                    '<center>' . $this->Dashboard->MakeCheckBox("massact_list[]", false, $Value['prcode_id']) . '</center>'
                 ]
             );
 		}
@@ -192,7 +196,7 @@ Class Prcode extends PluginActions
 		$this->Dashboard->ThemeAddStr(
 			$this->_Lang['ap_getsum'],
 			$this->_Lang['ap_getsum_desc'],
-			"<input name=\"get_sum\" class=\"form-control\" type=\"text\" style=\"width: 30%\" value=\"10.00\"> " . $this->Dashboard->API->Declension( 10 )
+			"<input name=\"get_sum\" class=\"form-control\" type=\"text\" style=\"width: 30%\" value=\"10.00\"> " . \Billing\Api\Balance::Init()->Declension( 10 )
 		);
 
 		$this->Dashboard->ThemeAddStr(
