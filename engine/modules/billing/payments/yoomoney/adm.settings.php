@@ -100,7 +100,7 @@ Class YooMoney implements IPayment
     public function check_out(array $result, array $config_payment, array $invoice ) : string|bool
     {
         $sign_received = $result['sign'] ?? '';
-        unset($result['sign']);
+        unset($result['sign'], $result['PHPSESSID']);
 
         ksort($result);
 
@@ -126,11 +126,6 @@ Class YooMoney implements IPayment
         if ((float)$payment_amount != (float)$invoice['invoice_pay'])
         {
             return "Error sum: expected {$invoice['invoice_pay']}, got {$payment_amount}";
-        }
-
-        if (isset($result['notification_type']) && $result['notification_type'] !== 'p2p-incoming')
-        {
-            return "Error notification_type: {$result['notification_type']}";
         }
 
         return true;

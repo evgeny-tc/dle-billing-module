@@ -25,14 +25,14 @@ Class Dashboard
     /**
      * @throws \Exception
      */
-    public static function Start(): null
+    public static function Start() : void
     {
         if ( empty(self::$instance) )
 		{
             self::$instance = new self();
         }
 
-        return self::$instance->Loader();
+        self::$instance->Loader();
     }
 
     /**
