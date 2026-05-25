@@ -106,7 +106,7 @@ Class YooMoney implements IPayment
 			return "Error sum " . $result['amount'];
 		}
 
-		if($hash !== $result['sha1_hash'])
+		if($hash !== $result['sign'])
 		{
 			return "Error hash";
 		}
