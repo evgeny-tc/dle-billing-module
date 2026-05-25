@@ -669,6 +669,21 @@ return array
     'statistics_6' => "Главное меню",
     'statistics_7' => "<i class='fa fa-area-chart'></i> Сводка",
 
+	'statistics_period_week' => "Неделя",
+	'statistics_period_month' => "Месяц",
+	'statistics_period_quarter' => "3 мес.",
+	'statistics_period_year' => "Год",
+	'statistics_period_hint' => "Период: %s — %s",
+	'statistics_period_net' => "Сальдо за период",
+	'statistics_period_ops' => "операций в истории",
+	'statistics_period_in' => "Начислено за период",
+	'statistics_period_out' => "Списано за период",
+	'statistics_period_hint_ops' => "по истории баланса",
+	'statistics_global_title' => "Система в целом",
+	'statistics_users_count' => "пользователей с балансом",
+	'statistics_invoice_short' => "квит.",
+	'statistics_show' => "Применить фильтр",
+
 	'statistics_new_1' => "Статистика движения средств",
 	'statistics_new_1_graf' => "Динамика доходов и расходов пользователей",
 

@@ -860,6 +860,7 @@ HTML;
 		      <script src="public/billing/accessibility.js"></script>
 		      <script src="public/billing/jquery.slidereveal.min.js"></script>
 			  <script src="public/billing/core.js"></script>
+			  <script src="public/billing/statistics.js"></script>
 			  <script type="text/javascript">
 			  	jQuery(document).ready(function(){'.$JSmenu.'});
 			  </script>';
