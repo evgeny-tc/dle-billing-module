@@ -10,7 +10,7 @@
 	<filedelete>1</filedelete>
 	<needplugin></needplugin>
 	<mnotice>1</mnotice>
-	<mysqlinstall><![CDATA[CREATE TABLE  IF NOT EXISTS `{prefix}_billing_history`(
+	<mysqlinstall><![CDATA[CREATE TABLE IF NOT EXISTS `dle_billing_history`(
   `history_id` int(11) NOT NULL,
   `history_plugin` varchar(21) NOT NULL,
   `history_plugin_id` int(11) NOT NULL,
@@ -22,11 +22,11 @@
   `history_balance` decimal(10,2) NOT NULL,
   `history_currency` varchar(100) NOT NULL,
   `history_text` text NOT NULL,
-  `history_date` int(11) NOT NULL
-	PRIMARY KEY (`history_id`)
-) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
+  `history_date` int(11) NOT NULL,
+  PRIMARY KEY (`history_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1;
 
-CREATE TABLE IF NOT EXISTS `{prefix}_billing_invoice` (
+CREATE TABLE IF NOT EXISTS `dle_billing_invoice` (
   `invoice_id` int(11) NOT NULL,
   `invoice_paysys` varchar(21) NOT NULL,
   `invoice_user_name` varchar(40) NOT NULL,
@@ -37,11 +37,11 @@ CREATE TABLE IF NOT EXISTS `{prefix}_billing_invoice` (
   `invoice_date_pay` int(11) NOT NULL,
   `invoice_payer_requisites` varchar(40) NOT NULL,
   `invoice_payer_info` text NOT NULL,
-  `invoice_handler` text NOT NULL
-	PRIMARY KEY (`invoice_id`)
-) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
+  `invoice_handler` text NOT NULL,
+  PRIMARY KEY (`invoice_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1;
 
-CREATE TABLE IF NOT EXISTS `{prefix}_billing_refund` (
+CREATE TABLE IF NOT EXISTS `dle_billing_refund` (
   `refund_id` int(11) NOT NULL,
   `refund_date` int(11) NOT NULL,
   `refund_user` varchar(40) NOT NULL,
@@ -49,23 +49,23 @@ CREATE TABLE IF NOT EXISTS `{prefix}_billing_refund` (
   `refund_commission` decimal(10,2) NOT NULL,
   `refund_requisites` text NOT NULL,
   `refund_date_return` int(11) NOT NULL,
-  `refund_date_cancel` int(11) NOT NULL
-	PRIMARY KEY (`refund_id`)
-) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
+  `refund_date_cancel` int(11) NOT NULL,
+  PRIMARY KEY (`refund_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1;
 
-CREATE TABLE IF NOT EXISTS `{prefix}_billing_coupons` (
+CREATE TABLE IF NOT EXISTS `dle_billing_coupons` (
   `coupon_id` int(11) NOT NULL,
   `coupon_use` varchar(40) NOT NULL,
   `coupon_time_end` int(11) NOT NULL,
   `coupon_type` int(11) NOT NULL,
   `coupon_value` float NOT NULL,
-  `coupon_key` varchar(24) NOT NULL
-    PRIMARY KEY (`coupon_id`)
-) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
+  `coupon_key` varchar(24) NOT NULL,
+  PRIMARY KEY (`coupon_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1;
 
-ALTER TABLE `{prefix}_users` ADD `user_balance` decimal(10,2) NOT NULL;
+ALTER TABLE `dle_users` ADD `user_balance` decimal(10,2) NOT NULL;
 
-INSERT INTO `{prefix}_static` (`name`, `descr`, `template`, `allow_br`, `allow_template`, `grouplevel`, `tpl`, `metadescr`, `metakeys`, `views`, `template_folder`, `date`, `metatitle`, `allow_count`, `sitemap`, `disable_index`) VALUES ('billing', 'Личный кабинет', 'billing/cabinet', 1, 1, 'all', 'billing', 'billing/cabinet', 'cabinet, billing', 0, '', unix_timestamp(), '', 1, 1, 1);]]></mysqlinstall>
+INSERT INTO `dle_static` (`name`, `descr`, `template`, `allow_br`, `allow_template`, `grouplevel`, `tpl`, `metadescr`, `metakeys`, `views`, `template_folder`, `date`, `metatitle`, `allow_count`, `sitemap`, `disable_index`) VALUES ('billing', 'Личный кабинет', 'billing/cabinet', 1, 1, 'all', 'billing', 'billing/cabinet', 'cabinet, billing', 0, '', unix_timestamp(), '', 1, 1, 1);]]></mysqlinstall>
 	<mysqlupgrade><![CDATA[]]></mysqlupgrade>
 	<mysqlenable><![CDATA[INSERT INTO `{prefix}_admin_sections` (`name`, `title`, `descr`, `icon`, `allow_groups`) VALUES ('billing', 'DLE Billing', 'Автоматизируйте прием платежей на сайте с помощью модуля DLE-Billing', 'engine/skins/billing/icons/billing.png', '1');]]></mysqlenable>
 	<mysqldisable><![CDATA[DELETE FROM `{prefix}_admin_sections` WHERE name = 'billing';]]></mysqldisable>
