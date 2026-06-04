@@ -839,7 +839,7 @@ HTML;
 		$JSmenu = "<ul>" . $JSmenu . "</ul>";
 
         $JSmenu = "$('li .active').after('{$JSmenu}');
-					$('.curmod > ul').css('display', 'block');
+					$('.curmod > ul').css('display', 'block'); console.log('shpw');
 					$('a[title=\"Просмотр сайта\"]').attr('href', '/{$this->config['page']}.html');			
 					$('.curmod').addClass('active');";
 
@@ -862,7 +862,9 @@ HTML;
 			  <script src="public/billing/core.js"></script>
 			  <script src="public/billing/statistics.js"></script>
 			  <script type="text/javascript">
-			  	jQuery(document).ready(function(){'.$JSmenu.'});
+			  setTimeout(() => {
+                  jQuery(document).ready(function(){'.$JSmenu.'});
+                }, 200);
 			  </script>';
 	}
 

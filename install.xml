@@ -11,7 +11,7 @@
 	<needplugin></needplugin>
 	<mnotice>1</mnotice>
 	<mysqlinstall><![CDATA[CREATE TABLE IF NOT EXISTS `{userprefix}_billing_history`(
-  `history_id` int(11) NOT NULL,
+  `history_id` int(11) NOT NULL AUTO_INCREMENT,
   `history_plugin` varchar(21) NOT NULL,
   `history_plugin_id` int(11) NOT NULL,
   `history_user_name` varchar(40) NOT NULL,
@@ -27,7 +27,7 @@
 ) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
 
 CREATE TABLE IF NOT EXISTS `{userprefix}_billing_invoice` (
-  `invoice_id` int(11) NOT NULL,
+  `invoice_id` int(11) NOT NULL AUTO_INCREMENT,
   `invoice_paysys` varchar(21) NOT NULL,
   `invoice_user_name` varchar(40) NOT NULL,
   `invoice_user_anonymous` int(11) NOT NULL DEFAULT '0',
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `{userprefix}_billing_invoice` (
 ) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
 
 CREATE TABLE IF NOT EXISTS `{userprefix}_billing_refund` (
-  `refund_id` int(11) NOT NULL,
+  `refund_id` int(11) NOT NULL AUTO_INCREMENT,
   `refund_date` int(11) NOT NULL,
   `refund_user` varchar(40) NOT NULL,
   `refund_summa` decimal(10,2) NOT NULL,
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `{userprefix}_billing_refund` (
 ) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
 
 CREATE TABLE IF NOT EXISTS `{userprefix}_billing_coupons` (
-  `coupon_id` int(11) NOT NULL,
+  `coupon_id` int(11) NOT NULL AUTO_INCREMENT,
   `coupon_use` varchar(40) NOT NULL,
   `coupon_time_end` int(11) NOT NULL,
   `coupon_type` int(11) NOT NULL,
