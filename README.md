@@ -36,10 +36,8 @@
 - Формы
 
 ## Платежные агрегаторы
-- Payok.io
 - ЮMoney
 - Робокасса
-- Free-Kassa
 - Tegro.money
 - Интеркасса
 - betatransfer.io
