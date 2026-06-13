@@ -473,7 +473,7 @@ Class Pay
         #
         $DATA = $this->ClearData( $_REQUEST );
 
-        $this->logging( 1, str_replace("\n", "<br>", print_r( $DATA, true )) );
+        $this->logging( 1, $DATA );
 
         # Проверка ключа
         #
@@ -607,35 +607,43 @@ Class Pay
 
     /**
      * Логирование
-     * TODO: replace new method
      * @param int $step
      * @param string $info
      * @return void
      */
-    private function logging( int $step = 0, string $info = '' ) : void
+    private function logging(int $step = 0, mixed $info = '') : void
     {
         if( ! $this->DevTools->config['test'] ) return;
 
-        if( filesize('pay.logger.php') > 1024 and ! $step )
+        $logFile = 'pay.logger.php';
+
+        if( filesize($logFile) > 1024 and ! $step )
         {
-            unlink('pay.logger.php');
+            unlink($logFile);
         }
 
-        if( ! file_exists( 'pay.logger.php' ) )
+        if( ! file_exists( $logFile ) )
         {
-            $handler = fopen( 'pay.logger.php', "a" );
-
+            $handler = fopen( $logFile, "a" );
             fwrite( $handler, "<?php if( !defined( 'BILLING_MODULE' ) ) die( 'Hacking attempt!' ); ?>\n");
+            fwrite( $handler, "<?php die(); ?>\n");
+            fwrite( $handler, "// Log format: step|timestamp|data\n");
         }
         else
         {
-            $handler = fopen( 'pay.logger.php', "a" );
+            $handler = fopen( $logFile, "a" );
+        }
+
+        $encodedInfo = json_encode($info, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+
+        if ($encodedInfo === false) {
+            $encodedInfo = '[BINARY DATA]';
         }
 
         fwrite( $handler,
             $step . '|' .
             langdate( "j.m.Y H:i", $this->_TIME) . '|' .
-            $info . "\n"
+            $encodedInfo . "\n"
         );
 
         fclose( $handler );

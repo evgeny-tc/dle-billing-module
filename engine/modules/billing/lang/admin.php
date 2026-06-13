@@ -196,8 +196,8 @@ return array
 
 	'logger_text_1' => "Дата и время",
 	'logger_text_2' => "Статус",
-	'logger_text_3' => "Тип",
-	'logger_text_4' => "Содержимое",
+	'logger_text_3' => "Проверка",
+	'logger_text_4' => "Результат",
 
 	'logger_do_0' => "Получен запрос от платежной системы",
 	'logger_do_1' => "Параметры платежа получены",
