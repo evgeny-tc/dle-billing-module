@@ -11,7 +11,7 @@ namespace Billing;
 
 Class Enot implements IPayment
 {
-    public string $doc = "https://enot.io/en/knowledge/index";
+    public string $doc = "https://enot.io/";
 
     private static array $LANG_MESSAGE = [
         'curl' => "Ошибка отправки запроса!",
