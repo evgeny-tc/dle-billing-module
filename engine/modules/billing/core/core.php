@@ -329,7 +329,11 @@ trait Core
      */
     public function ThemeChangeTime( int $time, string $custom_format = '' ) : string
     {
-        date_default_timezone_set( $this->dle['date_adjust'] );
+        static $timezoneSet = false;
+        if (!$timezoneSet) {
+            date_default_timezone_set( $this->dle['date_adjust'] );
+            $timezoneSet = true;
+        }
 
         if( $custom_format )
         {

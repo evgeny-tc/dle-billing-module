@@ -50,11 +50,12 @@ return new class extends Hooks
 
         $_Lang = Core::getLang('bonuses');
 
-        # Всего платежей у пользователя
+        # Всего платежей у пользователя + группа пользователя
         #
-		$countPay = $db->super_query( "SELECT COUNT(*) as `count`
-														FROM " . USERPREFIX . "_billing_history
-														WHERE history_user_name = '{$user}' and history_plugin = 'pay'" );
+		$countPay = $db->super_query( "SELECT COUNT(*) as `count`,
+													(SELECT user_group FROM " . PREFIX . "_users WHERE name = '{$user}') as `user_group`
+													FROM " . USERPREFIX . "_billing_history
+													WHERE history_user_name = '{$user}' and history_plugin = 'pay'" );
 
 		# Первый платеж
 		#
@@ -99,9 +100,7 @@ return new class extends Hooks
 		#
 		if( intval($this->configPlugin['active_count']) >= intval($countPay['count']) and $plus >= floatval($this->configPlugin['active_min']) )
 		{
-			$_uGroup = $db->super_query( "SELECT user_group FROM " . USERPREFIX . "_users WHERE name = '{$user}'" );
-
-			if( in_array( $_uGroup['user_group'], explode(',', $this->configPlugin['active_from']) ) )
+			if( in_array( $countPay['user_group'], explode(',', $this->configPlugin['active_from']) ) )
 			{
 				$db->query( "UPDATE " . PREFIX . "_users
 									SET user_group='" . intval($this->configPlugin['active_to']) . "'

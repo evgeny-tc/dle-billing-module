@@ -19,7 +19,7 @@ if( $member_id['name'] and $billingLang = include ENGINE_DIR . '/modules/billing
         $_return_js = [];
 
         $db->query( "SELECT * FROM " . USERPREFIX . "_billing_history
-                        WHERE history_user_name = '{$member_id['name']}' and history_date > {$lastCheck}
+                        WHERE history_user_name = '" . $db->safesql($member_id['name']) . "' and history_date > {$lastCheck}
                        ORDER BY history_id asc LIMIT 3" );
 
         while ( $row = $db->get_row() )

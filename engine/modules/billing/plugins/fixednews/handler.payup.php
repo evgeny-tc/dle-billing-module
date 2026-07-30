@@ -24,7 +24,7 @@ return new class extends Handler
     {
         global $db;
 
-        $InfoPay = unserialize($Invoice['invoice_payer_info']);
+        $InfoPay = json_decode($Invoice['invoice_payer_info'], true) ?? (unserialize($Invoice['invoice_payer_info']) ?: []);
 
         if( ! $post_id = intval($InfoPay['params']['post_id']) )
         {

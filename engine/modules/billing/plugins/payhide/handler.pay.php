@@ -24,7 +24,7 @@ return new class extends Handler
     {
         global $db, $_TIME;
 
-        $InfoPay = unserialize($Invoice['invoice_payer_info']);
+        $InfoPay = json_decode($Invoice['invoice_payer_info'], true) ?? (unserialize($Invoice['invoice_payer_info']) ?: []);
 
         $InfoPay['params']['pagelink'] = base64_decode($InfoPay['params']['pagelink']);
         $InfoPay['params']['post_id'] = intval( $InfoPay['params']['post_id'] );

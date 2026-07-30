@@ -123,17 +123,19 @@ Class Users
 			}
 			else
 			{
-				if( $_Do )
+				$_Sum = floatval($_Sum);
+
+			if( $_Do )
 		        {
 		            $this->Dashboard->LQuery->db->query( "UPDATE " . USERPREFIX . "_users
-		                                                    SET {$this->Dashboard->config['fname']} = {$this->Dashboard->config['fname']} + $_Sum
-		                                                    WHERE user_group = '$_Group'");
+		                                                    SET {$this->Dashboard->config['fname']} = {$this->Dashboard->config['fname']} + {$_Sum}
+		                                                    WHERE user_group = '{$_Group}'");
 		        }
 		        else
 		        {
 		            $this->Dashboard->LQuery->db->query( "UPDATE " . USERPREFIX . "_users
-		                                                    SET {$this->Dashboard->config['fname']} = {$this->Dashboard->config['fname']} - $_Sum
-		                                                    WHERE user_group = '$_Group'");
+		                                                    SET {$this->Dashboard->config['fname']} = {$this->Dashboard->config['fname']} - {$_Sum}
+		                                                    WHERE user_group = '{$_Group}'");
 		        }
 
 		        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['users_ok_group'], "?mod=billing&c=users" );
@@ -229,13 +231,13 @@ Class Users
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['users_label'],
 			$this->Dashboard->lang['users_label_desc'],
-			"<input name=\"search_name\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . $_POST['search_name'] ."\">"
+			"<input name=\"search_name\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . htmlspecialchars($_POST['search_name'] ?? '', ENT_QUOTES, 'UTF-8') ."\">"
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['user_se_balance'],
 			$this->Dashboard->lang['user_se_balance_desc'],
-			"<input name=\"search_balance\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . $_POST['search_balance'] ."\">"
+			"<input name=\"search_balance\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . htmlspecialchars($_POST['search_balance'] ?? '', ENT_QUOTES, 'UTF-8') ."\">"
 		);
 
 		$tabs[] = [

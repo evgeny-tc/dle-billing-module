@@ -344,7 +344,7 @@ class Database
                     FROM " . USERPREFIX . "_billing_history `transaction`
                     LEFT JOIN " . USERPREFIX . "_users `user_data`
                         ON user_data.name = transaction.history_user_name
-             WHERE history_id = " . $id
+             WHERE history_id = " . intval($id)
         ) ?: null;
     }
 
@@ -377,7 +377,7 @@ class Database
                     FROM " . USERPREFIX . "_billing_invoice `invoice`
                     LEFT JOIN " . USERPREFIX . "_users `user_data`
                         ON user_data.name = invoice.invoice_user_name
-             WHERE invoice_id = " . $id
+             WHERE invoice_id = " . intval($id)
         ) ?: null;
     }
 
@@ -563,7 +563,7 @@ class Database
             array_walk_recursive($payerInfo, function (&$item) {
                 $item = preg_replace('/[^ a-z&#;@а-яA-ZА-Я\d.]/ui', '', (string) $item);
             });
-            return serialize($payerInfo);
+            return json_encode($payerInfo, JSON_UNESCAPED_UNICODE);
         }
 
         return $this->db->safesql((string) $payerInfo);
@@ -578,14 +578,14 @@ class Database
     private function updateInvoiceWithCoupon(array $invoice, array $coupon): void
     {
         $payerData = !empty($invoice['invoice_payer_info'])
-            ? unserialize($invoice['invoice_payer_info'])
+            ? json_decode($invoice['invoice_payer_info'], true) ?? (unserialize($invoice['invoice_payer_info']) ?: [])
             : [];
 
         $payerData['coupon'] = $coupon;
 
         $this->db->query(
             "UPDATE " . USERPREFIX . "_billing_invoice
-             SET invoice_payer_info = '" . serialize($payerData) . "'
+             SET invoice_payer_info = '" . $this->db->safesql(json_encode($payerData, JSON_UNESCAPED_UNICODE)) . "'
              WHERE invoice_id = " . intval($invoice['invoice_id'])
         );
     }

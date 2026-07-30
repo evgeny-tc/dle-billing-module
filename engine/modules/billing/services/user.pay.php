@@ -218,7 +218,7 @@ Class Pay
             #
             if( $Invoice['invoice_handler'] )
             {
-                $InfoPay = unserialize($Invoice['invoice_payer_info']);
+                $InfoPay = json_decode($Invoice['invoice_payer_info'], true) ?? (unserialize($Invoice['invoice_payer_info']) ?: []);
 
                 if( isset($InfoPay['billing']['from_balance']) )
                 {
@@ -543,7 +543,7 @@ Class Pay
 
             # если цена не по купону -> конвертируем
             #
-            $InfoPay = unserialize($Invoice['invoice_payer_info']);
+            $InfoPay = json_decode($Invoice['invoice_payer_info'], true) ?? (unserialize($Invoice['invoice_payer_info']) ?: []);
 
             if( ! $InfoPay['coupon']['coupon_id'] )
             {
