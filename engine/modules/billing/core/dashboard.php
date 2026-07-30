@@ -18,6 +18,8 @@ Class Dashboard
 
 	private static self $instance;
 
+	private static array $injected = [];
+
 	private function __construct(){}
     private function __clone()    {}
     private function __wakeup()   {}
@@ -25,8 +27,24 @@ Class Dashboard
     /**
      * @throws \Exception
      */
-    public static function Start() : void
+    public static function Start(
+		?\db $db = null,
+		?array $config = null,
+		?array $member_id = null,
+		?int $_TIME = null,
+		?string $dle_login_hash = null,
+		?string $selected_language = null
+	) : void
     {
+		self::$injected = array_filter([
+			'db' => $db,
+			'config' => $config,
+			'member_id' => $member_id,
+			'_TIME' => $_TIME,
+			'dle_login_hash' => $dle_login_hash,
+			'selected_language' => $selected_language,
+		], fn($v) => $v !== null);
+
         if ( empty(self::$instance) )
 		{
             self::$instance = new self();
@@ -125,7 +143,17 @@ Class Dashboard
      */
 	private function Loader() : void
 	{
-		global $config, $member_id, $_TIME, $db, $dle_login_hash, $selected_language;
+		$config = self::$injected['config'] ?? null;
+		$member_id = self::$injected['member_id'] ?? null;
+		$_TIME = self::$injected['_TIME'] ?? null;
+		$db = self::$injected['db'] ?? null;
+		$dle_login_hash = self::$injected['dle_login_hash'] ?? null;
+		$selected_language = self::$injected['selected_language'] ?? null;
+
+		if (!$config || !$member_id || !$_TIME || !$db || !$dle_login_hash)
+		{
+			global $config, $member_id, $_TIME, $db, $dle_login_hash, $selected_language;
+		}
 
         $selected_language = preg_replace("/[^a-zA-Z0-9-_\s]/", "", trim( $selected_language ) );
 		$this->lang 	= file_exists(MODULE_PATH . '/lang/' . $selected_language . '/admin.php') ? include MODULE_PATH . '/lang/' . $selected_language . '/admin.php' : include MODULE_PATH . '/lang/admin.php';

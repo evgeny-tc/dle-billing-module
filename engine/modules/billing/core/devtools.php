@@ -17,6 +17,7 @@ Class DevTools
     use Core, Utheme;
 
     private static self $instance;
+	private static array $injected = [];
 
     private function __construct(){}
     private function __clone()    {}
@@ -26,8 +27,22 @@ Class DevTools
      * @return void
      * @throws \Exception
      */
-    public static function Start() : void
+    public static function Start(
+		?\db $db = null,
+		?array $config = null,
+		?array $member_id = null,
+		?int $_TIME = null,
+		?string $dle_login_hash = null
+	) : void
     {
+		self::$injected = array_filter([
+			'db' => $db,
+			'config' => $config,
+			'member_id' => $member_id,
+			'_TIME' => $_TIME,
+			'dle_login_hash' => $dle_login_hash,
+		], fn($v) => $v !== null);
+
         if ( empty(self::$instance) )
         {
             self::$instance = new self();
@@ -106,7 +121,16 @@ Class DevTools
      */
     private function Loader(): void
     {
-        global $config, $member_id, $_TIME, $db, $dle_login_hash;
+        $config = self::$injected['config'] ?? null;
+        $member_id = self::$injected['member_id'] ?? null;
+        $_TIME = self::$injected['_TIME'] ?? null;
+        $db = self::$injected['db'] ?? null;
+        $dle_login_hash = self::$injected['dle_login_hash'] ?? null;
+
+        if (!$config || !$member_id || !$_TIME || !$db || !$dle_login_hash)
+        {
+            global $config, $member_id, $_TIME, $db, $dle_login_hash;
+        }
 
         $this->lang 	= include MODULE_PATH . '/lang/cabinet.php';
         $this->config 	= static::getConfig('');
