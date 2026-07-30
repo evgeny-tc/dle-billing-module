@@ -344,7 +344,7 @@ class Database
                     FROM " . USERPREFIX . "_billing_history `transaction`
                     LEFT JOIN " . USERPREFIX . "_users `user_data`
                         ON user_data.name = transaction.history_user_name
-             WHERE history_id = " . intval($id)
+             WHERE history_id = " . $id
         ) ?: null;
     }
 
@@ -377,7 +377,7 @@ class Database
                     FROM " . USERPREFIX . "_billing_invoice `invoice`
                     LEFT JOIN " . USERPREFIX . "_users `user_data`
                         ON user_data.name = invoice.invoice_user_name
-             WHERE invoice_id = " . intval($id)
+             WHERE invoice_id = " . $id
         ) ?: null;
     }
 
