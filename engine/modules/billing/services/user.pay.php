@@ -218,7 +218,7 @@ Class Pay
             #
             if( $Invoice['invoice_handler'] )
             {
-                $InfoPay = json_decode($Invoice['invoice_payer_info'], true) ?? (unserialize($Invoice['invoice_payer_info']) ?: []);
+                $InfoPay = DevTools::decodeInfo($Invoice['invoice_payer_info']);
 
                 if( isset($InfoPay['billing']['from_balance']) )
                 {
@@ -337,15 +337,17 @@ Class Pay
                                 comment: $logData[0],
                                 plugin_id: (int)$logData[1],
                                 plugin_name: $pluginHandler ?? 'null',
-                                pm: (bool)$this->config['mail_payok_pm'],
-                                email: (bool)$this->config['mail_payok_email']
+                                pm: (bool)$this->DevTools->config['mail_payok_pm'],
+                                email: (bool)$this->DevTools->config['mail_payok_email']
                             )->From(
                                 userLogin: $this->DevTools->member_id['name'],
                                 sum: $Invoice['invoice_get']
-                            )->sendEvent()->Commit();
+                            )->sendEvent();
 
                             if( $this->DevTools->invoiceRegisterPay( $Invoice, $this->DevTools->member_id['name'] ) )
                             {
+                                \Billing\Api\Balance::Init()->Commit();
+
                                 if( $_GET['modal'] )
                                 {
                                     $this->DevTools->ThemeSetElement( '[modal]', '' );
@@ -360,9 +362,13 @@ Class Pay
                                     $this->DevTools->ThemeLoad( 'pay/success' )
                                 );
                             }
+
+                            \Billing\Api\Balance::Init()->Rollback();
                         }
-                        catch (\BalanceException $e)
+                        catch (\Throwable $e)
                         {
+                            \Billing\Api\Balance::Init()->Rollback();
+
                             throw new \Exception(
                                 $e->getMessage()
                             );
@@ -412,9 +418,9 @@ Class Pay
                     if( $_coupon and $this->DevTools->LQuery->useCoupon($couponData, $Invoice) )
                     {
                         $this->DevTools->LQuery->updateInvoice(
-                            invoice_id: $GET['id'],
+                            invoiceId: (int) $GET['id'],
                             wait: true,
-                            invoice_pay: $Invoice['invoice_pay']
+                            amountPay: (float) $Invoice['invoice_pay']
                         );
                     }
 
@@ -543,7 +549,7 @@ Class Pay
 
             # если цена не по купону -> конвертируем
             #
-            $InfoPay = json_decode($Invoice['invoice_payer_info'], true) ?? (unserialize($Invoice['invoice_payer_info']) ?: []);
+            $InfoPay = DevTools::decodeInfo($Invoice['invoice_payer_info']);
 
             if( ! $InfoPay['coupon']['coupon_id'] )
             {
@@ -615,9 +621,9 @@ Class Pay
     {
         if( ! $this->DevTools->config['test'] ) return;
 
-        $logFile = 'pay.logger.php';
+        $logFile = MODULE_DATA . '/pay.logger.php';
 
-        if( filesize($logFile) > 1024 and ! $step )
+        if( file_exists($logFile) && filesize($logFile) > 1024 && ! $step )
         {
             unlink($logFile);
         }
@@ -642,7 +648,7 @@ Class Pay
 
         fwrite( $handler,
             $step . '|' .
-            langdate( "j.m.Y H:i", $this->_TIME) . '|' .
+            langdate( "j.m.Y H:i", $this->DevTools->_TIME) . '|' .
             $encodedInfo . "\n"
         );
 

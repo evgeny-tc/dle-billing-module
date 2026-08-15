@@ -24,14 +24,25 @@ if( $member_id['name'] and $billingLang = include ENGINE_DIR . '/modules/billing
 
         while ( $row = $db->get_row() )
         {
+            $title = json_encode($billingLang['push_title'], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+            $comment = htmlspecialchars(strip_tags((string) $row['history_text']), ENT_QUOTES, 'UTF-8');
+
             if( $row['history_plus'] > 0 )
             {
-                $_return_js[] = "DLEPush.info('<b>+" . \Billing\Api\Balance::Init()->Convert(value: $row['history_plus'], declension: true) . "</b><br><i>{$row['history_text']}</i>', '{$billingLang['push_title']}');";
+                $msg = json_encode(
+                    '<b>+' . \Billing\Api\Balance::Init()->Convert(value: $row['history_plus'], declension: true) . '</b><br><i>' . $comment . '</i>',
+                    JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+                );
+                $_return_js[] = "DLEPush.info({$msg}, {$title});";
             }
 
             if( $row['history_minus'] > 0 )
             {
-                $_return_js[] = "DLEPush.error('<b>-" . \Billing\Api\Balance::Init()->Convert(value: $row['history_minus'], declension: true)  . "</b><br><i>{$row['history_text']}</i>', '{$billingLang['push_title']}');";
+                $msg = json_encode(
+                    '<b>-' . \Billing\Api\Balance::Init()->Convert(value: $row['history_minus'], declension: true) . '</b><br><i>' . $comment . '</i>',
+                    JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+                );
+                $_return_js[] = "DLEPush.error({$msg}, {$title});";
             }
         }
 

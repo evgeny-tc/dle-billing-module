@@ -422,6 +422,39 @@ class Database
     }
 
     /**
+     * Mark invoice as paid only if it is still unpaid
+     * @param int $invoiceId
+     * @param string|null $paymentSystem
+     * @param string|null $payerRequisites
+     * @return bool
+     */
+    public function claimInvoice(
+        int $invoiceId,
+        ?string $paymentSystem = null,
+        ?string $payerRequisites = null
+    ): bool
+    {
+        $updates = ["invoice_date_pay = '{$this->currentTime}'"];
+
+        if ($paymentSystem !== null) {
+            $updates[] = "invoice_paysys = '" . $this->sanitize($paymentSystem) . "'";
+        }
+
+        if ($payerRequisites !== null) {
+            $updates[] = "invoice_payer_requisites = '" . $this->sanitize($payerRequisites) . "'";
+        }
+
+        $this->db->query(
+            "UPDATE " . USERPREFIX . "_billing_invoice 
+             SET " . implode(', ', $updates) . "
+             WHERE invoice_id = " . intval($invoiceId) . "
+               AND invoice_date_pay = 0"
+        );
+
+        return (int) $this->db->get_affected_rows() === 1;
+    }
+
+    /**
      * Delete invoice by ID
      * @param int $invoiceId
      * @return bool
@@ -578,7 +611,7 @@ class Database
     private function updateInvoiceWithCoupon(array $invoice, array $coupon): void
     {
         $payerData = !empty($invoice['invoice_payer_info'])
-            ? json_decode($invoice['invoice_payer_info'], true) ?? (unserialize($invoice['invoice_payer_info']) ?: [])
+            ? \Billing\DevTools::decodeInfo($invoice['invoice_payer_info'])
             : [];
 
         $payerData['coupon'] = $coupon;

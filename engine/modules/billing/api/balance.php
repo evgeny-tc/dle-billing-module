@@ -56,7 +56,7 @@ Class Balance
     /**
      * @param array|null $params
      * @return static
-     * @throws \BalanceException
+     * @throws BalanceException
      */
     public static function Init(?array $params = []) : self
 	{
@@ -68,7 +68,7 @@ Class Balance
 
             if( ! $params )
             {
-                $params = file_exists( ENGINE_DIR . '/data/billing/config.php' ) ? require ENGINE_DIR . '/data/billing/config.php' : throw new \BalanceException('Unable to load config file');
+                $params = file_exists( ENGINE_DIR . '/data/billing/config.php' ) ? require ENGINE_DIR . '/data/billing/config.php' : throw new BalanceException('Unable to load config file');
             }
 
             self::$global = [

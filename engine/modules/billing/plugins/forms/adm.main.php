@@ -212,7 +212,7 @@ Class Forms extends PluginActions
 
             # Данные формы
             #
-            $row['form_data'] = json_decode($row['form_data'], true) ?? (unserialize($row['form_data']) ?: []);
+            $row['form_data'] = \Billing\DevTools::decodeInfo($row['form_data']);
 
             # Вывести колонки
             #

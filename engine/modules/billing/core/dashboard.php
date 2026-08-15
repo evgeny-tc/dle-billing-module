@@ -56,7 +56,7 @@ Class Dashboard
     /**
      * Current version
      */
-    public string $version = '1.0.2';
+    public string $version = '1.0.3';
 
 	/**
 	 * DLE config

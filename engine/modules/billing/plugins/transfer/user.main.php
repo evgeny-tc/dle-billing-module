@@ -112,7 +112,7 @@ Class Transfer
                 );
             }
 
-            $_SearchUser = $this->DevTools->LQuery->findUserByName( htmlspecialchars( trim( $_POST['bs_user_name'] ), ENT_COMPAT, $this->DevTools->config_dle['charset'] ) );
+            $_SearchUser = $this->DevTools->LQuery->findUserByName( trim( $_POST['bs_user_name'] ) );
 
             if( ! $_SearchUser['name'] )
 			{
@@ -124,11 +124,16 @@ Class Transfer
                 throw new \Exception($this->DevTools->lang['transfer_error_name_me']);
 			}
 
+            $_MoneyGet = floatval( $_Money - $_MoneyCommission );
+
             try
             {
-                $transactionTransfer = \Billing\Api\Balance::Init()->Transaction();
-                
-                \Billing\Api\Balance::Init()->Comment(
+                $api = \Billing\Api\Balance::Init()->Transaction();
+
+                $api->Check(
+                    userLogin: $this->DevTools->member_id['name'],
+                    sum: floatval($_Money)
+                )->Comment(
                     userLogin: $this->DevTools->member_id['name'],
                     minus: $_Money,
                     comment: sprintf( $this->DevTools->lang['transfer_log_for'], urlencode( $_SearchUser['name'] ), $_SearchUser['name'], $_MoneyCommission, \Billing\Api\Balance::Init()->Declension( $_MoneyCommission ) ),
@@ -139,13 +144,13 @@ Class Transfer
                 )->From(
                     userLogin: $this->DevTools->member_id['name'],
                     sum: floatval($_Money)
-                );
+                )->sendEvent();
 
                 # Комиссия
                 #
                 if( $_MoneyCommission > 0 )
                 {
-                    \Billing\Api\Balance::Init()->sendCommission(
+                    $api->sendCommission(
                         sum: $_MoneyCommission,
                         comment: $this->DevTools->lang['transfer_commission_text'],
                         plugin: 'transfer',
@@ -153,22 +158,24 @@ Class Transfer
                     );
                 }
 
-                \Billing\Api\Balance::Init()->Comment(
+                $api->Comment(
                     userLogin: $_SearchUser['name'],
-                    plus: floatval( $_Money - $_MoneyCommission ),
+                    plus: $_MoneyGet,
                     comment: sprintf( $this->DevTools->lang['transfer_log_from'], urlencode( $this->DevTools->member_id['name'] ), $this->DevTools->member_id['name'] ),
                     plugin_id: intval($this->DevTools->member_id['user_id']),
                     plugin_name: 'transfer',
                     pm: true,
                     email: true
                 )->To(
-                    userLogin: $this->DevTools->member_id['name'],
-                    sum: floatval($_Money)
-                )->Commit();
+                    userLogin: $_SearchUser['name'],
+                    sum: $_MoneyGet
+                )->sendEvent()->Commit();
             }
-            catch (\Billing\BalanceException $e)
+            catch (\Throwable $e)
             {
-                return $e->getMessage();
+                \Billing\Api\Balance::Init()->Rollback();
+
+                throw new \Exception($e->getMessage());
             }
 
 			header( 'Location: /' . $this->DevTools->config['page'] . '.html/' . $this->DevTools->get_plugin . '/ok/info/' . urlencode( base64_encode($_SearchUser['name']."|".$_MoneyCommission ."|".\Billing\Api\Balance::Init()->Declension( $_MoneyCommission ) ) ) );

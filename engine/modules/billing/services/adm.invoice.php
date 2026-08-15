@@ -519,7 +519,7 @@ Class Invoice
             return print_r( $json_data, true );
         }
 
-        $unserialize_data = unserialize($data);
+        $unserialize_data = @unserialize($data, ['allowed_classes' => false]);
 
         if( is_array( $unserialize_data ) )
         {
