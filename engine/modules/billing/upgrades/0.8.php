@@ -12,7 +12,7 @@ require_once MODULE_PATH . '/helpers/install.functions.php';
 $_version = '0.8';
 
 $tableSchema = [
-    'ALTER TABLE ' . USERPREFIX . '_users MODIFY COLUMN ' . $this->Dashboard->config['fname'] . ' decimal(10,2) NOT NULL;',
+    'ALTER TABLE ' . USERPREFIX . '_users MODIFY COLUMN ' . \Billing\Database::safeField($this->Dashboard->config['fname'] ?? 'user_balance') . ' decimal(10,2) NOT NULL;',
     'ALTER TABLE ' . USERPREFIX . '_billing_history MODIFY COLUMN history_plus decimal(10,2) NOT NULL;',
     'ALTER TABLE ' . USERPREFIX . '_billing_history MODIFY COLUMN history_minus decimal(10,2) NOT NULL;',
     'ALTER TABLE ' . USERPREFIX . '_billing_history MODIFY COLUMN history_balance decimal(10,2) NOT NULL;',

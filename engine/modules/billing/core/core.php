@@ -159,6 +159,36 @@ trait Core
     }
 
     /**
+     * Unix time after which an unpaid invoice is expired, or null if TTL is off
+     */
+    public function invoiceExpireBefore(): ?int
+    {
+        $minutes = (int) ($this->config['invoice_time'] ?? 0);
+
+        if( $minutes <= 0 )
+        {
+            return null;
+        }
+
+        return $this->_TIME - ( $minutes * 60 );
+    }
+
+    /**
+     * Unpaid invoice older than invoice_time
+     */
+    public function isInvoiceExpired(array $invoice): bool
+    {
+        $expireBefore = $this->invoiceExpireBefore();
+
+        if( $expireBefore === null || ! empty($invoice['invoice_date_pay']) )
+        {
+            return false;
+        }
+
+        return (int) ($invoice['invoice_date_creat'] ?? 0) < $expireBefore;
+    }
+
+    /**
      * Оплатить квитанцию
      * @param array $Invoice
      * @param string|null $payerRequisites
@@ -232,6 +262,7 @@ trait Core
         }
         catch ( \Throwable $e )
         {
+            \Billing\Api\Balance::Init()->Rollback();
             $this->LQuery->updateInvoice( (int) $Invoice['invoice_id'], true );
 
             throw $e;

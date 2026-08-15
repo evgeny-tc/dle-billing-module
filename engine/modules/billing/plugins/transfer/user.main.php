@@ -203,7 +203,7 @@ Class Transfer
 
 		$this->DevTools->LQuery->where(
             [
-                "history_plugin = '{s} ' "=>'transfer',
+                "history_plugin = '{s}' "=>'transfer',
                 "history_user_name = '{s}' " => $this->DevTools->member_id['name']
             ]
         );

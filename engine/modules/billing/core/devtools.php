@@ -21,7 +21,7 @@ Class DevTools
 
     private function __construct(){}
     private function __clone()    {}
-    private function __wakeup()   {}
+    public function __wakeup()   {}
 
     /**
      * @return void
@@ -121,16 +121,21 @@ Class DevTools
      */
     private function Loader(): void
     {
-        $config = self::$injected['config'] ?? null;
-        $member_id = self::$injected['member_id'] ?? null;
-        $_TIME = self::$injected['_TIME'] ?? null;
-        $db = self::$injected['db'] ?? null;
-        $dle_login_hash = self::$injected['dle_login_hash'] ?? null;
+        $required = ['config', 'member_id', '_TIME', 'db', 'dle_login_hash'];
 
-        if (!$config || !$member_id || !$_TIME || !$db || !$dle_login_hash)
+        foreach( $required as $key )
         {
-            global $config, $member_id, $_TIME, $db, $dle_login_hash;
+            if( ! array_key_exists($key, self::$injected) )
+            {
+                throw new \RuntimeException('Billing: missing required dependency ' . $key);
+            }
         }
+
+        $config = self::$injected['config'];
+        $member_id = self::$injected['member_id'];
+        $_TIME = self::$injected['_TIME'];
+        $db = self::$injected['db'];
+        $dle_login_hash = self::$injected['dle_login_hash'];
 
         $this->lang 	= include MODULE_PATH . '/lang/cabinet.php';
         $this->config 	= static::getConfig('');
@@ -152,7 +157,7 @@ Class DevTools
             }
         }
 
-        $this->LQuery 	= new Database( $db, $this->config['fname'], $_TIME );
+        $this->LQuery 	= new Database( $db, Database::safeField($this->config['fname'] ?? 'user_balance'), $_TIME );
 
         $this->dle 		= $config;
         $this->member_id = $member_id;
@@ -160,7 +165,7 @@ Class DevTools
         $this->_TIME = $_TIME;
         $this->hash = $dle_login_hash;
 
-        $this->BalanceUser = \Billing\Api\Balance::Init()->Convert( $this->member_id[$this->config['fname']] );
+        $this->BalanceUser = \Billing\Api\Balance::Init()->Convert( $this->member_id[$this->LQuery->balanceField] ?? 0 );
 
         # Параметры загрузки
         #

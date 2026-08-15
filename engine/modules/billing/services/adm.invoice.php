@@ -99,18 +99,11 @@ Class Invoice
 			);
 		}
 
-        # Удалить старые квитанции
+        # Удалить старые квитанции и вернуть купоны
         #
-        if( $this->Dashboard->config['invoice_time'] )
+        if( $expireBefore = $this->Dashboard->invoiceExpireBefore() )
         {
-            $this->Dashboard->LQuery->where(
-                [
-                    "invoice_date_creat < {s}" => $this->Dashboard->_TIME - ( $this->Dashboard->config['invoice_time'] * 60 ),
-                    "invoice_date_pay = '0' " => 1
-                ]
-            );
-
-            $this->Dashboard->LQuery->deleteInvoices();
+            $this->Dashboard->LQuery->purgeExpiredInvoices($expireBefore);
         }
 
 		$this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_4'] );

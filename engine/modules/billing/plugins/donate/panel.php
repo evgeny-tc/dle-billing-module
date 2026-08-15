@@ -186,8 +186,10 @@ else
         $_Content = str_replace('{login}', $member_id['name'], $_Content);
         $_Content = str_replace('{login.urlencode}', urlencode( $member_id['name'] ), $_Content);
 
-        $_Content = str_replace('{balance}', $member_id[$_ConfigMod['fname']], $_Content);
-        $_Content = str_replace('{balance.currency}', \Billing\Api\Balance::Init()->Declension( $member_id[$_ConfigMod['fname']] ), $_Content);
+        $fname = preg_replace('/[^a-zA-Z0-9_]/', '', (string) ($_ConfigMod['fname'] ?? '')) ?: 'user_balance';
+
+        $_Content = str_replace('{balance}', $member_id[$fname], $_Content);
+        $_Content = str_replace('{balance.currency}', \Billing\Api\Balance::Init()->Declension( $member_id[$fname] ), $_Content);
 
         $_Content = str_replace('{donate.login}', $loginUser, $_Content);
         $_Content = str_replace('{donate.login.urlencode}', urlencode( $loginUser ), $_Content);

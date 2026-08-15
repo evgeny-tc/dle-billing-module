@@ -31,7 +31,7 @@ class StatisticsData
     public function __construct(object $db, string $balanceField, array $lang, int $start, int $end, ?string $sector = null)
     {
         $this->db = $db;
-        $this->balanceField = $balanceField;
+        $this->balanceField = Database::safeField($balanceField);
         $this->lang = $lang;
         $this->start = $start;
         $this->end = $end;

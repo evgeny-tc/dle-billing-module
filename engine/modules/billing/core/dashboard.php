@@ -22,7 +22,7 @@ Class Dashboard
 
 	private function __construct(){}
     private function __clone()    {}
-    private function __wakeup()   {}
+    public function __wakeup()   {}
 
     /**
      * @throws \Exception
@@ -143,17 +143,22 @@ Class Dashboard
      */
 	private function Loader() : void
 	{
-		$config = self::$injected['config'] ?? null;
-		$member_id = self::$injected['member_id'] ?? null;
-		$_TIME = self::$injected['_TIME'] ?? null;
-		$db = self::$injected['db'] ?? null;
-		$dle_login_hash = self::$injected['dle_login_hash'] ?? null;
-		$selected_language = self::$injected['selected_language'] ?? null;
+		$required = ['config', 'member_id', '_TIME', 'db', 'dle_login_hash'];
 
-		if (!$config || !$member_id || !$_TIME || !$db || !$dle_login_hash)
+		foreach( $required as $key )
 		{
-			global $config, $member_id, $_TIME, $db, $dle_login_hash, $selected_language;
+			if( ! array_key_exists($key, self::$injected) )
+			{
+				throw new \RuntimeException('Billing: missing required dependency ' . $key);
+			}
 		}
+
+		$config = self::$injected['config'];
+		$member_id = self::$injected['member_id'];
+		$_TIME = self::$injected['_TIME'];
+		$db = self::$injected['db'];
+		$dle_login_hash = self::$injected['dle_login_hash'];
+		$selected_language = self::$injected['selected_language'] ?? '';
 
         $selected_language = preg_replace("/[^a-zA-Z0-9-_\s]/", "", trim( $selected_language ) );
 		$this->lang 	= file_exists(MODULE_PATH . '/lang/' . $selected_language . '/admin.php') ? include MODULE_PATH . '/lang/' . $selected_language . '/admin.php' : include MODULE_PATH . '/lang/admin.php';
@@ -161,7 +166,7 @@ Class Dashboard
 
 		$this->LQuery 	= new Database(
 			$db,
-			$this->config['fname'],
+			Database::safeField($this->config['fname'] ?? 'user_balance'),
 			$_TIME
 		);
 

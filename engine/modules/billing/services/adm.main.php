@@ -414,7 +414,7 @@ Class Main
         if( isset( $_POST['clear'] ) )
         {
             $this->Dashboard->CheckHash();
-            @unlink("pay.logger.php");
+            @unlink(MODULE_DATA . '/pay.logger.php');
         }
 
         $this->Dashboard->ThemeEchoHeader($this->Dashboard->lang['main_log']);
@@ -429,8 +429,8 @@ Class Main
             '<th>' . htmlspecialchars($this->Dashboard->lang['logger_text_4']) . '</th>'
         ]);
 
-        if( file_exists('pay.logger.php')
-            && $handle = @fopen('pay.logger.php', "r") )
+        if( file_exists(MODULE_DATA . '/pay.logger.php')
+            && $handle = @fopen(MODULE_DATA . '/pay.logger.php', "r") )
         {
             $log_id = 0;
 
@@ -669,7 +669,7 @@ Class Main
         echo "Date: " . date('Y-m-d H:i:s') . "\n";
         echo str_repeat("=", 80) . "\n\n";
 
-        if( file_exists('pay.logger.php') && $handle = @fopen('pay.logger.php', "r") )
+        if( file_exists(MODULE_DATA . '/pay.logger.php') && $handle = @fopen(MODULE_DATA . '/pay.logger.php', "r") )
         {
             $lineNum = 0;
 

@@ -324,14 +324,16 @@ Class Pay
                     {
                         $logData = (isset($Handler) ) ? $Handler->desc($InfoPay) : ['null', 0];
 
-                        if( $_coupon and ! $this->DevTools->LQuery->useCoupon($couponData, $Invoice) )
-                        {
-                            throw new \Exception($this->DevTools->lang['coupon_use_error']);
-                        }
-
                         try
                         {
-                            \Billing\Api\Balance::Init()->Transaction()->Comment(
+                            \Billing\Api\Balance::Init()->Transaction();
+
+                            if( $_coupon and ! $this->DevTools->LQuery->useCoupon($couponData, $Invoice) )
+                            {
+                                throw new \Exception($this->DevTools->lang['coupon_use_error']);
+                            }
+
+                            \Billing\Api\Balance::Init()->Comment(
                                 userLogin: $this->DevTools->member_id['name'],
                                 minus: $Invoice['invoice_get'],
                                 comment: $logData[0],

@@ -25,6 +25,8 @@ require_once MODULE_PATH . '/helpers/autoloader.php';
 
 try
 {
+    global $db, $config, $member_id, $_TIME, $dle_login_hash;
+
     Billing\DevTools::Start(
         db: $db,
         config: $config,

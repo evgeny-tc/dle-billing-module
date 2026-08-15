@@ -60,7 +60,7 @@ class Statistics
 
         $this->data = new StatisticsData(
             $this->Dashboard->LQuery->db,
-            $this->Dashboard->config['fname'],
+            $this->Dashboard->LQuery->balanceField,
             $this->Dashboard->lang,
             $start,
             $end
@@ -599,7 +599,7 @@ HTML;
                             <span class="text-muted">{$this->renderUserGroup($user)}</span>
                         </div>
                         <div class="col-md-2">
-                            <div class="billing-stat-kpi__value">{$this->formatMoney($user[$this->Dashboard->config['fname']] ?? 0)}</div>
+                            <div class="billing-stat-kpi__value">{$this->formatMoney($user[$this->Dashboard->LQuery->balanceField] ?? 0)}</div>
                             <div class="text-muted text-size-small">{$this->Dashboard->lang['statistics_users_balance']}</div>
                         </div>
                         <div class="col-md-2">
@@ -693,7 +693,7 @@ HTML;
         }
 
         if (!empty($_POST['clear_balance'])) {
-            $field = $this->Dashboard->config['fname'];
+            $field = $this->Dashboard->LQuery->balanceField;
             $this->Dashboard->LQuery->db->query(
                 'UPDATE ' . USERPREFIX . "_users SET {$field} = 0"
             );

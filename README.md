@@ -1,6 +1,6 @@
 ## DLE-Billing
 
-![Version](https://img.shields.io/badge/version-1.0.2-blue.svg?style=flat-square "version")
+![Version](https://img.shields.io/badge/version-1.0.3-blue.svg?style=flat-square "version")
 ![DLE](https://img.shields.io/badge/DLE-19.0+-green.svg?style=flat-square "DLE")
 ![PHP](https://img.shields.io/badge/PHP-8+-blue.svg?style=flat-square "PHP")
 ![jQuery](https://img.shields.io/badge/jQuery-3.0+-yellow.svg?style=flat-square "jQuery")
@@ -36,6 +36,7 @@
 - Формы
 
 ## Платежные агрегаторы
+- Т‑Банк
 - ЮMoney
 - Робокасса
 - Tegro.money

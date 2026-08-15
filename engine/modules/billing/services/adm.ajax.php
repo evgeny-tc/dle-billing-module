@@ -81,7 +81,7 @@ Class Ajax
         }
         else
         {
-            $this->Dashboard->LQuery->db->query( "select name FROM  " . USERPREFIX . "_users ORDER BY {$this->Dashboard->config['fname']} DESC LIMIT 10" );
+            $this->Dashboard->LQuery->db->query( "select name FROM  " . USERPREFIX . "_users ORDER BY {$this->Dashboard->LQuery->balanceField} DESC LIMIT 10" );
         }
 
         $result = [];
