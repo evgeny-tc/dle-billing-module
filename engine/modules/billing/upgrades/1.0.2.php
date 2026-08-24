@@ -72,7 +72,12 @@ if( isset($_REQUEST['install']) )
         );
     }
 
-    $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['upgrade_ok'] . $_version, '?mod=billing' );
+    $this->Dashboard->ThemeMsg(
+        title: $this->Dashboard->lang['ok'],
+        text: $this->Dashboard->lang['upgrade_ok'] . $_version,
+        link: '?mod=billing',
+        show_progress: true
+    );
 }
 
 $this->Dashboard->ThemeEchoHeader();

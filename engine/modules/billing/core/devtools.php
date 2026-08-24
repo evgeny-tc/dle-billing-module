@@ -17,22 +17,38 @@ Class DevTools
     use Core, Utheme;
 
     private static self $instance;
+	private static array $injected = [];
 
     private function __construct(){}
     private function __clone()    {}
-    private function __wakeup()   {}
+    public function __wakeup()   {}
 
     /**
-     * @return null
+     * @return void
      * @throws \Exception
      */
-    public static function Start(): null
+    public static function Start(
+		?\db $db = null,
+		?array $config = null,
+		?array $member_id = null,
+		?int $_TIME = null,
+		?string $dle_login_hash = null
+	) : void
     {
+		self::$injected = array_filter([
+			'db' => $db,
+			'config' => $config,
+			'member_id' => $member_id,
+			'_TIME' => $_TIME,
+			'dle_login_hash' => $dle_login_hash,
+		], fn($v) => $v !== null);
+
         if ( empty(self::$instance) )
         {
             self::$instance = new self();
         }
-        return self::$instance->Loader();
+
+        self::$instance->Loader();
     }
 
     /**
@@ -105,7 +121,21 @@ Class DevTools
      */
     private function Loader(): void
     {
-        global $config, $member_id, $_TIME, $db, $dle_login_hash;
+        $required = ['config', 'member_id', '_TIME', 'db', 'dle_login_hash'];
+
+        foreach( $required as $key )
+        {
+            if( ! array_key_exists($key, self::$injected) )
+            {
+                throw new \RuntimeException('Billing: missing required dependency ' . $key);
+            }
+        }
+
+        $config = self::$injected['config'];
+        $member_id = self::$injected['member_id'];
+        $_TIME = self::$injected['_TIME'];
+        $db = self::$injected['db'];
+        $dle_login_hash = self::$injected['dle_login_hash'];
 
         $this->lang 	= include MODULE_PATH . '/lang/cabinet.php';
         $this->config 	= static::getConfig('');
@@ -127,7 +157,7 @@ Class DevTools
             }
         }
 
-        $this->LQuery 	= new Database( $db, $this->config['fname'], $_TIME );
+        $this->LQuery 	= new Database( $db, Database::safeField($this->config['fname'] ?? 'user_balance'), $_TIME );
 
         $this->dle 		= $config;
         $this->member_id = $member_id;
@@ -135,7 +165,7 @@ Class DevTools
         $this->_TIME = $_TIME;
         $this->hash = $dle_login_hash;
 
-        $this->BalanceUser = \Billing\Api\Balance::Init()->Convert( $this->member_id[$this->config['fname']] );
+        $this->BalanceUser = \Billing\Api\Balance::Init()->Convert( $this->member_id[$this->LQuery->balanceField] ?? 0 );
 
         # Параметры загрузки
         #

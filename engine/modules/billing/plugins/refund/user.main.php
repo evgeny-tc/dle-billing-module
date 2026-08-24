@@ -137,12 +137,16 @@ Class Refund
                 }
                 else
                 {
+                    $transactionRefund->Rollback();
+
                     return $this->DevTools->lang['pay_error_title'];
                 }
             }
-            catch (\Billing\BalanceException $e)
+            catch (\Throwable $e)
             {
-                return $e->getMessage();
+                \Billing\Api\Balance::Init()->Rollback();
+
+                throw new \Exception($e->getMessage());
             }
 
 			header( 'Location: /' . $this->DevTools->config['page'] . '.html/' . $this->DevTools->get_plugin . '/ok/' );

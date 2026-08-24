@@ -1,7 +1,7 @@
 ## DLE-Billing
 
-![Version](https://img.shields.io/badge/version-0.9.5.1-blue.svg?style=flat-square "version")
-![DLE](https://img.shields.io/badge/DLE-13.0+-green.svg?style=flat-square "DLE")
+![Version](https://img.shields.io/badge/version-1.0.3-blue.svg?style=flat-square "version")
+![DLE](https://img.shields.io/badge/DLE-19.0+-green.svg?style=flat-square "DLE")
 ![PHP](https://img.shields.io/badge/PHP-8+-blue.svg?style=flat-square "PHP")
 ![jQuery](https://img.shields.io/badge/jQuery-3.0+-yellow.svg?style=flat-square "jQuery")
 ![Charset](https://img.shields.io/badge/license-MIT-red.svg?style=flat-square "license")
@@ -31,17 +31,20 @@
 - Оплата контента
 - Фиксация новостей
 - Пожертвования
-- Промокоды
+- Купоны
 - Бонусы
 - Формы
 
 ## Платежные агрегаторы
-- Payok.io
+- Т‑Банк
+- ЮКасса
 - ЮMoney
 - Робокасса
-- Free-Kassa
 - Tegro.money
 - Интеркасса
 - betatransfer.io
 - PayAnyWay
 - enot.io
+
+## Интеграции
+- API для подключения платежей в сторонние модули

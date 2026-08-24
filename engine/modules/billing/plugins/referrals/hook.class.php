@@ -36,7 +36,7 @@ return new class extends Hooks
 
         $_List = file_exists(MODULE_DATA . '/plugin.referrals.list.dat') ? file(MODULE_DATA . '/plugin.referrals.list.dat') : false;
 
-        $arList = is_string($_List[0]) ? unserialize($_List[0]) : [];
+        $arList = is_string($_List[0] ?? null) ? @unserialize($_List[0], ['allowed_classes' => false]) : [];
 
         if( ! is_array($arList) or ! count($arList) )
         {

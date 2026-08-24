@@ -18,27 +18,45 @@ Class Dashboard
 
 	private static self $instance;
 
+	private static array $injected = [];
+
 	private function __construct(){}
     private function __clone()    {}
-    private function __wakeup()   {}
+    public function __wakeup()   {}
 
     /**
      * @throws \Exception
      */
-    public static function Start(): null
+    public static function Start(
+		?\db $db = null,
+		?array $config = null,
+		?array $member_id = null,
+		?int $_TIME = null,
+		?string $dle_login_hash = null,
+		?string $selected_language = null
+	) : void
     {
+		self::$injected = array_filter([
+			'db' => $db,
+			'config' => $config,
+			'member_id' => $member_id,
+			'_TIME' => $_TIME,
+			'dle_login_hash' => $dle_login_hash,
+			'selected_language' => $selected_language,
+		], fn($v) => $v !== null);
+
         if ( empty(self::$instance) )
 		{
             self::$instance = new self();
         }
 
-        return self::$instance->Loader();
+        self::$instance->Loader();
     }
 
     /**
      * Current version
      */
-    public string $version = '1.0.2';
+    public string $version = '1.0.3';
 
 	/**
 	 * DLE config
@@ -125,7 +143,22 @@ Class Dashboard
      */
 	private function Loader() : void
 	{
-		global $config, $member_id, $_TIME, $db, $dle_login_hash, $selected_language;
+		$required = ['config', 'member_id', '_TIME', 'db', 'dle_login_hash'];
+
+		foreach( $required as $key )
+		{
+			if( ! array_key_exists($key, self::$injected) )
+			{
+				throw new \RuntimeException('Billing: missing required dependency ' . $key);
+			}
+		}
+
+		$config = self::$injected['config'];
+		$member_id = self::$injected['member_id'];
+		$_TIME = self::$injected['_TIME'];
+		$db = self::$injected['db'];
+		$dle_login_hash = self::$injected['dle_login_hash'];
+		$selected_language = self::$injected['selected_language'] ?? '';
 
         $selected_language = preg_replace("/[^a-zA-Z0-9-_\s]/", "", trim( $selected_language ) );
 		$this->lang 	= file_exists(MODULE_PATH . '/lang/' . $selected_language . '/admin.php') ? include MODULE_PATH . '/lang/' . $selected_language . '/admin.php' : include MODULE_PATH . '/lang/admin.php';
@@ -133,7 +166,7 @@ Class Dashboard
 
 		$this->LQuery 	= new Database(
 			$db,
-			$this->config['fname'],
+			Database::safeField($this->config['fname'] ?? 'user_balance'),
 			$_TIME
 		);
 
@@ -839,7 +872,7 @@ HTML;
 		$JSmenu = "<ul>" . $JSmenu . "</ul>";
 
         $JSmenu = "$('li .active').after('{$JSmenu}');
-					$('.curmod > ul').css('display', 'block');
+					$('.curmod > ul').css('display', 'block'); console.log('shpw');
 					$('a[title=\"Просмотр сайта\"]').attr('href', '/{$this->config['page']}.html');			
 					$('.curmod').addClass('active');";
 
@@ -860,8 +893,11 @@ HTML;
 		      <script src="public/billing/accessibility.js"></script>
 		      <script src="public/billing/jquery.slidereveal.min.js"></script>
 			  <script src="public/billing/core.js"></script>
+			  <script src="public/billing/statistics.js"></script>
 			  <script type="text/javascript">
-			  	jQuery(document).ready(function(){'.$JSmenu.'});
+			  setTimeout(() => {
+                  jQuery(document).ready(function(){'.$JSmenu.'});
+                }, 200);
 			  </script>';
 	}
 

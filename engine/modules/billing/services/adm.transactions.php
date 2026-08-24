@@ -181,13 +181,13 @@ Class Transactions
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['search_pcode'],
 			$this->Dashboard->lang['search_pcode_desc'],
-			"<input name=\"search_plugin\" class=\"form-control\" type=\"text\" value=\"" . $_POST['search_plugin'] ."\" style=\"width: 100%\">"
+			"<input name=\"search_plugin\" class=\"form-control\" type=\"text\" value=\"" . htmlspecialchars($_POST['search_plugin'] ?? '', ENT_QUOTES, 'UTF-8') ."\" style=\"width: 100%\">"
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['search_pid'],
 			$this->Dashboard->lang['search_pcode_desc'],
-			"<input name=\"search_plugin_id\" class=\"form-control\" type=\"text\" value=\"" . $_POST['search_plugin_id'] ."\" style=\"width: 100%\">"
+			"<input name=\"search_plugin_id\" class=\"form-control\" type=\"text\" value=\"" . htmlspecialchars($_POST['search_plugin_id'] ?? '', ENT_QUOTES, 'UTF-8') ."\" style=\"width: 100%\">"
 		);
 
 		$this->Dashboard->ThemeAddStr(
@@ -199,26 +199,26 @@ Class Transactions
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['history_search_sum'],
 			$this->Dashboard->lang['history_search_sum_desc'],
-			"<input name=\"search_summa\" class=\"form-control\" type=\"text\" value=\"" . $_POST['search_summa'] ."\" style=\"width: 100%\">"
+			"<input name=\"search_summa\" class=\"form-control\" type=\"text\" value=\"" . htmlspecialchars($_POST['search_summa'] ?? '', ENT_QUOTES, 'UTF-8') ."\" style=\"width: 100%\">"
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['search_user'],
 			$this->Dashboard->lang['search_user_desc'],
-			"<input name=\"search_login\" class=\"form-control\" type=\"text\" value=\"" . $_POST['search_login'] ."\" style=\"width: 100%\">"
+			"<input name=\"search_login\" class=\"form-control\" type=\"text\" value=\"" . htmlspecialchars($_POST['search_login'] ?? '', ENT_QUOTES, 'UTF-8') ."\" style=\"width: 100%\">"
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['search_comm'],
 			$this->Dashboard->lang['search_comm_desc'],
-			"<input name=\"search_comment\" class=\"form-control\" type=\"text\" value=\"" . $_POST['search_comment'] ."\" style=\"width: 100%\">"
+			"<input name=\"search_comment\" class=\"form-control\" type=\"text\" value=\"" . htmlspecialchars($_POST['search_comment'] ?? '', ENT_QUOTES, 'UTF-8') ."\" style=\"width: 100%\">"
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['search_date'],
 			$this->Dashboard->lang['search_pcode_desc'],
-			$this->Dashboard->lang['date_from'] . $this->Dashboard->MakeCalendar("search_date", $_POST['search_date'], 'width: 40%', 'calendar') .
-			$this->Dashboard->lang['date_to'] . $this->Dashboard->MakeCalendar("search_date_to", $_POST['search_date_to'], 'width: 40%', 'calendar')
+			$this->Dashboard->lang['date_from'] . $this->Dashboard->MakeCalendar("search_date", htmlspecialchars($_POST['search_date'] ?? '', ENT_QUOTES, 'UTF-8'), 'width: 40%', 'calendar') .
+			$this->Dashboard->lang['date_to'] . $this->Dashboard->MakeCalendar("search_date_to", htmlspecialchars($_POST['search_date_to'] ?? '', ENT_QUOTES, 'UTF-8'), 'width: 40%', 'calendar')
 		);
 
 		$tabs[] = [

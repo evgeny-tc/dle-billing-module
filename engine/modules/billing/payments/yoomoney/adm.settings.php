@@ -11,32 +11,32 @@ namespace Billing;
 
 Class YooMoney implements IPayment
 {
-	public string $doc = 'https://dle-billing.ru/doc/payments/yoomoney';
+    public string $doc = 'https://dle-billing.ru/doc/payments/yoomoney';
 
-	public function Settings( array$config ) : array
-	{
-		$Form = [];
+    public function Settings( array$config ) : array
+    {
+        $Form = [];
 
-		$Form[] = [
-			"Номер кошелька:",
-			"Номер кошелька в системе ЮMoney",
-			"<input name=\"save_con[yanumber]\" class=\"form-control\" type=\"text\" value=\"" . $config['yanumber'] ."\" style=\"width: 100%\">"
-		];
+        $Form[] = [
+            "Номер кошелька:",
+            "Номер кошелька в системе ЮMoney",
+            "<input name=\"save_con[yanumber]\" class=\"form-control\" type=\"text\" value=\"" . $config['yanumber'] ."\" style=\"width: 100%\">"
+        ];
 
-		$Form[] = [
-			"Секретное слово:",
-			"<a href='https://yoomoney.ru/transfer/myservices/http-notification' target='_blank'>Секретное слово</a> позволит вам проверять подлинность уведомлений.",
-			"<input name=\"save_con[key]\" class=\"form-control\" type=\"password\" value=\"" . $config['key'] ."\" style=\"width: 100%\">"
-		];
+        $Form[] = [
+            "Секретное слово:",
+            "<a href='https://yoomoney.ru/transfer/myservices/http-notification' target='_blank'>Секретное слово</a> позволит вам проверять подлинность уведомлений.",
+            "<input name=\"save_con[key]\" class=\"form-control\" type=\"password\" value=\"" . $config['key'] ."\" style=\"width: 100%\">"
+        ];
 
-		return $Form;
-	}
+        return $Form;
+    }
 
-	public function Form( int $id, array $payment_config, array $invoice, string $currency, string $desc ) : string
-	{
-		global $config;
+    public function Form( int $id, array $payment_config, array $invoice, string $currency, string $desc ) : string
+    {
+        global $config;
 
-		return '<form method="POST" id="paysys_form" action="https://yoomoney.ru/quickpay/confirm.xml">
+        return '<form method="POST" id="paysys_form" action="https://yoomoney.ru/quickpay/confirm.xml">
 				 <input type="hidden" name="receiver" value="'.$payment_config['yanumber'].'">
 				 <input type="hidden" name="formcomment" value="'.$desc.'">
 				 <input type="hidden" name="short-dest" value="'.$desc.'">
@@ -80,39 +80,56 @@ Class YooMoney implements IPayment
 				 <br />
 				 <input type="submit" name="submit-button" class="btn" value="Оплатить">
 				</form>';
-	}
+    }
 
-	public function check_payer_requisites( array $data ) : string
-	{
-		return (string)$data['sender'];
-	}
+    public function check_payer_requisites( array $data ) : string
+    {
+        return (string)$data['sender'];
+    }
 
-	public function check_id( array $data ) : int
-	{
-		return intval($data['label']);
-	}
+    public function check_id( array $data ) : int
+    {
+        return intval($data['label']);
+    }
 
-	public function check_ok( array $data ) : string
-	{
-		return "HTTP 202 OK";
-	}
+    public function check_ok( array $data ) : string
+    {
+        return "HTTP 200 OK";
+    }
 
-	public function check_out(array $result, array $config_payment, array $invoice ) : string|bool
-	{
-		$hash = sha1($result['notification_type'].'&'.$result['operation_id'].'&'.$result['amount'].'&'.$result['currency'].'&'.$result['datetime'].'&'.$result['sender'].'&'.$result['codepro'].'&'.$config_payment['key'].'&'.$result['label']);
+    public function check_out(array $result, array $config_payment, array $invoice ) : string|bool
+    {
+        $sign_received = $result['sign'] ?? '';
+        unset($result['sign'], $result['PHPSESSID']);
 
-		if( $result['withdraw_amount'] != $invoice['invoice_pay'] )
-		{
-			return "Error sum " . $result['amount'];
-		}
+        ksort($result);
 
-		if($hash !== $result['sha1_hash'])
-		{
-			return "Error hash";
-		}
+        $signature_parts = [];
 
-		return true;
-	}
+        foreach ($result as $key => $value)
+        {
+            $encoded_value = rawurlencode($value);
+            $signature_parts[] = $key . '=' . $encoded_value;
+        }
+
+        $signature_string = implode('&', $signature_parts);
+
+        $calculated_sign = hash_hmac('sha256', $signature_string, $config_payment['key']);
+
+        if ($calculated_sign !== $sign_received)
+        {
+            return "Error hash: calculated {$calculated_sign}, received {$sign_received}";
+        }
+
+        $payment_amount = $result['withdraw_amount'] ?? $result['amount'] ?? 0;
+
+        if ((float)$payment_amount != (float)$invoice['invoice_pay'])
+        {
+            return "Error sum: expected {$invoice['invoice_pay']}, got {$payment_amount}";
+        }
+
+        return true;
+    }
 }
 
 $Paysys = new YooMoney;

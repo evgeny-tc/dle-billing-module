@@ -47,21 +47,15 @@ Class Invoice
                 throw new \Exception($this->DevTools->lang['invoice_paid_error']);
             }
 
+            $this->DevTools->LQuery->releaseCouponFromInvoice($Del);
             $this->DevTools->LQuery->deleteInvoice( $Delete_id );
         }
 
-        # Удалить старые квитанции
+        # Удалить старые квитанции и вернуть купоны
         #
-        if( $this->DevTools->config['invoice_time'] )
+        if( $expireBefore = $this->DevTools->invoiceExpireBefore() )
         {
-            $this->DevTools->LQuery->where(
-                [
-                    "invoice_date_creat < {s}" => $this->DevTools->_TIME - ( $this->DevTools->config['invoice_time'] * 60 ),
-                    "invoice_date_pay = '0' " => 1
-                ]
-            );
-
-            $this->DevTools->LQuery->deleteInvoices();
+            $this->DevTools->LQuery->purgeExpiredInvoices($expireBefore);
         }
 
         $Content = $this->DevTools->ThemeLoad( "invoice" );

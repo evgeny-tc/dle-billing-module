@@ -15,7 +15,7 @@ return new class extends Handler
     {
         global $db;
 
-        $info = unserialize($Invoice['invoice_payer_info']);
+        $info = DevTools::decodeInfo($Invoice['invoice_payer_info']);
 
         if( $form_id = intval($info['params']['form_id']) )
         {
@@ -43,7 +43,7 @@ return new class extends Handler
             throw new Exception($_Lang['errors']['form_id']);
         }
 
-        $Form['form_data'] = unserialize($Form['form_data']);
+        $Form['form_data'] = DevTools::decodeInfo($Form['form_data']);
 
         return [$Form['form_data']['params']['pay_desc'] ?? '', $form_id];
     }
@@ -68,7 +68,7 @@ return new class extends Handler
             throw new \Exception($_Lang['errors']['form_id']);
         }
 
-        $Form['form_data'] = unserialize($Form['form_data']);
+        $Form['form_data'] = DevTools::decodeInfo($Form['form_data']);
 
         $more_data[$_Lang['pay']['desc']] = $Form['form_data']['params']['pay_desc'] ?? '';
     }

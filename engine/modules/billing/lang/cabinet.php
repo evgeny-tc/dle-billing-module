@@ -6,6 +6,7 @@ return [
 
     'register_pay_unknown_invoice' => "<i>Квитанция не найдена</i>",
     'register_pay_payed_invoice' => "<i>Квитанция оплачена</i>",
+    'register_pay_handler_error' => "<i>Ошибка обработчика оплаты</i>",
     'register_pay_unknown_title' => "<i>неизвестно</i>",
     'register_pay_unknown_currency' => "у.е.",
 

@@ -56,7 +56,7 @@ Class Referrals
 
 		$this->DevTools->LQuery->where(
             [
-                "history_plugin = '{s} ' " => 'referrals',
+                "history_plugin = '{s}' " => 'referrals',
                 "history_user_name = '{s}' " => $this->DevTools->member_id['name']
             ]
         );
@@ -78,7 +78,7 @@ Class Referrals
 		{
 			$TimeLine = $TplLine;
 
-			$TimeLine = str_replace("{date=".$TplLineDate."}", $this->DevTools->ThemeChangeTime( intval($Value['payhide_date']), $TplLineDate ), $TimeLine);
+			$TimeLine = str_replace("{date=".$TplLineDate."}", $this->DevTools->ThemeChangeTime( intval($Value['history_date']), $TplLineDate ), $TimeLine);
 			$TimeLine = str_replace("{referral.name}", '<a href="/user/' . urlencode($Value['name']) . '">' . $Value['name'] . '</a>', $TimeLine );
 			$TimeLine = str_replace("{referral.desc}", $Value['history_text'], $TimeLine );
 			$TimeLine = str_replace("{referral.bonus}", $Value['history_plus'], $TimeLine );

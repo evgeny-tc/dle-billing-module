@@ -26,7 +26,7 @@ $blank = [
 	'start' => "log/main/page/1",
     'start_admin' => "main/main",
 	'format' => "float",
-	'version' => "1.0.2",
+	'version' => "1.0.3",
 	'urls' => "refund-cashback"
 ];
 

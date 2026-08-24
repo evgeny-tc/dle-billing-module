@@ -99,18 +99,11 @@ Class Invoice
 			);
 		}
 
-        # Удалить старые квитанции
+        # Удалить старые квитанции и вернуть купоны
         #
-        if( $this->Dashboard->config['invoice_time'] )
+        if( $expireBefore = $this->Dashboard->invoiceExpireBefore() )
         {
-            $this->Dashboard->LQuery->where(
-                [
-                    "invoice_date_creat < {s}" => $this->Dashboard->_TIME - ( $this->Dashboard->config['invoice_time'] * 60 ),
-                    "invoice_date_pay = '0' " => 1
-                ]
-            );
-
-            $this->Dashboard->LQuery->deleteInvoices();
+            $this->Dashboard->LQuery->purgeExpiredInvoices($expireBefore);
         }
 
 		$this->Dashboard->ThemeEchoHeader( $this->Dashboard->lang['menu_4'] );
@@ -268,25 +261,25 @@ Class Invoice
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['invoice_summa'],
 			$this->Dashboard->lang['invoice_summa_desc'],
-			"<input name=\"search_summa\" class=\"form-control\" type=\"text\" value=\"" . $_POST['search_summa'] ."\" style=\"width: 100%\">"
+			"<input name=\"search_summa\" class=\"form-control\" type=\"text\" value=\"" . htmlspecialchars($_POST['search_summa'] ?? '', ENT_QUOTES, 'UTF-8') ."\" style=\"width: 100%\">"
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['invoice_search_sum_get'],
 			$this->Dashboard->lang['invoice_search_sum_get_desc'],
-			"<input name=\"search_summa_get\" class=\"form-control\" type=\"text\" value=\"" . $_POST['search_summa_get'] ."\" style=\"width: 100%\">"
+			"<input name=\"search_summa_get\" class=\"form-control\" type=\"text\" value=\"" . htmlspecialchars($_POST['search_summa_get'] ?? '', ENT_QUOTES, 'UTF-8') ."\" style=\"width: 100%\">"
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['search_user'],
 			$this->Dashboard->lang['search_user_desc'],
-			"<input name=\"search_login\" class=\"form-control\" type=\"text\" value=\"" . $_POST['search_login'] ."\" style=\"width: 100%\">"
+			"<input name=\"search_login\" class=\"form-control\" type=\"text\" value=\"" . htmlspecialchars($_POST['search_login'] ?? '', ENT_QUOTES, 'UTF-8') ."\" style=\"width: 100%\">"
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['invoice_payer_requisites'],
 			$this->Dashboard->lang['invoice_payer_requisites_desc'],
-			"<input name=\"search_payer_requisites\" class=\"form-control\" type=\"text\" value=\"" . $_POST['search_payer_requisites'] ."\" style=\"width: 100%\">"
+			"<input name=\"search_payer_requisites\" class=\"form-control\" type=\"text\" value=\"" . htmlspecialchars($_POST['search_payer_requisites'] ?? '', ENT_QUOTES, 'UTF-8') ."\" style=\"width: 100%\">"
 		);
 
 		$this->Dashboard->ThemeAddStr(
@@ -304,15 +297,15 @@ Class Invoice
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['invoice_search_date_create'],
 			$this->Dashboard->lang['search_pcode_desc'],
-            $this->Dashboard->lang['date_from'] . $this->Dashboard->MakeCalendar("search_date", $_POST['search_date'], 'width: 40%', 'calendar') .
-            $this->Dashboard->lang['date_to'] . $this->Dashboard->MakeCalendar("search_date_to", $_POST['search_date_to'], 'width: 40%', 'calendar')
+            $this->Dashboard->lang['date_from'] . $this->Dashboard->MakeCalendar("search_date", htmlspecialchars($_POST['search_date'] ?? '', ENT_QUOTES, 'UTF-8'), 'width: 40%', 'calendar') .
+            $this->Dashboard->lang['date_to'] . $this->Dashboard->MakeCalendar("search_date_to", htmlspecialchars($_POST['search_date_to'] ?? '', ENT_QUOTES, 'UTF-8'), 'width: 40%', 'calendar')
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['invoice_search_date_pay'],
 			$this->Dashboard->lang['search_pcode_desc'],
-			'от ' . $this->Dashboard->MakeCalendar("search_date_pay", $_POST['search_date_pay'], 'width: 40%', 'calendar') .
-			' до ' . $this->Dashboard->MakeCalendar("search_date_pay_to", $_POST['search_date_pay_to'], 'width: 40%', 'calendar')
+			'от ' . $this->Dashboard->MakeCalendar("search_date_pay", htmlspecialchars($_POST['search_date_pay'] ?? '', ENT_QUOTES, 'UTF-8'), 'width: 40%', 'calendar') .
+			' до ' . $this->Dashboard->MakeCalendar("search_date_pay_to", htmlspecialchars($_POST['search_date_pay_to'] ?? '', ENT_QUOTES, 'UTF-8'), 'width: 40%', 'calendar')
 		);
 
 		$tabs[] = [
@@ -519,7 +512,7 @@ Class Invoice
             return print_r( $json_data, true );
         }
 
-        $unserialize_data = unserialize($data);
+        $unserialize_data = @unserialize($data, ['allowed_classes' => false]);
 
         if( is_array( $unserialize_data ) )
         {

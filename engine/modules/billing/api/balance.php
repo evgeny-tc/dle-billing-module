@@ -17,11 +17,11 @@ use \Billing\BalanceException;
  */
 Class Balance
 {
-	private static self $instance;
+	private static ?self $instance = null;
 
 	private function __construct(){}
     private function __clone()    {}
-    private function __wakeup()   {}
+    public function __wakeup()   {}
 
     private static array $global = [];
 
@@ -48,6 +48,11 @@ Class Balance
     private array $hook_data = [];
 
     /**
+     * Loaded hook plugins: name => ['hook' => Hooks, 'config' => array]
+     */
+    private static ?array $hookRegistry = null;
+
+    /**
      * Текущее звено события
      * @var int
      */
@@ -56,7 +61,7 @@ Class Balance
     /**
      * @param array|null $params
      * @return static
-     * @throws \BalanceException
+     * @throws BalanceException
      */
     public static function Init(?array $params = []) : self
 	{
@@ -68,7 +73,7 @@ Class Balance
 
             if( ! $params )
             {
-                $params = file_exists( ENGINE_DIR . '/data/billing/config.php' ) ? require ENGINE_DIR . '/data/billing/config.php' : throw new \BalanceException('Unable to load config file');
+                $params = file_exists( ENGINE_DIR . '/data/billing/config.php' ) ? require ENGINE_DIR . '/data/billing/config.php' : throw new BalanceException('Unable to load config file');
             }
 
             self::$global = [
@@ -87,6 +92,18 @@ Class Balance
         }
 
         return self::$instance;
+    }
+
+    /**
+     * Reset singleton (tests)
+     * @internal
+     */
+    public static function reset() : void
+    {
+        self::$instance = null;
+        self::$buffer = [];
+        self::$global = [];
+        self::$hookRegistry = null;
     }
 
     /**
@@ -193,12 +210,27 @@ Class Balance
     }
 
     /**
+     * Depth of nested Transaction() calls
+     */
+    private int $transactionLevel = 0;
+
+    /**
+     * PM / email to send after Commit
+     */
+    private array $pendingNotices = [];
+
+    /**
      * DB start transaction
      * @return $this
      */
     public function Transaction() : self
     {
-        self::$global['DB']->query('START TRANSACTION');
+        if( $this->transactionLevel === 0 )
+        {
+            self::$global['DB']->query('START TRANSACTION');
+        }
+
+        $this->transactionLevel++;
 
         return $this;
     }
@@ -209,7 +241,18 @@ Class Balance
      */
     public function Commit() : void
     {
-        self::$global['DB']->query('COMMIT');
+        if( $this->transactionLevel <= 0 )
+        {
+            return;
+        }
+
+        $this->transactionLevel--;
+
+        if( $this->transactionLevel === 0 )
+        {
+            self::$global['DB']->query('COMMIT');
+            $this->flushNotices();
+        }
     }
 
     /**
@@ -218,6 +261,13 @@ Class Balance
      */
     public function Rollback() : void
     {
+        if( $this->transactionLevel <= 0 )
+        {
+            return;
+        }
+
+        $this->transactionLevel = 0;
+        $this->pendingNotices = [];
         self::$global['DB']->query('ROLLBACK');
     }
 
@@ -231,9 +281,30 @@ Class Balance
      */
     public function From(int $userId = 0, string $userLogin = '', float $sum = 0) : self
     {
-        $getUser = $this->getUser($userId, $userLogin);
+        $sum = abs($sum);
 
-        self::$global['DB']->query( "UPDATE " . USERPREFIX . "_users SET " . self::getBalanceField() . " = " . self::getBalanceField() . " - {$sum} WHERE user_id='{$getUser['user_id']}'");
+        if( $sum <= 0 )
+        {
+            return $this;
+        }
+
+        $field = self::getBalanceField();
+        $sumSql = number_format($sum, 2, '.', '');
+        $getUser = $this->getUser($userId, $userLogin, $this->transactionLevel > 0);
+
+        self::$global['DB']->query(
+            "UPDATE " . USERPREFIX . "_users
+             SET {$field} = {$field} - {$sumSql}
+             WHERE user_id = " . intval($getUser['user_id']) . "
+               AND {$field} >= {$sumSql}"
+        );
+
+        if( (int) self::$global['DB']->get_affected_rows() !== 1 )
+        {
+            throw new BalanceException('balance.check');
+        }
+
+        $this->rememberBalance($getUser, -$sum);
 
         return $this;
     }
@@ -248,9 +319,29 @@ Class Balance
      */
     public function To(int $userId = 0, string $userLogin = '', float $sum = 0) : self
     {
-        $getUser = $this->getUser($userId, $userLogin);
+        $sum = abs($sum);
 
-        self::$global['DB']->query( "UPDATE " . USERPREFIX . "_users SET " . self::getBalanceField() . " = " . self::getBalanceField() . " + {$sum} WHERE user_id='{$getUser['user_id']}'");
+        if( $sum <= 0 )
+        {
+            return $this;
+        }
+
+        $field = self::getBalanceField();
+        $sumSql = number_format($sum, 2, '.', '');
+        $getUser = $this->getUser($userId, $userLogin, $this->transactionLevel > 0);
+
+        self::$global['DB']->query(
+            "UPDATE " . USERPREFIX . "_users
+             SET {$field} = {$field} + {$sumSql}
+             WHERE user_id = " . intval($getUser['user_id'])
+        );
+
+        if( (int) self::$global['DB']->get_affected_rows() !== 1 )
+        {
+            throw new BalanceException('user.not_found:' . $userId . $userLogin);
+        }
+
+        $this->rememberBalance($getUser, $sum);
 
         return $this;
     }
@@ -290,9 +381,12 @@ Class Balance
 
         $plugin_name = self::$global['DB']->safesql($plugin_name);
 
+        $ip = self::$global['DB']->safesql($_SERVER['REMOTE_ADDR'] ?? '');
+        $agent = self::$global['DB']->safesql($_SERVER['HTTP_USER_AGENT'] ?? '');
+
         self::$global['DB']->query( "INSERT INTO " . PREFIX . "_billing_history
 							(history_plugin, history_plugin_id, history_user_name, history_ip, history_agent_info, history_plus, history_minus, history_balance, history_currency, history_text, history_date) values
-							('{$plugin_name}', '{$plugin_id}', '{$getUser['name']}', '{$_SERVER['REMOTE_ADDR']}', '{$_SERVER['HTTP_USER_AGENT']}', '{$plus}', '{$minus}', '{$balance_after}', '{$currency}', '{$comment}', '" . self::$global['TIME'] . "')" );
+							('{$plugin_name}', '{$plugin_id}', '{$getUser['name']}', '{$ip}', '{$agent}', '{$plus}', '{$minus}', '{$balance_after}', '{$currency}', '{$comment}', '" . self::$global['TIME'] . "')" );
 
         $userReportBalance = $getUser [self::getBalanceField()] + $plus - $minus;
 
@@ -309,35 +403,79 @@ Class Balance
             'plugin_name' => $plugin_name
         ];
 
-        # Уведомления
+        # Уведомления — после Commit, чтобы ЛС не открывал свою транзакцию внутри оплаты
         #
-        if( $pm )
+        if( $pm or $email )
         {
-            (new Message(userId: $userId, name: $userLogin))->loadTemplate('balance')->buildTemplate(
-                [
-                    '{date}' => langdate( "j F Y  G:i", self::$global['TIME'] ),
-                    '{login}' => $getUser['name'],
-                    '{sum}'=> ( $plus ? "+{$plus} {$currency}" : "-{$plus} {$currency}" ),
-                    '{comment}' => strip_tags($comment),
-                    '{balance}' => \Billing\Api\Balance::Init()->Convert(value: $userReportBalance, separator_space: true, declension: true)
-                ]
-            );
-        }
+            $this->pendingNotices[] = [
+                'pm' => $pm,
+                'email' => $email,
+                'userId' => $userId,
+                'userLogin' => $getUser['name'],
+                'plus' => $plus,
+                'minus' => $minus,
+                'comment' => $comment,
+                'balance' => $userReportBalance,
+                'currency' => $currency,
+            ];
 
-        if( $email )
-        {
-            (new Email(userId: $userId, name: $userLogin))->loadTemplate('balance')->buildTemplate(
-                [
-                    '{date}' => langdate( "j F Y  G:i", self::$global['TIME'] ),
-                    '{login}' => $getUser['name'],
-                    '{sum}'=> ( $plus ? "+{$plus} {$currency}" : "-{$plus} {$currency}" ),
-                    '{comment}' => strip_tags($comment),
-                    '{balance}' => \Billing\Api\Balance::Init()->Convert(value: $userReportBalance, separator_space: true, declension: true)
-                ]
-            );
+            if( $this->transactionLevel === 0 )
+            {
+                $this->flushNotices();
+            }
         }
 
         return $this;
+    }
+
+    /**
+     * Send queued PM / email. Failures must not roll back money.
+     */
+    private function flushNotices() : void
+    {
+        $notices = $this->pendingNotices;
+        $this->pendingNotices = [];
+
+        foreach( $notices as $notice )
+        {
+            $date = function_exists('langdate')
+                ? langdate( "j F Y  G:i", self::$global['TIME'] )
+                : date( "j.m.Y H:i", (int) self::$global['TIME'] );
+
+            $sum = $notice['plus']
+                ? "+" . $notice['plus'] . " " . $notice['currency']
+                : "-" . $notice['minus'] . " " . $notice['currency'];
+
+            $tags = [
+                '{date}' => $date,
+                '{login}' => $notice['userLogin'],
+                '{sum}' => $sum,
+                '{comment}' => strip_tags($notice['comment']),
+                '{balance}' => $this->Convert(value: $notice['balance'], separator_space: true, declension: true),
+            ];
+
+            try
+            {
+                if( $notice['pm'] )
+                {
+                    (new Message(userId: $notice['userId'], name: $notice['userLogin']))
+                        ->loadTemplate('balance')
+                        ->buildTemplate($tags)
+                        ->send();
+                }
+
+                if( $notice['email'] )
+                {
+                    (new Email(userId: $notice['userId'], name: $notice['userLogin']))
+                        ->loadTemplate('balance')
+                        ->buildTemplate($tags)
+                        ->send();
+                }
+            }
+            catch( \Throwable )
+            {
+            }
+        }
     }
 
     /**
@@ -356,46 +494,80 @@ Class Balance
                 $this->hook_data = array_merge($this->hook_data , $hook_new_data);
             }
 
-            if( ! class_exists('\Billing\Hooks') )
+            foreach( self::hookRegistry() as $plugin )
             {
-                require_once ENGINE_DIR . '/modules/billing/core/hooks.php';
-            }
-
-            $List = opendir( ENGINE_DIR . '/modules/billing/plugins/' );
-
-            while ( $name = readdir($List) )
-            {
-                if ( in_array($name, [".", "..", "/", "index.php", ".htaccess"]) ) continue;
-
-                if( file_exists( ENGINE_DIR . '/modules/billing/plugins/' . $name . '/hook.class.php' )
-                    and file_exists( ENGINE_DIR . '/data/billing/plugin.' . $name . '.php' ))
+                if( in_array('init', get_class_methods($plugin['hook']), true) )
                 {
-                    $Hook = include( ENGINE_DIR . '/modules/billing/plugins/' . $name . '/hook.class.php' );
-
-                    if( $Hook instanceof \Billing\Hooks)
-                    {
-                        if( in_array('init', get_class_methods($Hook) ) )
-                        {
-                            $Hook->init(
-                                include MODULE_DATA . '/plugin.' . $name . '.php'
-                            );
-                        }
-
-                        $Hook->pay(
-                            $this->hook_data['userLogin'],
-                            $this->hook_data['plus'],
-                            $this->hook_data['minus'],
-                            $this->hook_data['balance'],
-                            $this->hook_data['comment'],
-                            $this->hook_data['plugin_name'],
-                            $this->hook_data['plugin_id']
-                        );
-                    }
+                    $plugin['hook']->init($plugin['config']);
                 }
+
+                $plugin['hook']->pay(
+                    $this->hook_data['userLogin'] ?? '',
+                    $this->hook_data['plus'] ?? null,
+                    $this->hook_data['minus'] ?? null,
+                    $this->hook_data['balance'] ?? 0,
+                    $this->hook_data['comment'] ?? '',
+                    $this->hook_data['plugin_name'] ?? '',
+                    $this->hook_data['plugin_id'] ?? 0
+                );
             }
         }
 
         return $this;
+    }
+
+    /**
+     * Plugins with hook.class.php, loaded once per request
+     * @return array<string, array{hook: \Billing\Hooks, config: array}>
+     */
+    private static function hookRegistry() : array
+    {
+        if( self::$hookRegistry !== null )
+        {
+            return self::$hookRegistry;
+        }
+
+        self::$hookRegistry = [];
+
+        if( ! class_exists('\Billing\Hooks') )
+        {
+            require_once ENGINE_DIR . '/modules/billing/core/hooks.php';
+        }
+
+        $pluginsDir = ENGINE_DIR . '/modules/billing/plugins';
+
+        if( ! is_dir($pluginsDir) )
+        {
+            return self::$hookRegistry;
+        }
+
+        foreach( scandir($pluginsDir) ?: [] as $name )
+        {
+            if( $name === '.' || $name === '..' || ! preg_match('/^[a-z0-9_-]+$/i', $name) )
+            {
+                continue;
+            }
+
+            $hookFile = $pluginsDir . '/' . $name . '/hook.class.php';
+            $configFile = ENGINE_DIR . '/data/billing/plugin.' . $name . '.php';
+
+            if( ! is_file($hookFile) || ! is_file($configFile) )
+            {
+                continue;
+            }
+
+            $Hook = include $hookFile;
+
+            if( $Hook instanceof \Billing\Hooks )
+            {
+                self::$hookRegistry[$name] = [
+                    'hook' => $Hook,
+                    'config' => include $configFile,
+                ];
+            }
+        }
+
+        return self::$hookRegistry;
     }
 
     /**
@@ -408,7 +580,9 @@ Class Balance
      */
     public function Check(int $userId = 0, string $userLogin = '', float $sum = 0) : self
     {
-        if( $this->getUser($userId, $userLogin)[self::getBalanceField()] < $sum )
+        $getUser = $this->getUser($userId, $userLogin, $this->transactionLevel > 0);
+
+        if( (float) $getUser[self::getBalanceField()] < (float) $sum )
         {
             throw new BalanceException('balance.check');
         }
@@ -420,29 +594,41 @@ Class Balance
      * Найти пользователя
      * @param int $userId
      * @param string $userLogin
+     * @param bool $forUpdate
      * @return array
      * @throws BalanceException
      */
-    protected function getUser(int $userId = 0, string $userLogin = '') : array
+    protected function getUser(int $userId = 0, string $userLogin = '', bool $forUpdate = false) : array
     {
-        if( ( $userId and $userId == self::$global['USER']['user_id'] ) or ($userLogin and $userLogin == self::$global['USER']['name']) )
+        $field = self::getBalanceField();
+        $cacheKey = md5($userId . $userLogin);
+
+        if( ! $forUpdate )
         {
-            return self::$global['USER'];
+            if( ( $userId and $userId == (self::$global['USER']['user_id'] ?? 0) ) or ($userLogin and $userLogin == (self::$global['USER']['name'] ?? '') ) )
+            {
+                return self::$global['USER'];
+            }
+
+            if( isset(self::$buffer[$cacheKey]) )
+            {
+                return self::$buffer[$cacheKey];
+            }
         }
 
-        if( self::$buffer[md5($userId.$userLogin)] )
-        {
-            return self::$buffer[md5($userId.$userLogin)];
-        }
+        $lock = ( $forUpdate and $this->transactionLevel > 0 ) ? ' FOR UPDATE' : '';
 
         if( $userId )
         {
-            self::$global['DB']->query( "SELECT user_id, name, email, " . self::getBalanceField() . " FROM " . USERPREFIX . "_users WHERE user_id = '{$userId}'" );
+            self::$global['DB']->query( "SELECT user_id, name, email, {$field} FROM " . USERPREFIX . "_users WHERE user_id = " . intval($userId) . $lock );
         }
-
-        if( $userLogin )
+        else if( $userLogin !== '' )
         {
-            self::$global['DB']->query( "SELECT user_id, name, email, " . self::getBalanceField() . " FROM " . USERPREFIX . "_users WHERE name = '" . self::$global['DB']->safesql( $userLogin ) . "'" );
+            self::$global['DB']->query( "SELECT user_id, name, email, {$field} FROM " . USERPREFIX . "_users WHERE name = '" . self::$global['DB']->safesql( $userLogin ) . "'" . $lock );
+        }
+        else
+        {
+            throw new BalanceException('user.not_found:');
         }
 
         if( ! $user = self::$global['DB']->get_row())
@@ -450,7 +636,37 @@ Class Balance
             throw new BalanceException('user.not_found:' . $userId . $userLogin);
         }
 
-        return self::$buffer[md5($userId.$userLogin)] = $user;
+        self::$buffer[$cacheKey] = $user;
+
+        if( (int) (self::$global['USER']['user_id'] ?? 0) === (int) $user['user_id'] )
+        {
+            self::$global['USER'][$field] = $user[$field];
+        }
+
+        return $user;
+    }
+
+    /**
+     * Keep in-memory balance in sync after From/To
+     */
+    private function rememberBalance(array $user, float $delta) : void
+    {
+        $field = self::getBalanceField();
+        $newBalance = (float) ($user[$field] ?? 0) + $delta;
+
+        foreach( self::$buffer as $key => $cached )
+        {
+            if( (int) ($cached['user_id'] ?? 0) === (int) $user['user_id'] )
+            {
+                self::$buffer[$key][$field] = $newBalance;
+            }
+        }
+
+        if( (int) (self::$global['USER']['user_id'] ?? 0) === (int) $user['user_id']
+            or ( self::$global['USER']['name'] ?? '' ) === ( $user['name'] ?? '' ) )
+        {
+            self::$global['USER'][$field] = $newBalance;
+        }
     }
 
     /**
@@ -515,15 +731,15 @@ Class Balance
     {
         if( self::$global['BILLING']['commission'] and $systemName = self::$global['BILLING']['admin'] )
         {
-            $this->To(
-                userLogin: $systemName,
-                sum: $sum
-            )->Comment(
+            $this->Comment(
                 userLogin: $systemName,
                 plus: $sum,
                 comment: self::$global['LANG']['commission'] . $comment,
                 plugin_id: $plugin_id,
                 plugin_name: $plugin
+            )->To(
+                userLogin: $systemName,
+                sum: $sum
             );
         }
 
@@ -535,6 +751,6 @@ Class Balance
      */
     protected static function getBalanceField() : string
     {
-        return self::$global['BILLING']['fname'];
+        return \Billing\Database::safeField( (string) ( self::$global['BILLING']['fname'] ?? 'user_balance' ) );
     }
 }

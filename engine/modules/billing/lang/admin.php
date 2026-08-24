@@ -49,6 +49,7 @@ return array
 
     'register_pay_unknown_invoice' => "<i>Квитанция не найдена</i>",
     'register_pay_payed_invoice' => "<i>Квитанция оплачена</i>",
+    'register_pay_handler_error' => "<i>Ошибка обработчика оплаты</i>",
     'register_pay_sql_error' => "<i>Ошибка при выполнении запроса</i>",
     'register_pay_unknown_title' => "<i>неизвестно</i>",
     'register_pay_unknown_currency' => "у.е.",
@@ -183,8 +184,8 @@ return array
 	'menu_3_d' => "Поиск пользователей по логину и балансу, редактирование баланса пользователей и групп",
 	'menu_4' => "Поступление средств",
 	'menu_4_d' => "Просмотр и редактирование запросов пользователей на пополнение баланса через платежные системы",
-	'menu_5' => "Статистика",
-	'menu_5_d' => "Статистика дохода и расхода пользователей, статистика плагинов и платежных систем, сводка по доходу сайта",
+	'menu_5' => "Аналитика",
+	'menu_5_d' => "Аналитика доходов и расходов пользователей, статистика плагинов и платежных систем, сводка по доходу сайта",
 	'menu_6' => "Каталог плагинов",
 	'menu_6_d' => "Каталог плагинов и платежных систем, проверка актуальных версий",
     'menu_7' => "Режим отладки",
@@ -196,8 +197,8 @@ return array
 
 	'logger_text_1' => "Дата и время",
 	'logger_text_2' => "Статус",
-	'logger_text_3' => "Тип",
-	'logger_text_4' => "Содержимое",
+	'logger_text_3' => "Проверка",
+	'logger_text_4' => "Результат",
 
 	'logger_do_0' => "Получен запрос от платежной системы",
 	'logger_do_1' => "Параметры платежа получены",
@@ -614,7 +615,7 @@ return array
 
 	# Statistics
 	#
-	'statistics_title' => "Статистика",
+	'statistics_title' => "Аналитика",
 	'statistics_title_desc' => "Статистика пополнения и расхода баланса пользователей",
 	'stats_error_remove' => "Ошибка hash строки",
 	'stats_ok_remove' => "Информация о платеже удалена",
@@ -668,6 +669,21 @@ return array
     'statistics_6_title' => "Вернуться",
     'statistics_6' => "Главное меню",
     'statistics_7' => "<i class='fa fa-area-chart'></i> Сводка",
+
+	'statistics_period_week' => "Неделя",
+	'statistics_period_month' => "Месяц",
+	'statistics_period_quarter' => "3 мес.",
+	'statistics_period_year' => "Год",
+	'statistics_period_hint' => "Период: %s — %s",
+	'statistics_period_net' => "Сальдо за период",
+	'statistics_period_ops' => "операций в истории",
+	'statistics_period_in' => "Начислено за период",
+	'statistics_period_out' => "Списано за период",
+	'statistics_period_hint_ops' => "по истории баланса",
+	'statistics_global_title' => "Система в целом",
+	'statistics_users_count' => "пользователей с балансом",
+	'statistics_invoice_short' => "квит.",
+	'statistics_show' => "Применить фильтр",
 
 	'statistics_new_1' => "Статистика движения средств",
 	'statistics_new_1_graf' => "Динамика доходов и расходов пользователей",

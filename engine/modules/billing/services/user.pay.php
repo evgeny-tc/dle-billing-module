@@ -218,7 +218,7 @@ Class Pay
             #
             if( $Invoice['invoice_handler'] )
             {
-                $InfoPay = unserialize($Invoice['invoice_payer_info']);
+                $InfoPay = DevTools::decodeInfo($Invoice['invoice_payer_info']);
 
                 if( isset($InfoPay['billing']['from_balance']) )
                 {
@@ -324,28 +324,32 @@ Class Pay
                     {
                         $logData = (isset($Handler) ) ? $Handler->desc($InfoPay) : ['null', 0];
 
-                        if( $_coupon and ! $this->DevTools->LQuery->useCoupon($couponData, $Invoice) )
-                        {
-                            throw new \Exception($this->DevTools->lang['coupon_use_error']);
-                        }
-
                         try
                         {
-                            \Billing\Api\Balance::Init()->Transaction()->Comment(
+                            \Billing\Api\Balance::Init()->Transaction();
+
+                            if( $_coupon and ! $this->DevTools->LQuery->useCoupon($couponData, $Invoice) )
+                            {
+                                throw new \Exception($this->DevTools->lang['coupon_use_error']);
+                            }
+
+                            \Billing\Api\Balance::Init()->Comment(
                                 userLogin: $this->DevTools->member_id['name'],
                                 minus: $Invoice['invoice_get'],
                                 comment: $logData[0],
                                 plugin_id: (int)$logData[1],
                                 plugin_name: $pluginHandler ?? 'null',
-                                pm: (bool)$this->config['mail_payok_pm'],
-                                email: (bool)$this->config['mail_payok_email']
+                                pm: (bool)$this->DevTools->config['mail_payok_pm'],
+                                email: (bool)$this->DevTools->config['mail_payok_email']
                             )->From(
                                 userLogin: $this->DevTools->member_id['name'],
                                 sum: $Invoice['invoice_get']
-                            )->sendEvent()->Commit();
+                            )->sendEvent();
 
                             if( $this->DevTools->invoiceRegisterPay( $Invoice, $this->DevTools->member_id['name'] ) )
                             {
+                                \Billing\Api\Balance::Init()->Commit();
+
                                 if( $_GET['modal'] )
                                 {
                                     $this->DevTools->ThemeSetElement( '[modal]', '' );
@@ -360,9 +364,13 @@ Class Pay
                                     $this->DevTools->ThemeLoad( 'pay/success' )
                                 );
                             }
+
+                            \Billing\Api\Balance::Init()->Rollback();
                         }
-                        catch (\BalanceException $e)
+                        catch (\Throwable $e)
                         {
+                            \Billing\Api\Balance::Init()->Rollback();
+
                             throw new \Exception(
                                 $e->getMessage()
                             );
@@ -412,9 +420,9 @@ Class Pay
                     if( $_coupon and $this->DevTools->LQuery->useCoupon($couponData, $Invoice) )
                     {
                         $this->DevTools->LQuery->updateInvoice(
-                            invoice_id: $GET['id'],
+                            invoiceId: (int) $GET['id'],
                             wait: true,
-                            invoice_pay: $Invoice['invoice_pay']
+                            amountPay: (float) $Invoice['invoice_pay']
                         );
                     }
 
@@ -473,7 +481,7 @@ Class Pay
         #
         $DATA = $this->ClearData( $_REQUEST );
 
-        $this->logging( 1, str_replace("\n", "<br>", print_r( $DATA, true )) );
+        $this->logging( 1, $DATA );
 
         # Проверка ключа
         #
@@ -543,7 +551,7 @@ Class Pay
 
             # если цена не по купону -> конвертируем
             #
-            $InfoPay = unserialize($Invoice['invoice_payer_info']);
+            $InfoPay = DevTools::decodeInfo($Invoice['invoice_payer_info']);
 
             if( ! $InfoPay['coupon']['coupon_id'] )
             {
@@ -607,35 +615,43 @@ Class Pay
 
     /**
      * Логирование
-     * TODO: replace new method
      * @param int $step
      * @param string $info
      * @return void
      */
-    private function logging( int $step = 0, string $info = '' ) : void
+    private function logging(int $step = 0, mixed $info = '') : void
     {
         if( ! $this->DevTools->config['test'] ) return;
 
-        if( filesize('pay.logger.php') > 1024 and ! $step )
+        $logFile = MODULE_DATA . '/pay.logger.php';
+
+        if( file_exists($logFile) && filesize($logFile) > 1024 && ! $step )
         {
-            unlink('pay.logger.php');
+            unlink($logFile);
         }
 
-        if( ! file_exists( 'pay.logger.php' ) )
+        if( ! file_exists( $logFile ) )
         {
-            $handler = fopen( 'pay.logger.php', "a" );
-
+            $handler = fopen( $logFile, "a" );
             fwrite( $handler, "<?php if( !defined( 'BILLING_MODULE' ) ) die( 'Hacking attempt!' ); ?>\n");
+            fwrite( $handler, "<?php die(); ?>\n");
+            fwrite( $handler, "// Log format: step|timestamp|data\n");
         }
         else
         {
-            $handler = fopen( 'pay.logger.php', "a" );
+            $handler = fopen( $logFile, "a" );
+        }
+
+        $encodedInfo = json_encode($info, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+
+        if ($encodedInfo === false) {
+            $encodedInfo = '[BINARY DATA]';
         }
 
         fwrite( $handler,
             $step . '|' .
-            langdate( "j.m.Y H:i", $this->_TIME) . '|' .
-            $info . "\n"
+            langdate( "j.m.Y H:i", $this->DevTools->_TIME) . '|' .
+            $encodedInfo . "\n"
         );
 
         fclose( $handler );

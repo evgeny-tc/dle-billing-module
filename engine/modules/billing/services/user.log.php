@@ -21,7 +21,7 @@ Class Log
      * @return string
      * @throws \Exception
      */
-    public function main( array $GET = [] )
+    public function main( array $GET = [] ) : string
     {
         # Проверка авторизации
         #

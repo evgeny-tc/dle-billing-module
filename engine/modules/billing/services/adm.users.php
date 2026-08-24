@@ -19,9 +19,11 @@ Class Users
     /**
      * @throws BalanceException
      */
-    public function mainPage() : string
+	public function mainPage() : string
 	{
 		global $user_group;
+
+		$balanceField = $this->Dashboard->LQuery->balanceField;
 
 		# Внести изменения в баланс пользователей
 		#
@@ -65,8 +67,8 @@ Class Users
                                 comment: $_Comment,
                                 plugin_id: $this->Dashboard->member_id['user_id'],
                                 plugin_name: 'users',
-                                pm: (bool)$this->config['mail_payok_pm'],
-                                email: (bool)$this->config['mail_payok_email']
+                                pm: (bool)$this->Dashboard->config['mail_payok_pm'],
+                                email: (bool)$this->Dashboard->config['mail_payok_email']
                             )->To(
                                 userLogin: $login,
                                 sum: $_Sum
@@ -80,8 +82,8 @@ Class Users
                                 comment: $_Comment,
                                 plugin_id: $this->Dashboard->member_id['user_id'],
                                 plugin_name: 'users',
-                                pm: (bool)$this->config['mail_payok_pm'],
-                                email: (bool)$this->config['mail_payok_email']
+                                pm: (bool)$this->Dashboard->config['mail_payok_pm'],
+                                email: (bool)$this->Dashboard->config['mail_payok_email']
                             )->From(
                                 userLogin: $login,
                                 sum: $_Sum
@@ -123,17 +125,19 @@ Class Users
 			}
 			else
 			{
-				if( $_Do )
+				$_Sum = floatval($_Sum);
+
+			if( $_Do )
 		        {
 		            $this->Dashboard->LQuery->db->query( "UPDATE " . USERPREFIX . "_users
-		                                                    SET {$this->Dashboard->config['fname']} = {$this->Dashboard->config['fname']} + $_Sum
-		                                                    WHERE user_group = '$_Group'");
+		                                                    SET {$balanceField} = {$balanceField} + {$_Sum}
+		                                                    WHERE user_group = '{$_Group}'");
 		        }
 		        else
 		        {
 		            $this->Dashboard->LQuery->db->query( "UPDATE " . USERPREFIX . "_users
-		                                                    SET {$this->Dashboard->config['fname']} = {$this->Dashboard->config['fname']} - $_Sum
-		                                                    WHERE user_group = '$_Group'");
+		                                                    SET {$balanceField} = {$balanceField} - {$_Sum}
+		                                                    WHERE user_group = '{$_Group}'");
 		        }
 
 		        $this->Dashboard->ThemeMsg( $this->Dashboard->lang['ok'], $this->Dashboard->lang['users_ok_group'], "?mod=billing&c=users" );
@@ -153,19 +157,19 @@ Class Users
 			switch( substr( $_POST['search_balance'], 0, 1) )
 			{
 				case '>':
-					$_WhereData["{$this->Dashboard->config['fname']} > '{s}'"] = substr($_POST['search_balance'], 1, strlen($_POST['search_balance']));
+					$_WhereData["{$balanceField} > '{s}'"] = substr($_POST['search_balance'], 1, strlen($_POST['search_balance']));
 				break;
 
 				case '<':
-					$_WhereData["{$this->Dashboard->config['fname']} < '{s}'"] = substr($_POST['search_balance'], 1, strlen($_POST['search_balance']));
+					$_WhereData["{$balanceField} < '{s}'"] = substr($_POST['search_balance'], 1, strlen($_POST['search_balance']));
 				break;
 
 				case '=':
-					$_WhereData["{$this->Dashboard->config['fname']} = '{s}'"] = substr($_POST['search_balance'], 1, strlen($_POST['search_balance']));
+					$_WhereData["{$balanceField} = '{s}'"] = substr($_POST['search_balance'], 1, strlen($_POST['search_balance']));
 				break;
 
 				default:
-					$_WhereData["{$this->Dashboard->config['fname']} = '{s}'"] = $_POST['search_balance'];
+					$_WhereData["{$balanceField} = '{s}'"] = $_POST['search_balance'];
 			}
 
 			$_WhereData["name LIKE '%{s}%' or email LIKE '%{s}%'"] = $_POST['search_name'];
@@ -176,7 +180,7 @@ Class Users
 		}
 		else
 		{
-			$this->Dashboard->LQuery->where( ["{$this->Dashboard->config['fname']} > 0 " => 1] );
+			$this->Dashboard->LQuery->where( ["{$balanceField} > 0 " => 1] );
 
 			$Data = $this->Dashboard->LQuery->searchUsers( 10 );
 		}
@@ -203,7 +207,7 @@ Class Users
                     $user_group[$Value['user_group']]['group_name'],
                     $this->Dashboard->ThemeChangeTime( $Value['reg_date']),
                     \Billing\Api\Balance::Init()->Convert(
-                        value: $Value[$this->Dashboard->config['fname']],
+                        value: $Value[$balanceField],
                         separator_space: true,
                         declension: true
                     )
@@ -229,13 +233,13 @@ Class Users
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['users_label'],
 			$this->Dashboard->lang['users_label_desc'],
-			"<input name=\"search_name\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . $_POST['search_name'] ."\">"
+			"<input name=\"search_name\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . htmlspecialchars($_POST['search_name'] ?? '', ENT_QUOTES, 'UTF-8') ."\">"
 		);
 
 		$this->Dashboard->ThemeAddStr(
 			$this->Dashboard->lang['user_se_balance'],
 			$this->Dashboard->lang['user_se_balance_desc'],
-			"<input name=\"search_balance\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . $_POST['search_balance'] ."\">"
+			"<input name=\"search_balance\" class=\"form-control\" type=\"text\" style=\"width: 100%\" value=\"" . htmlspecialchars($_POST['search_balance'] ?? '', ENT_QUOTES, 'UTF-8') ."\">"
 		);
 
 		$tabs[] = [
@@ -254,9 +258,9 @@ Class Users
 			if( $group_id == 5 ) continue;
 
 			$users = $this->Dashboard->LQuery->db->super_query( "SELECT count(*) as `count`,
-												 min(" . $this->Dashboard->config['fname'] . ") as `min`,
-												 max(" . $this->Dashboard->config['fname'] . ") as `max`,
-												 sum(" . $this->Dashboard->config['fname'] . ") as `sum`
+												 min(" . $balanceField . ") as `min`,
+												 max(" . $balanceField . ") as `max`,
+												 sum(" . $balanceField . ") as `sum`
 											FROM " . USERPREFIX . "_users WHERE user_group='$group_id'" );
 
 			$this->Dashboard->ThemeAddTR(

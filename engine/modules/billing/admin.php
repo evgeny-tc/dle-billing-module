@@ -36,7 +36,14 @@ require_once MODULE_PATH . '/helpers/autoloader.php';
 
 try
 {
-    Billing\Dashboard::Start();
+    Billing\Dashboard::Start(
+        db: $db,
+        config: $config,
+        member_id: $member_id,
+        _TIME: $_TIME,
+        dle_login_hash: $dle_login_hash,
+        selected_language: $selected_language
+    );
 }
 catch (\Exception $e)
 {

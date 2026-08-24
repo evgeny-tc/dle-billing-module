@@ -85,15 +85,15 @@ Class Prcode
 															prcode_active_date = '" . $this->DevTools->_TIME . "'
 														        WHERE prcode_id='" . $_SearchPromoCode['prcode_id'] . "'" );
 
-            $processActivate->From(
-                userLogin: $this->DevTools->member_id['name'],
-                sum: $_SearchPromoCode['prcode_sum']
-            )->Comment(
+            $processActivate->Comment(
                 userLogin: $this->DevTools->member_id['name'],
                 minus: $_SearchPromoCode['prcode_sum'],
                 comment: sprintf($this->pluginLang['ui_active_desc'], $PromoCode),
                 plugin_id: $_SearchPromoCode['prcode_id'],
                 plugin_name: static::PLUGIN
+            )->From(
+                userLogin: $this->DevTools->member_id['name'],
+                sum: $_SearchPromoCode['prcode_sum']
             )->Commit();
 
 			return $this->DevTools->ThemeMsg(

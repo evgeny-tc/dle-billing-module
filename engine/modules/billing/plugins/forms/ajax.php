@@ -151,7 +151,7 @@ try
 					        '" . $arHash['form_title'] . "',
 							'" . floatval($arHash['price']) . "',
 							'" . $arHash['theme'] . "',
-							'" . serialize($_Save) . "',
+							'" . $db->safesql(json_encode($_Save, JSON_UNESCAPED_UNICODE)) . "',
 							'" . $_TIME . "',
 							'" . $userUid . "')" );
 

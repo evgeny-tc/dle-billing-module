@@ -407,111 +407,310 @@ Class Main
      * @return string
      * @throws \Exception
      */
-	public function logPage() : string
-	{
-		# Очистить
-		#
-		if( isset( $_POST['clear'] ) )
-		{
+    public function logPage() : string
+    {
+        # Очистить
+        #
+        if( isset( $_POST['clear'] ) )
+        {
             $this->Dashboard->CheckHash();
+            @unlink(MODULE_DATA . '/pay.logger.php');
+        }
 
-			@unlink("pay.logger.php");
-		}
+        $this->Dashboard->ThemeEchoHeader($this->Dashboard->lang['main_log']);
 
-		$this->Dashboard->ThemeEchoHeader($this->Dashboard->lang['main_log']);
+        $Sections = 0;
+        $Content = $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['main_log'] );
 
-		$Sections = 0;
-		$Content = $this->Dashboard->ThemeHeadStart( $this->Dashboard->lang['main_log'] );
+        $this->Dashboard->ThemeAddTR([
+            '<th>' . htmlspecialchars($this->Dashboard->lang['logger_text_1']) . '</th>',
+            '<th>' . htmlspecialchars($this->Dashboard->lang['logger_text_2']) . '</th>',
+            '<th>' . htmlspecialchars($this->Dashboard->lang['logger_text_3']) . '</th>',
+            '<th>' . htmlspecialchars($this->Dashboard->lang['logger_text_4']) . '</th>'
+        ]);
 
-		$this->Dashboard->ThemeAddTR(
-            [
-                '<th>' . $this->Dashboard->lang['logger_text_1'] . '</th>',
-                '<th>' . $this->Dashboard->lang['logger_text_2'] . '</th>',
-                '<th>' . $this->Dashboard->lang['logger_text_3'] . '</th>',
-                '<th>' . $this->Dashboard->lang['logger_text_4'] . '</th>'
-            ]
-        );
+        if( file_exists(MODULE_DATA . '/pay.logger.php')
+            && $handle = @fopen(MODULE_DATA . '/pay.logger.php', "r") )
+        {
+            $log_id = 0;
 
-		if( $handle = @fopen('pay.logger.php', "r") )
-		{
-			$log_id = 0;
+            while ( ($_LogStr = fgets($handle, 4096)) !== false)
+            {
+                $_LogStr = trim($_LogStr);
 
-			while ( ($_LogStr = fgets($handle, 4096)) !== false)
-			{
-				$log_id ++;
+                if( str_starts_with($_LogStr, '<?php') ||
+                    str_starts_with($_LogStr, '//') ||
+                    empty($_LogStr) )
+                {
+                    continue;
+                }
 
-				$_Log = explode('|', $_LogStr);
+                $log_id++;
 
-				if( $_Log[0] == '0' and $Sections > 1 )
-				{
-					$this->Dashboard->ThemeAddTR( array(
-						'<td colspan="4"></td>'
-					));
-				}
+                $_Log = explode('|', $_LogStr, 3);
 
-				$Sections ++;
+                if( count($_Log) < 3 ) continue;
 
-				if( ! $_Log[1] ) continue;
+                $step = (int)$_Log[0];
+                $time = trim($_Log[1]);
 
-				$this->Dashboard->ThemeAddTR(
-                    [
-                        $_Log[1],
-                        $this->LogType( $_Log[0] ),
-                        $this->Dashboard->lang['logger_do_' . $_Log[0]],
-                        (
-                        strlen( $_Log[2] ) > 20
-                            ? '<a href="#" onClick="BillingJS.openDialog( \'#log_' . $log_id . '\' ); return false">' . mb_substr( strip_tags( $_Log[2] ), 0, 40, $this->Dashboard->dle['charset'] ) . '..</a>'
-                            : $_Log[2]
-                        ) . '<div id="log_' . $log_id . '" title="' . $this->Dashboard->lang['logger_text_4'] . '" style="display:none">
-							<pre>' . $_Log[2] . '</pre>
-						</div>'
-                    ]
+                if( empty($time) ) continue;
+
+                if( $step == 0 && $Sections > 1 )
+                {
+                    $this->Dashboard->ThemeAddTR([
+                        '<td colspan="4"><hr style="margin: 10px 0;"></td>'
+                    ]);
+                }
+
+                $Sections++;
+
+                $decodedData = $this->decodeLogData(trim($_Log[2]));
+
+                $safeTime = htmlspecialchars($time, ENT_QUOTES, 'UTF-8');
+                $logType = $this->LogType($step);
+                $stepLabel = htmlspecialchars(
+                    $this->Dashboard->lang['logger_do_' . $step] ?? 'Step ' . $step,
+                    ENT_QUOTES,
+                    'UTF-8'
                 );
-			}
 
-			$Content .= $this->Dashboard->ThemeParserTable();
-			$Content .= $this->Dashboard->ThemePadded(
+                $previewText = strip_tags($decodedData);
+                $shortText = mb_strlen($previewText) > 40
+                    ? mb_substr($previewText, 0, 40, 'UTF-8') . '...'
+                    : $previewText;
+
+                $rowId = 'log_' . $log_id;
+
+                $this->Dashboard->ThemeAddTR([
+                    $safeTime,
+                    $logType,
+                    $stepLabel,
+                    $this->renderLogCell($shortText, $decodedData, $rowId)
+                ]);
+            }
+
+            fclose($handle);
+
+            $Content .= $this->Dashboard->ThemeParserTable();
+            $Content .= $this->Dashboard->ThemePadded(
                 $this->Dashboard->MakeButton("clear", $this->Dashboard->lang['history_search_btn_null'], 'bg-danger') .
-                '<a class="btn btn-sm btn-raised legitRipple bg-slate-600" style="float: right" href="?mod=billing&m=exportlog"> ' . $this->Dashboard->lang['export_btn'] . '</a>'
+                '<a class="btn btn-sm btn-raised legitRipple bg-slate-600" style="float: right" href="?mod=billing&m=exportlog"> ' .
+                htmlspecialchars($this->Dashboard->lang['export_btn']) . '</a>'
             );
-		}
-		else
-		{
-			$Content .= $this->Dashboard->ThemeParserTable();
-			$Content .= $this->Dashboard->ThemePadded( $this->Dashboard->lang['nullpadding'], '' );
-		}
+        }
+        else
+        {
+            $Content .= $this->Dashboard->ThemeParserTable();
+            $Content .= $this->Dashboard->ThemePadded( $this->Dashboard->lang['nullpadding'] );
+        }
 
-		$Content .= $this->Dashboard->ThemeHeadClose();
-		$Content .= $this->Dashboard->ThemeEchoFoother();
+        $Content .= $this->Dashboard->ThemeHeadClose();
+        $Content .= $this->Dashboard->ThemeEchoFoother();
 
-		return $Content;
-	}
+        return $Content;
+    }
 
     /**
+     * @param string $encodedData
+     * @return string
+     */
+    private function decodeLogData(string $encodedData): string
+    {
+        $encodedData = trim($encodedData);
+
+        if( empty($encodedData) ) {
+            return '';
+        }
+
+        $decoded = json_decode($encodedData, true);
+
+        if (json_last_error() === JSON_ERROR_NONE)
+        {
+            if (is_array($decoded))
+            {
+                return $this->formatArrayPretty($decoded);
+            }
+            elseif (is_string($decoded))
+            {
+                return htmlspecialchars($decoded, ENT_QUOTES, 'UTF-8');
+            }
+            else
+            {
+                return htmlspecialchars((string)$decoded, ENT_QUOTES, 'UTF-8');
+            }
+        }
+
+        return htmlspecialchars($encodedData, ENT_QUOTES, 'UTF-8');
+    }
+
+    /**
+     * Форматирование массива лога
+     * @param array $data
+     * @param int $level
+     * @return string
+     */
+    private function formatArrayPretty(array $data, int $level = 0): string
+    {
+        $indent = str_repeat('  ', $level);
+        $result = '';
+
+        foreach ($data as $key => $value)
+        {
+            $safeKey = htmlspecialchars($key, ENT_QUOTES, 'UTF-8');
+
+            if (is_array($value))
+            {
+                $result .= $indent . "📁 {$safeKey}:\n";
+                $result .= $this->formatArrayPretty($value, $level + 1);
+            }
+            elseif (is_string($value))
+            {
+                $maskedValue = $this->maskSensitiveData($key, $value);
+                $safeValue = htmlspecialchars($maskedValue, ENT_QUOTES, 'UTF-8');
+                $result .= $indent . "📄 {$safeKey}: {$safeValue}\n";
+            }
+            elseif (is_bool($value))
+            {
+                $result .= $indent . "✓ {$safeKey}: " . ($value ? 'Да' : 'Нет') . "\n";
+            }
+            elseif (is_null($value))
+            {
+                $result .= $indent . "❌ {$safeKey}: [пусто]\n";
+            }
+            else
+            {
+                $safeValue = htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+                $result .= $indent . "📄 {$safeKey}: {$safeValue}\n";
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Маскировка чувствительных данных
+     * @param string $key
+     * @param string $value
+     * @return string
+     */
+    private function maskSensitiveData(string $key, string $value): string
+    {
+        $sensitiveKeys = [
+            'password', 'pass', 'pwd', 'token', 'secret', 'key',
+            'auth', 'credit', 'card', 'cvv', 'pin', 'hash',
+            'dle_password', 'PHPSESSID', 'session', 'cookie',
+            'api_key', 'private_key', 'secret_key'
+        ];
+
+        $keyLower = strtolower($key);
+
+        foreach ($sensitiveKeys as $sensitive)
+        {
+            if (strpos($keyLower, $sensitive) !== false)
+            {
+                if (strlen($value) > 8)
+                {
+                    return substr($value, 0, 4) . '••••' . substr($value, -4);
+                }
+                else
+                {
+                    return str_repeat('•', strlen($value));
+                }
+            }
+        }
+
+        if (preg_match('/^[a-f0-9]{32,40}$/i', $value))
+        {
+            return substr($value, 0, 6) . '••••' . substr($value, -6);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Рендер ячейки с логом
+     * @param string $shortText
+     * @param string $fullText
+     * @param string $rowId
+     * @return string
+     */
+    private function renderLogCell(string $shortText, string $fullText, string $rowId) : string
+    {
+        $safeShortText = htmlspecialchars($shortText, ENT_QUOTES, 'UTF-8');
+        $safeRowId = htmlspecialchars($rowId, ENT_QUOTES, 'UTF-8');
+        $safeTitle = htmlspecialchars($this->Dashboard->lang['logger_text_4'] ?? 'Log details', ENT_QUOTES, 'UTF-8');
+
+        $formattedFullText = nl2br($fullText);
+
+        if (mb_strlen(strip_tags($fullText)) > 40)
+        {
+            return '<a href="#" onclick="BillingJS.openDialog(\'#' . $safeRowId . '\'); return false;">' .
+                $safeShortText . '</a>' .
+                '<div id="' . $safeRowId . '" title="' . $safeTitle . '" style="display:none">' .
+                '<div style="font-family: monospace; font-size: 12px; max-height: 500px; overflow: auto;">' .
+                $formattedFullText .
+                '</div></div>';
+        }
+
+        return $safeShortText;
+    }
+
+    /**
+     * Экспорт лога в файл
      * @return void
      */
     public function exportlogPage() : void
     {
-        $data = [];
+        header('Content-Type: text/plain; charset=utf-8');
+        header('Content-Disposition: attachment; filename="billing_log_' . date('Y-m-d_H-i-s') . '.txt"');
 
-        if( $handle = @fopen('pay.logger.php', "r") )
+        echo "Billing Module Log Export\n";
+        echo "Date: " . date('Y-m-d H:i:s') . "\n";
+        echo str_repeat("=", 80) . "\n\n";
+
+        if( file_exists(MODULE_DATA . '/pay.logger.php') && $handle = @fopen(MODULE_DATA . '/pay.logger.php', "r") )
         {
-            while (($_LogStr = fgets($handle, 4096)) !== false)
+            $lineNum = 0;
+
+            while ( ($_LogStr = fgets($handle, 4096)) !== false)
             {
-                $_Log = explode('|', $_LogStr);
+                $_LogStr = trim($_LogStr);
 
-                if( ! $_Log[1] ) continue;
+                if( str_starts_with($_LogStr, '<?php') ||
+                    str_starts_with($_LogStr, '//') ||
+                    empty($_LogStr) )
+                {
+                    continue;
+                }
 
-                $data[] = $_Log[1];
-                $data[] = $this->Dashboard->lang['logger_do_' . $_Log[0]];
-                $data[] = $_Log[2];
-                $data[] = '';
+                $lineNum++;
+
+                $_Log = explode('|', $_LogStr, 3);
+
+                if( count($_Log) < 3 ) continue;
+
+                $step = $_Log[0];
+                $time = $_Log[1];
+                $rawData = trim($_Log[2]);
+
+                $decodedData = $this->decodeLogData($rawData);
+
+                echo "[{$lineNum}] Time: {$time}\n";
+                echo "Step: {$step}\n";
+                echo "Data:\n{$decodedData}\n";
+                echo str_repeat("-", 80) . "\n\n";
             }
+
+            fclose($handle);
+            echo "\nTotal records: {$lineNum}\n";
+        }
+        else
+        {
+            echo "Log file not found.\n";
         }
 
-        echo '<pre>'.implode('<br>', $data).'</pre>';
-
-        die;
+        exit;
     }
 
     /**
@@ -537,9 +736,9 @@ Class Main
 	{
 		if( in_array( $msg_id, array( 0, 1, 5, 6, 8, 9, 10, 14 ) )  )
 		{
-			return '<center><span class="text-success"><b><i class="fa fa-check-circle"></i></b></span></center>';
+			return '<span class="text-success"><b><i class="fa fa-check-circle"></i></b></span>';
 		}
 
-		return '<center><span class="text-danger"><b><i class="fa fa-exclamation-circle"></i></b></span></center>';
+		return '<span class="text-danger"><b><i class="fa fa-exclamation-circle"></i></b></span>';
 	}
 }

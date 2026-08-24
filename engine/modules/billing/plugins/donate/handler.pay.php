@@ -29,7 +29,7 @@ return new class extends Handler
      */
     public function pay(array $Invoice) : bool
     {
-        $InfoPay = unserialize($Invoice['invoice_payer_info']);
+        $InfoPay = DevTools::decodeInfo($Invoice['invoice_payer_info']);
 
         \Billing\Api\Balance::Init()->Transaction();
 

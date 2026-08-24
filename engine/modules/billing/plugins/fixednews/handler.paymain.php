@@ -24,7 +24,7 @@ return new class extends Handler
     {
         global $db, $_TIME;
 
-        $InfoPay = unserialize($Invoice['invoice_payer_info']);
+        $InfoPay = DevTools::decodeInfo($Invoice['invoice_payer_info']);
 
         if( ! $post_id = intval($InfoPay['params']['post_id']) )
         {

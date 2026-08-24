@@ -159,6 +159,36 @@ trait Core
     }
 
     /**
+     * Unix time after which an unpaid invoice is expired, or null if TTL is off
+     */
+    public function invoiceExpireBefore(): ?int
+    {
+        $minutes = (int) ($this->config['invoice_time'] ?? 0);
+
+        if( $minutes <= 0 )
+        {
+            return null;
+        }
+
+        return $this->_TIME - ( $minutes * 60 );
+    }
+
+    /**
+     * Unpaid invoice older than invoice_time
+     */
+    public function isInvoiceExpired(array $invoice): bool
+    {
+        $expireBefore = $this->invoiceExpireBefore();
+
+        if( $expireBefore === null || ! empty($invoice['invoice_date_pay']) )
+        {
+            return false;
+        }
+
+        return (int) ($invoice['invoice_date_creat'] ?? 0) < $expireBefore;
+    }
+
+    /**
      * Оплатить квитанцию
      * @param array $Invoice
      * @param string|null $payerRequisites
@@ -169,57 +199,103 @@ trait Core
     {
         $this->Payments();
 
-        if( ! isset( $Invoice ) )
+        if( empty($Invoice['invoice_id']) )
         {
             throw new BalanceException($this->lang['register_pay_unknown_invoice']);
         }
 
-        if( $Invoice['invoice_date_pay'] )
+        if( ! empty($Invoice['invoice_date_pay']) )
         {
             throw new BalanceException($this->lang['register_pay_payed_invoice']);
         }
 
-        $this->LQuery->updateInvoice(
-            invoiceId: $Invoice['invoice_id'],
-            paymentSystem: $Invoice['invoice_paysys'],
+        if( ! $this->LQuery->claimInvoice(
+            invoiceId: (int) $Invoice['invoice_id'],
+            paymentSystem: $Invoice['invoice_paysys'] ?? null,
             payerRequisites: $payerRequisites
-        );
-
-        # есть обработчик
-        #
-        if( $Invoice['invoice_handler'] )
+        ) )
         {
-            list($pluginHandler, $fileHandler) = self::exInvoiceHandler($Invoice['invoice_handler']);
+            throw new BalanceException($this->lang['register_pay_payed_invoice']);
+        }
 
-            if( $Handler = self::getHandler($pluginHandler, $fileHandler) )
+        try
+        {
+            # есть обработчик
+            #
+            if( ! empty($Invoice['invoice_handler']) )
             {
-                $Handler->pay($Invoice);
+                list($pluginHandler, $fileHandler) = self::exInvoiceHandler($Invoice['invoice_handler']);
+
+                $Handler = ( $pluginHandler && $fileHandler )
+                    ? self::getHandler($pluginHandler, $fileHandler)
+                    : null;
+
+                if( ! $Handler || $Handler->pay($Invoice) !== true )
+                {
+                    throw new BalanceException($this->lang['register_pay_handler_error']);
+                }
+
+                return true;
             }
+
+            # зачислить
+            #
+            $mailComment = sprintf(
+                $this->lang['pay_msgOk'],
+                $this->Payments[$Invoice['invoice_paysys']]['title'] ?: $this->lang['register_pay_unknown_title'],
+                $Invoice['invoice_pay'],
+                $this->Payments[$Invoice['invoice_paysys']]['config']['currency'] ?: $this->lang['register_pay_unknown_currency'],
+            );
+
+            \Billing\Api\Balance::Init()->Comment(
+                userLogin: $Invoice['invoice_user_name'],
+                plus: $Invoice['invoice_get'],
+                comment: $mailComment,
+                pm: (bool)$this->config['mail_payok_pm'],
+                email: (bool)$this->config['mail_payok_email']
+            )->To(
+                userLogin: $Invoice['invoice_user_name'],
+                sum: $Invoice['invoice_get']
+            )->sendEvent();
 
             return true;
         }
+        catch ( \Throwable $e )
+        {
+            \Billing\Api\Balance::Init()->Rollback();
+            $this->LQuery->updateInvoice( (int) $Invoice['invoice_id'], true );
 
-        # зачислить
-        #
-        $mailComment = sprintf(
-            $this->lang['pay_msgOk'],
-            $this->Payments[$Invoice['invoice_paysys']]['title'] ?: $this->lang['register_pay_unknown_title'],
-            $Invoice['invoice_pay'],
-            $this->Payments[$Invoice['invoice_paysys']]['config']['currency'] ?: $this->lang['register_pay_unknown_currency'],
-        );
+            throw $e;
+        }
+    }
 
-        \Billing\Api\Balance::Init()->Comment(
-            userLogin: $Invoice['invoice_user_name'],
-            plus: $Invoice['invoice_get'],
-            comment: $mailComment,
-            pm: (bool)$this->config['mail_payok_pm'],
-            email: (bool)$this->config['mail_payok_email']
-        )->To(
-            userLogin: $Invoice['invoice_user_name'],
-            sum: $Invoice['invoice_get']
-        );
+    /**
+     * Decode invoice / form payload (json, legacy serialize without object classes)
+     * @param mixed $data
+     * @return array
+     */
+    public static function decodeInfo(mixed $data) : array
+    {
+        if( is_array($data) )
+        {
+            return $data;
+        }
 
-        return true;
+        if( ! is_string($data) || $data === '' )
+        {
+            return [];
+        }
+
+        $json = json_decode($data, true);
+
+        if( is_array($json) )
+        {
+            return $json;
+        }
+
+        $unserialized = @unserialize($data, ['allowed_classes' => false]);
+
+        return is_array($unserialized) ? $unserialized : [];
     }
 
     /**
@@ -329,7 +405,11 @@ trait Core
      */
     public function ThemeChangeTime( int $time, string $custom_format = '' ) : string
     {
-        date_default_timezone_set( $this->dle['date_adjust'] );
+        static $timezoneSet = false;
+        if (!$timezoneSet) {
+            date_default_timezone_set( $this->dle['date_adjust'] );
+            $timezoneSet = true;
+        }
 
         if( $custom_format )
         {

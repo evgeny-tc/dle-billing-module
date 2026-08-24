@@ -23,7 +23,7 @@ class Database
     /**
      * Database connection instance
      */
-    public \db $db;
+    public object $db;
 
     /**
      * Balance field name in users table
@@ -53,8 +53,18 @@ class Database
     public function __construct(object $db, string $field, int $time)
     {
         $this->db = $db;
-        $this->balanceField = $field;
+        $this->balanceField = self::safeField($field);
         $this->currentTime = $time;
+    }
+
+    /**
+     * Allow only a SQL identifier for the users.balance column
+     */
+    public static function safeField(string $field): string
+    {
+        $field = preg_replace('/[^a-zA-Z0-9_]/', '', $field) ?? '';
+
+        return $field !== '' ? $field : 'user_balance';
     }
 
     /**
@@ -88,11 +98,84 @@ class Database
             $this->updateInvoiceWithCoupon($invoice, $coupon);
         }
 
-        return (bool) $this->db->query(
+        $userName = $this->db->safesql((string) ($invoice['invoice_user_name'] ?? ''));
+
+        $this->db->query(
             "UPDATE " . USERPREFIX . "_billing_coupons
-             SET coupon_use = '{$invoice['invoice_user_name']}'
-             WHERE coupon_id = " . intval($coupon['coupon_id'])
+             SET coupon_use = '{$userName}'
+             WHERE coupon_id = " . intval($coupon['coupon_id']) . "
+               AND coupon_use = ''"
         );
+
+        return (int) $this->db->get_affected_rows() === 1;
+    }
+
+    /**
+     * Return a coupon reserved on an unpaid invoice
+     */
+    public function releaseCouponFromInvoice(array $invoice): bool
+    {
+        if (!empty($invoice['invoice_date_pay'])) {
+            return false;
+        }
+
+        $info = DevTools::decodeInfo($invoice['invoice_payer_info'] ?? '');
+        $couponId = (int) ($info['coupon']['coupon_id'] ?? 0);
+
+        if ($couponId <= 0) {
+            return false;
+        }
+
+        $this->db->query(
+            "UPDATE " . USERPREFIX . "_billing_coupons
+             SET coupon_use = ''
+             WHERE coupon_id = {$couponId}
+               AND coupon_use != ''"
+        );
+
+        return (int) $this->db->get_affected_rows() === 1;
+    }
+
+    /**
+     * Return coupons attached to unpaid invoices older than $expireBefore
+     */
+    public function releaseExpiredInvoiceCoupons(int $expireBefore): int
+    {
+        $this->db->query(
+            "SELECT invoice_id, invoice_date_pay, invoice_payer_info
+             FROM " . USERPREFIX . "_billing_invoice
+             WHERE invoice_date_pay = 0
+               AND invoice_date_creat < " . intval($expireBefore)
+        );
+
+        $invoices = [];
+        while ($row = $this->db->get_row()) {
+            $invoices[] = $row;
+        }
+
+        $released = 0;
+        foreach ($invoices as $invoice) {
+            if ($this->releaseCouponFromInvoice($invoice)) {
+                $released++;
+            }
+        }
+
+        return $released;
+    }
+
+    /**
+     * Return coupons and delete unpaid invoices older than $expireBefore
+     */
+    public function purgeExpiredInvoices(int $expireBefore): void
+    {
+        $this->releaseExpiredInvoiceCoupons($expireBefore);
+
+        $this->where([
+            "invoice_date_creat < {s}" => $expireBefore,
+            "invoice_date_pay = '0' " => 1,
+        ]);
+
+        $this->deleteInvoices();
     }
 
     /**
@@ -422,6 +505,39 @@ class Database
     }
 
     /**
+     * Mark invoice as paid only if it is still unpaid
+     * @param int $invoiceId
+     * @param string|null $paymentSystem
+     * @param string|null $payerRequisites
+     * @return bool
+     */
+    public function claimInvoice(
+        int $invoiceId,
+        ?string $paymentSystem = null,
+        ?string $payerRequisites = null
+    ): bool
+    {
+        $updates = ["invoice_date_pay = '{$this->currentTime}'"];
+
+        if ($paymentSystem !== null) {
+            $updates[] = "invoice_paysys = '" . $this->sanitize($paymentSystem) . "'";
+        }
+
+        if ($payerRequisites !== null) {
+            $updates[] = "invoice_payer_requisites = '" . $this->sanitize($payerRequisites) . "'";
+        }
+
+        $this->db->query(
+            "UPDATE " . USERPREFIX . "_billing_invoice 
+             SET " . implode(', ', $updates) . "
+             WHERE invoice_id = " . intval($invoiceId) . "
+               AND invoice_date_pay = 0"
+        );
+
+        return (int) $this->db->get_affected_rows() === 1;
+    }
+
+    /**
      * Delete invoice by ID
      * @param int $invoiceId
      * @return bool
@@ -563,7 +679,7 @@ class Database
             array_walk_recursive($payerInfo, function (&$item) {
                 $item = preg_replace('/[^ a-z&#;@а-яA-ZА-Я\d.]/ui', '', (string) $item);
             });
-            return serialize($payerInfo);
+            return json_encode($payerInfo, JSON_UNESCAPED_UNICODE);
         }
 
         return $this->db->safesql((string) $payerInfo);
@@ -578,14 +694,14 @@ class Database
     private function updateInvoiceWithCoupon(array $invoice, array $coupon): void
     {
         $payerData = !empty($invoice['invoice_payer_info'])
-            ? unserialize($invoice['invoice_payer_info'])
+            ? \Billing\DevTools::decodeInfo($invoice['invoice_payer_info'])
             : [];
 
         $payerData['coupon'] = $coupon;
 
         $this->db->query(
             "UPDATE " . USERPREFIX . "_billing_invoice
-             SET invoice_payer_info = '" . serialize($payerData) . "'
+             SET invoice_payer_info = '" . $this->db->safesql(json_encode($payerData, JSON_UNESCAPED_UNICODE)) . "'
              WHERE invoice_id = " . intval($invoice['invoice_id'])
         );
     }
