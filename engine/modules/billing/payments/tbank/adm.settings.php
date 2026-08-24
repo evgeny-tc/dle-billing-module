@@ -6,12 +6,11 @@
  * @author        dle-billing.ru <evgeny.tc@gmail.com>
  * @copyright     Copyright (c) 2012-2026
  */
-
 namespace Billing;
 
 Class Tbank implements IPayment
 {
-    public string $doc = 'https://developer.tbank.ru/eacq';
+    public string $doc = 'https://developer.tbank.ru/';
 
     public ?DevTools $DevTools = null;
 
