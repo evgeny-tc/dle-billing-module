@@ -3,7 +3,7 @@
 	<name>DLE Billing</name>
 	<description>Платежный модуль и биллинг платформа</description>
 	<icon>public/billing/icons/billing.png</icon>
-	<version>1.0.2</version>
+	<version>1.0.3</version>
 	<dleversion>13.0</dleversion>
 	<versioncompare>greater</versioncompare>
 	<upgradeurl>https://dle-billing.ru/update.json</upgradeurl>
@@ -23,7 +23,10 @@
   `history_currency` varchar(100) NOT NULL,
   `history_text` text NOT NULL,
   `history_date` int(11) NOT NULL,
-  PRIMARY KEY (`history_id`)
+  PRIMARY KEY (`history_id`),
+  KEY `history_user_name` (`history_user_name`),
+  KEY `history_date` (`history_date`),
+  KEY `history_plugin` (`history_plugin`)
 ) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
 
 CREATE TABLE IF NOT EXISTS `{userprefix}_billing_invoice` (
@@ -38,7 +41,11 @@ CREATE TABLE IF NOT EXISTS `{userprefix}_billing_invoice` (
   `invoice_payer_requisites` varchar(40) NOT NULL,
   `invoice_payer_info` text NOT NULL,
   `invoice_handler` text NOT NULL,
-  PRIMARY KEY (`invoice_id`)
+  PRIMARY KEY (`invoice_id`),
+  KEY `invoice_user_name` (`invoice_user_name`),
+  KEY `invoice_date_creat` (`invoice_date_creat`),
+  KEY `invoice_date_pay` (`invoice_date_pay`),
+  KEY `invoice_paysys` (`invoice_paysys`)
 ) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
 
 CREATE TABLE IF NOT EXISTS `{userprefix}_billing_refund` (
@@ -50,7 +57,9 @@ CREATE TABLE IF NOT EXISTS `{userprefix}_billing_refund` (
   `refund_requisites` text NOT NULL,
   `refund_date_return` int(11) NOT NULL,
   `refund_date_cancel` int(11) NOT NULL,
-  PRIMARY KEY (`refund_id`)
+  PRIMARY KEY (`refund_id`),
+  KEY `refund_user` (`refund_user`),
+  KEY `refund_date` (`refund_date`)
 ) ENGINE={engine} DEFAULT CHARSET={charset} AUTO_INCREMENT=1;
 
 CREATE TABLE IF NOT EXISTS `{userprefix}_billing_coupons` (
