@@ -188,6 +188,223 @@ p.bt_catalog_desc
 	margin: 10px auto;
 }
 
+.billing-stat-conversion-link {
+	margin-top: 10px;
+}
+
+.billing-stat-funnel {
+	margin: 12px 0 4px;
+	padding: 10px;
+}
+
+.billing-stat-funnel__track {
+	display: flex;
+	align-items: stretch;
+	gap: 0;
+}
+
+.billing-stat-funnel__item {
+	flex: 1 1 0;
+	min-width: 0;
+	padding: 16px 18px;
+	border: 1px solid #e0e0e0;
+	border-radius: 6px;
+	background: #fff;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.billing-stat-funnel__item--created {
+	border-top: 3px solid #42a5f5;
+}
+
+.billing-stat-funnel__item--selected {
+	border-top: 3px solid #ffa726;
+}
+
+.billing-stat-funnel__item--paid {
+	border-top: 3px solid #26a69a;
+}
+
+.billing-stat-funnel__arrow {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 28px;
+	color: #bdbdbd;
+	font-size: 22px;
+}
+
+.billing-stat-funnel__head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 10px;
+}
+
+.billing-stat-funnel__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background: #f5f5f5;
+	color: #666;
+	font-size: 13px;
+}
+
+.billing-stat-funnel__item--created .billing-stat-funnel__icon {
+	background: #e3f2fd;
+	color: #1976d2;
+}
+
+.billing-stat-funnel__item--selected .billing-stat-funnel__icon {
+	background: #fff3e0;
+	color: #ef6c00;
+}
+
+.billing-stat-funnel__item--paid .billing-stat-funnel__icon {
+	background: #e0f2f1;
+	color: #00897b;
+}
+
+.billing-stat-funnel__label {
+	font-size: 12px;
+	line-height: 1.3;
+	color: #666;
+}
+
+.billing-stat-funnel__metrics {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	margin-bottom: 4px;
+}
+
+.billing-stat-funnel__count {
+	font-size: 28px;
+	font-weight: 700;
+	line-height: 1;
+	color: #333;
+}
+
+.billing-stat-funnel__percent {
+	font-size: 14px;
+	font-weight: 600;
+	color: #888;
+}
+
+.billing-stat-funnel__sum {
+	font-size: 12px;
+	color: #999;
+	margin-bottom: 10px;
+}
+
+.billing-stat-funnel__progress {
+	height: 6px;
+	background: #eceff1;
+	border-radius: 3px;
+	overflow: hidden;
+}
+
+.billing-stat-funnel__progress span {
+	display: block;
+	height: 100%;
+	border-radius: 3px;
+	transition: width 0.3s ease;
+}
+
+.billing-stat-funnel__item--created .billing-stat-funnel__progress span {
+	background: #42a5f5;
+}
+
+.billing-stat-funnel__item--selected .billing-stat-funnel__progress span {
+	background: #ffa726;
+}
+
+.billing-stat-funnel__item--paid .billing-stat-funnel__progress span {
+	background: #26a69a;
+}
+
+.billing-stat-funnel__note {
+	margin-top: 12px;
+	padding: 10px 12px;
+	border-radius: 4px;
+	background: #fff8e1;
+	border: 1px solid #ffe082;
+	color: #795548;
+	font-size: 12px;
+}
+
+.billing-stat-funnel__note .fa {
+	margin-right: 4px;
+	color: #f9a825;
+}
+
+.billing-stat-funnel--compact .billing-stat-funnel__item {
+	padding: 12px 14px;
+}
+
+.billing-stat-funnel--compact .billing-stat-funnel__count {
+	font-size: 22px;
+}
+
+.billing-stat-funnel--compact .billing-stat-funnel__arrow {
+	flex-basis: 20px;
+	font-size: 18px;
+}
+
+@media (max-width: 991px) {
+	.billing-stat-funnel__track {
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.billing-stat-funnel__arrow {
+		flex: 0 0 auto;
+		transform: rotate(90deg);
+		padding: 2px 0;
+	}
+}
+
+.billing-stat-conversion-table td,
+.billing-stat-conversion-table th {
+	vertical-align: middle !important;
+}
+
+.billing-stat-rate {
+	display: inline-block;
+	min-width: 42px;
+	font-weight: 600;
+}
+
+.billing-stat-rate--good {
+	color: #2e7d32;
+}
+
+.billing-stat-rate--mid {
+	color: #ef6c00;
+}
+
+.billing-stat-rate--bad {
+	color: #c62828;
+}
+
+.billing-stat-conversion-bar {
+	height: 6px;
+	background: #eceff1;
+	border-radius: 3px;
+	margin-top: 6px;
+	overflow: hidden;
+}
+
+.billing-stat-conversion-bar span {
+	display: block;
+	height: 100%;
+	background: #26a69a;
+	border-radius: 3px;
+}
+
 .billing-stat-user-head {
 	margin-bottom: 15px;
 }

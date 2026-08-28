@@ -16,9 +16,6 @@ Class Users
 {
     public Dashboard $Dashboard;
 
-    /**
-     * @throws BalanceException
-     */
 	public function mainPage() : string
 	{
 		global $user_group;
@@ -55,40 +52,58 @@ Class Users
 			}
 			else
 			{
+				$Balance = \Billing\Api\Balance::Init();
+
 				foreach( $_Login as $login )
 				{
-					if( trim($login) )
+					$login = trim($login);
+
+					if( ! $login )
+					{
+						continue;
+					}
+
+					try
 					{
 						if( $_Do )
 						{
-                            \Billing\Api\Balance::Init()->Transaction()->Comment(
-                                userLogin: $login,
-                                plus: $_Sum,
-                                comment: $_Comment,
-                                plugin_id: $this->Dashboard->member_id['user_id'],
-                                plugin_name: 'users',
-                                pm: (bool)$this->Dashboard->config['mail_payok_pm'],
-                                email: (bool)$this->Dashboard->config['mail_payok_email']
-                            )->To(
-                                userLogin: $login,
-                                sum: $_Sum
-                            )->sendEvent()->Commit();
+							$Balance->Transaction()->Comment(
+								userLogin: $login,
+								plus: $_Sum,
+								comment: $_Comment,
+								plugin_id: $this->Dashboard->member_id['user_id'],
+								plugin_name: 'users',
+								pm: (bool)$this->Dashboard->config['mail_payok_pm'],
+								email: (bool)$this->Dashboard->config['mail_payok_email']
+							)->To(
+								userLogin: $login,
+								sum: $_Sum
+							)->sendEvent()->Commit();
 						}
 						else
 						{
-                            \Billing\Api\Balance::Init()->Transaction()->Comment(
-                                userLogin: $login,
-                                minus: $_Sum,
-                                comment: $_Comment,
-                                plugin_id: $this->Dashboard->member_id['user_id'],
-                                plugin_name: 'users',
-                                pm: (bool)$this->Dashboard->config['mail_payok_pm'],
-                                email: (bool)$this->Dashboard->config['mail_payok_email']
-                            )->From(
-                                userLogin: $login,
-                                sum: $_Sum
-                            )->sendEvent()->Commit();
+							$Balance->Transaction()->Comment(
+								userLogin: $login,
+								minus: $_Sum,
+								comment: $_Comment,
+								plugin_id: $this->Dashboard->member_id['user_id'],
+								plugin_name: 'users',
+								pm: (bool)$this->Dashboard->config['mail_payok_pm'],
+								email: (bool)$this->Dashboard->config['mail_payok_email']
+							)->From(
+								userLogin: $login,
+								sum: $_Sum
+							)->sendEvent()->Commit();
 						}
+					}
+					catch (BalanceException $e)
+					{
+						$Balance->Rollback();
+
+						$this->Dashboard->ThemeMsg(
+							$this->Dashboard->lang['error'],
+							$this->balanceErrorMessage($e, $login)
+						);
 					}
 				}
 
@@ -363,5 +378,22 @@ Class Users
 		$Content .= $this->Dashboard->ThemeEchoFoother();
 
 		return $Content;
+	}
+
+	private function balanceErrorMessage(BalanceException $e, string $login) : string
+	{
+		$login = htmlspecialchars($login, ENT_QUOTES, 'UTF-8');
+
+		if( $e->getMessage() === 'balance.check' )
+		{
+			return str_replace('{user}', $login, $this->Dashboard->lang['users_er_balance']);
+		}
+
+		if( str_starts_with($e->getMessage(), 'user.not_found:') )
+		{
+			return str_replace('{user}', $login, $this->Dashboard->lang['users_er_user_not_found']);
+		}
+
+		return $e->getMessage();
 	}
 }

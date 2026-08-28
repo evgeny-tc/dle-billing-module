@@ -22,7 +22,6 @@ var BillingStatistics = (function () {
         }
 
         var options = baseOptions(yTitle);
-        options.chart = { type: config.type || 'area' };
         options.title = { text: config.title || '' };
         options.subtitle = { text: config.subtitle || '' };
 
@@ -34,7 +33,38 @@ var BillingStatistics = (function () {
             };
         }
 
-        if (config.type === 'pie') {
+        if (config.type === 'combo') {
+            options.chart = { type: 'column' };
+            options.yAxis = [
+                {
+                    min: 0,
+                    title: { text: yTitle || '' }
+                },
+                {
+                    min: 0,
+                    max: config.yAxisMax || 100,
+                    title: { text: '%' },
+                    opposite: true
+                }
+            ];
+            options.tooltip = { shared: true };
+            options.plotOptions = {
+                column: { grouping: true, shadow: false },
+                line: {
+                    lineWidth: 2,
+                    marker: { enabled: true, radius: 3 }
+                }
+            };
+            options.series = (config.series || []).map(function (serie) {
+                return {
+                    name: serie.name,
+                    type: serie.type || 'column',
+                    data: serie.data,
+                    yAxis: serie.yAxis || 0
+                };
+            });
+        } else if (config.type === 'pie') {
+            options.chart = { type: 'pie' };
             options.tooltip = {
                 pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
             };
@@ -48,7 +78,14 @@ var BillingStatistics = (function () {
                     }
                 }
             };
+            options.series = config.series || [];
         } else if (config.type === 'bar') {
+            options.chart = { type: 'bar' };
+            options.yAxis = {
+                min: 0,
+                max: config.yAxisMax || null,
+                title: { text: yTitle || '' }
+            };
             options.plotOptions = {
                 bar: { dataLabels: { enabled: true } }
             };
@@ -61,7 +98,9 @@ var BillingStatistics = (function () {
                 backgroundColor: '#FFFFFF',
                 shadow: true
             };
+            options.series = config.series || [];
         } else {
+            options.chart = { type: config.type || 'area' };
             options.tooltip = {
                 split: true,
                 valueSuffix: yTitle ? ' (' + yTitle.split('(').pop().replace(')', '') : ''
@@ -77,9 +116,9 @@ var BillingStatistics = (function () {
                     column: { stacking: config.stacking }
                 };
             }
-        }
 
-        options.series = config.series || [];
+            options.series = config.series || [];
+        }
 
         Highcharts.chart(containerId, options);
     }

@@ -184,6 +184,7 @@ HTML;
 
         $menu = $this->buildMenuHtml([
             '' => $this->Dashboard->lang['statistics_7'],
+            'conversion' => $this->Dashboard->lang['statistics_conversion_title'],
             'billings' => $this->Dashboard->lang['statistics_2_title'],
             'plugins' => $this->Dashboard->lang['statistics_3_title'],
             'users' => $this->Dashboard->lang['statistics_4_title'],
@@ -314,11 +315,284 @@ HTML;
         $chart .= $this->renderFlowChart();
         $chart .= $this->Dashboard->ThemeHeadClose();
 
+        $conversion = $this->Dashboard->ThemeHeadStart($this->Dashboard->lang['statistics_conversion_title']);
+        $conversion .= $this->renderConversionOverview($this->data()->getInvoiceConversion($this->invoiceExpireBefore()));
+        $conversion .= $this->Dashboard->ThemeHeadClose();
+
         $globalRow = $this->Dashboard->ThemeHeadStart($this->Dashboard->lang['statistics_global_title']);
         $globalRow .= $this->renderGlobalTable($global);
         $globalRow .= $this->Dashboard->ThemeHeadClose();
 
-        return $this->pageShell($kpis . $chart . $globalRow) . $this->Dashboard->ThemeEchoFoother();
+        return $this->pageShell($kpis . $chart . $conversion . $globalRow) . $this->Dashboard->ThemeEchoFoother();
+    }
+
+    /**
+     * Конверсия квитанций и отвал по платежным системам
+     */
+    public function conversionPage(): string
+    {
+        $this->Dashboard->ThemeEchoHeader($this->Dashboard->lang['menu_5']);
+
+        $expireBefore = $this->invoiceExpireBefore();
+        $overview = $this->data()->getInvoiceConversion($expireBefore);
+        $byPaysys = $this->data()->getInvoiceConversionByPaysys($expireBefore);
+
+        $kpis = $this->renderKpiCards([
+            [
+                'icon' => 'fa-file-text-o',
+                'title' => $this->Dashboard->lang['statistics_conversion_created'],
+                'value' => (string) $overview['created'],
+                'sub' => $this->formatMoney($overview['created_sum']),
+            ],
+            [
+                'icon' => 'fa-check-circle',
+                'title' => $this->Dashboard->lang['statistics_conversion_paid'],
+                'value' => (string) $overview['paid'],
+                'sub' => $this->formatMoney($overview['paid_sum']),
+            ],
+            [
+                'icon' => 'fa-percent',
+                'title' => $this->Dashboard->lang['statistics_conversion_rate'],
+                'value' => $overview['conversion_rate'] . '%',
+                'sub' => sprintf(
+                    $this->Dashboard->lang['statistics_conversion_dropoff'],
+                    $overview['dropoff_rate']
+                ),
+            ],
+            [
+                'icon' => 'fa-hourglass-half',
+                'title' => $this->Dashboard->lang['statistics_conversion_unpaid'],
+                'value' => (string) $overview['unpaid'],
+                'sub' => $this->formatMoney($overview['unpaid_sum'])
+                    . ($overview['expired'] > 0
+                        ? ' · ' . sprintf($this->Dashboard->lang['statistics_conversion_expired'], $overview['expired'])
+                        : ''),
+            ],
+        ]);
+
+        $trend = $this->Dashboard->ThemeHeadStart($this->Dashboard->lang['statistics_conversion_trend']);
+        $trend .= $this->renderConversionTrendChart();
+        $trend .= $this->Dashboard->ThemeHeadClose();
+
+        $funnel = $this->Dashboard->ThemeHeadStart($this->Dashboard->lang['statistics_conversion_funnel']);
+        $funnel .= $this->renderConversionFunnel($overview);
+        $funnel .= $this->Dashboard->ThemeHeadClose();
+
+        $table = $this->Dashboard->ThemeHeadStart($this->Dashboard->lang['statistics_conversion_paysys']);
+        $table .= $this->renderConversionPaysysTable($byPaysys);
+        $table .= $this->Dashboard->ThemeHeadClose();
+
+        $chart = $this->Dashboard->ThemeHeadStart($this->Dashboard->lang['statistics_conversion_chart']);
+        $chart .= $this->renderConversionPaysysChart($byPaysys);
+        $chart .= $this->Dashboard->ThemeHeadClose();
+
+        return $this->pageShell($kpis . $trend . $funnel . $table . $chart) . $this->Dashboard->ThemeEchoFoother();
+    }
+
+    private function invoiceExpireBefore(): ?int
+    {
+        return $this->Dashboard->invoiceExpireBefore();
+    }
+
+    private function renderConversionOverview(array $overview): string
+    {
+        if ($overview['created'] === 0) {
+            return $this->Dashboard->lang['statistics_null'];
+        }
+
+        $html = $this->renderConversionFunnel($overview, true);
+        $html .= '<p class="text-muted text-size-small billing-stat-conversion-link">'
+            . '<a href="' . $this->tabUrl('conversion') . '">'
+            . $this->Dashboard->lang['statistics_conversion_more']
+            . '</a></p>';
+
+        return $html;
+    }
+
+    private function renderConversionFunnel(array $overview, bool $compact = false): string
+    {
+        if ($overview['created'] === 0) {
+            return $this->Dashboard->lang['statistics_null'];
+        }
+
+        $steps = [
+            [
+                'label' => $this->Dashboard->lang['statistics_conversion_created'],
+                'count' => $overview['created'],
+                'sum' => $overview['created_sum'],
+                'percent' => 100.0,
+                'icon' => 'fa-file-text-o',
+                'class' => 'billing-stat-funnel__item--created',
+            ],
+            [
+                'label' => $this->Dashboard->lang['statistics_conversion_selected'],
+                'count' => max(0, $overview['created'] - $overview['no_paysys']),
+                'sum' => null,
+                'percent' => $overview['created'] > 0
+                    ? round((($overview['created'] - $overview['no_paysys']) * 100) / $overview['created'], 1)
+                    : 0.0,
+                'icon' => 'fa-credit-card',
+                'class' => 'billing-stat-funnel__item--selected',
+            ],
+            [
+                'label' => $this->Dashboard->lang['statistics_conversion_paid'],
+                'count' => $overview['paid'],
+                'sum' => $overview['paid_sum'],
+                'percent' => $overview['conversion_rate'],
+                'icon' => 'fa-check-circle',
+                'class' => 'billing-stat-funnel__item--paid',
+            ],
+        ];
+
+        $html = '<div class="billing-stat-funnel' . ($compact ? ' billing-stat-funnel--compact' : '') . '">';
+        $html .= '<div class="billing-stat-funnel__track">';
+
+        foreach ($steps as $index => $step) {
+            if ($index > 0) {
+                $html .= '<div class="billing-stat-funnel__arrow" aria-hidden="true"><i class="fa fa-angle-right"></i></div>';
+            }
+
+            $sumLine = $step['sum'] !== null
+                ? '<div class="billing-stat-funnel__sum">' . $this->formatMoney((float) $step['sum']) . '</div>'
+                : '';
+            $width = max(0, min(100, (float) $step['percent']));
+
+            $html .= <<<HTML
+                <div class="billing-stat-funnel__item {$step['class']}">
+                    <div class="billing-stat-funnel__head">
+                        <span class="billing-stat-funnel__icon"><i class="fa {$step['icon']}"></i></span>
+                        <span class="billing-stat-funnel__label">{$step['label']}</span>
+                    </div>
+                    <div class="billing-stat-funnel__metrics">
+                        <span class="billing-stat-funnel__count">{$step['count']}</span>
+                        <span class="billing-stat-funnel__percent">{$step['percent']}%</span>
+                    </div>
+                    {$sumLine}
+                    <div class="billing-stat-funnel__progress"><span style="width: {$width}%"></span></div>
+                </div>
+HTML;
+        }
+
+        $html .= '</div>';
+
+        if ($overview['no_paysys'] > 0) {
+            $html .= '<div class="billing-stat-funnel__note">'
+                . '<i class="fa fa-info-circle"></i> '
+                . sprintf($this->Dashboard->lang['statistics_conversion_no_paysys'], $overview['no_paysys'])
+                . '</div>';
+        }
+
+        return $html . '</div>';
+    }
+
+    private function renderConversionPaysysTable(array $byPaysys): string
+    {
+        if (empty($byPaysys)) {
+            return $this->Dashboard->lang['statistics_null'];
+        }
+
+        $payments = $this->Dashboard->Payments();
+        $payments[''] = ['title' => $this->Dashboard->lang['statistics_conversion_no_payment']];
+
+        $html = '<table class="table table-striped billing-stat-conversion-table"><thead><tr>';
+        $html .= '<th>' . $this->Dashboard->lang['pay_name'] . '</th>';
+        $html .= '<th>' . $this->Dashboard->lang['statistics_conversion_created'] . '</th>';
+        $html .= '<th>' . $this->Dashboard->lang['statistics_conversion_paid'] . '</th>';
+        $html .= '<th>' . $this->Dashboard->lang['statistics_conversion_unpaid'] . '</th>';
+        $html .= '<th>' . $this->Dashboard->lang['statistics_conversion_rate'] . '</th>';
+        $html .= '<th>' . $this->Dashboard->lang['statistics_conversion_dropoff_col'] . '</th>';
+        $html .= '<th>' . $this->Dashboard->lang['history_summa'] . '</th>';
+        $html .= '</tr></thead><tbody>';
+
+        foreach ($byPaysys as $row) {
+            $title = htmlspecialchars($payments[$row['paysys']]['title'] ?? $row['paysys'] ?: $payments['']['title']);
+            $rateClass = $row['conversion_rate'] >= 70 ? 'billing-stat-rate--good' : ($row['conversion_rate'] >= 40 ? 'billing-stat-rate--mid' : 'billing-stat-rate--bad');
+            $dropoffHint = $row['expired'] > 0
+                ? '<div class="text-muted text-size-small">' . sprintf($this->Dashboard->lang['statistics_conversion_expired'], $row['expired']) . '</div>'
+                : '';
+
+            $html .= '<tr>';
+            $html .= '<td><strong>' . $title . '</strong>' . $dropoffHint . '</td>';
+            $html .= '<td>' . $row['created'] . '</td>';
+            $html .= '<td>' . $row['paid'] . '</td>';
+            $html .= '<td>' . $row['unpaid'] . '</td>';
+            $html .= '<td><span class="billing-stat-rate ' . $rateClass . '">' . $row['conversion_rate'] . '%</span>'
+                . $this->renderConversionBar((float) $row['conversion_rate'])
+                . '</td>';
+            $html .= '<td>' . $row['dropoff_rate'] . '%</td>';
+            $html .= '<td>' . $this->formatMoney($row['paid_sum'])
+                . '<div class="text-muted text-size-small">' . $this->formatMoney($row['unpaid_sum']) . ' ' . $this->Dashboard->lang['statistics_conversion_lost'] . '</div>'
+                . '</td>';
+            $html .= '</tr>';
+        }
+
+        return $html . '</tbody></table>';
+    }
+
+    private function renderConversionBar(float $percent): string
+    {
+        $width = max(0, min(100, $percent));
+
+        return '<div class="billing-stat-conversion-bar"><span style="width:' . $width . '%"></span></div>';
+    }
+
+    private function renderConversionTrendChart(): string
+    {
+        $series = $this->data()->getInvoiceConversionSeries();
+
+        if (empty($series['dates'])) {
+            return $this->Dashboard->lang['statistics_null'];
+        }
+
+        return $this->renderChart([
+            'type' => 'combo',
+            'categories' => $series['dates'],
+            'yAxisMax' => 100,
+            'series' => [
+                ['name' => $this->Dashboard->lang['statistics_conversion_created'], 'data' => $series['created'], 'type' => 'column'],
+                ['name' => $this->Dashboard->lang['statistics_conversion_paid'], 'data' => $series['paid'], 'type' => 'column'],
+                ['name' => $this->Dashboard->lang['statistics_conversion_rate'], 'data' => $series['conversion'], 'type' => 'line', 'yAxis' => 1],
+            ],
+        ], $this->Dashboard->lang['statistics_conversion_rate'] . ' (%)');
+    }
+
+    private function renderConversionPaysysChart(array $byPaysys): string
+    {
+        if (empty($byPaysys)) {
+            return $this->Dashboard->lang['statistics_null'];
+        }
+
+        $payments = $this->Dashboard->Payments();
+        $payments[''] = ['title' => $this->Dashboard->lang['statistics_conversion_no_payment']];
+
+        $categories = [];
+        $conversion = [];
+        $dropoff = [];
+
+        foreach ($byPaysys as $row) {
+            if ($row['created'] <= 0) {
+                continue;
+            }
+
+            $title = $payments[$row['paysys']]['title'] ?? $row['paysys'] ?: $payments['']['title'];
+            $categories[] = $title;
+            $conversion[] = $row['conversion_rate'];
+            $dropoff[] = $row['dropoff_rate'];
+        }
+
+        if (empty($categories)) {
+            return $this->Dashboard->lang['statistics_null'];
+        }
+
+        return $this->renderChart([
+            'type' => 'bar',
+            'categories' => $categories,
+            'yAxisMax' => 100,
+            'series' => [
+                ['name' => $this->Dashboard->lang['statistics_conversion_rate'], 'data' => $conversion],
+                ['name' => $this->Dashboard->lang['statistics_conversion_dropoff_col'], 'data' => $dropoff],
+            ],
+        ], '%');
     }
 
     /**
@@ -554,19 +828,19 @@ HTML;
         ]);
     }
 
-    private function renderChart(array $config): string
+    private function renderChart(array $config, ?string $yTitle = null): string
     {
         $this->chartCounter++;
         $id = 'billing_chart_' . $this->chartCounter;
         $payload = json_encode($config, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT);
         $currency = Balance::Init()->Declension(10);
-        $yTitle = $this->Dashboard->lang['history_summa'] . ' (' . $currency . ')';
+        $resolvedTitle = $yTitle ?? ($this->Dashboard->lang['history_summa'] . ' (' . $currency . ')');
 
         return <<<HTML
 <div id="{$id}" class="billing-stat-chart"></div>
 <script>
 $(function () {
-    BillingStatistics.render({$payload}, '{$id}', '{$yTitle}');
+    BillingStatistics.render({$payload}, '{$id}', '{$resolvedTitle}');
 });
 </script>
 HTML;

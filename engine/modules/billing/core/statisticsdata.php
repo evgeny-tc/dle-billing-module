@@ -197,6 +197,144 @@ class StatisticsData
         );
     }
 
+    public function getInvoiceConversion(?int $expireBefore = null, ?string $userName = null): array
+    {
+        $userSql = $this->invoiceUserWhere($userName);
+        $expiredExpr = $this->expiredCountExpr($expireBefore);
+
+        $row = $this->db->super_query(
+            "SELECT
+                COUNT(*) AS created,
+                SUM(CASE WHEN invoice_date_pay != 0 THEN 1 ELSE 0 END) AS paid,
+                SUM(CASE WHEN invoice_date_pay = 0 THEN 1 ELSE 0 END) AS unpaid,
+                {$expiredExpr} AS expired,
+                COALESCE(SUM(invoice_get), 0) AS created_sum,
+                COALESCE(SUM(CASE WHEN invoice_date_pay != 0 THEN invoice_get ELSE 0 END), 0) AS paid_sum,
+                COALESCE(SUM(CASE WHEN invoice_date_pay = 0 THEN invoice_get ELSE 0 END), 0) AS unpaid_sum,
+                SUM(CASE WHEN invoice_paysys = '' THEN 1 ELSE 0 END) AS no_paysys
+             FROM " . USERPREFIX . "_billing_invoice
+             WHERE invoice_date_creat >= '{$this->start}'
+               AND invoice_date_creat <= '{$this->end}'
+               AND invoice_paysys != 'balance'{$userSql}"
+        );
+
+        $created = (int) ($row['created'] ?? 0);
+        $paid = (int) ($row['paid'] ?? 0);
+        $unpaid = (int) ($row['unpaid'] ?? 0);
+        $expired = (int) ($row['expired'] ?? 0);
+
+        return [
+            'created' => $created,
+            'paid' => $paid,
+            'unpaid' => $unpaid,
+            'expired' => $expired,
+            'waiting' => max(0, $unpaid - $expired),
+            'no_paysys' => (int) ($row['no_paysys'] ?? 0),
+            'created_sum' => (float) ($row['created_sum'] ?? 0),
+            'paid_sum' => (float) ($row['paid_sum'] ?? 0),
+            'unpaid_sum' => (float) ($row['unpaid_sum'] ?? 0),
+            'conversion_rate' => $created > 0 ? round($paid * 100 / $created, 1) : 0.0,
+            'dropoff_rate' => $created > 0 ? round(($created - $paid) * 100 / $created, 1) : 0.0,
+        ];
+    }
+
+    /**
+     * @return array<string, array<string, float|int|string>>
+     */
+    public function getInvoiceConversionByPaysys(?int $expireBefore = null, ?string $userName = null): array
+    {
+        $userSql = $this->invoiceUserWhere($userName);
+        $expiredExpr = $this->expiredCountExpr($expireBefore);
+
+        $this->db->query(
+            "SELECT invoice_paysys,
+                    COUNT(*) AS created,
+                    SUM(CASE WHEN invoice_date_pay != 0 THEN 1 ELSE 0 END) AS paid,
+                    SUM(CASE WHEN invoice_date_pay = 0 THEN 1 ELSE 0 END) AS unpaid,
+                    {$expiredExpr} AS expired,
+                    COALESCE(SUM(invoice_get), 0) AS created_sum,
+                    COALESCE(SUM(CASE WHEN invoice_date_pay != 0 THEN invoice_get ELSE 0 END), 0) AS paid_sum,
+                    COALESCE(SUM(CASE WHEN invoice_date_pay = 0 THEN invoice_get ELSE 0 END), 0) AS unpaid_sum
+             FROM " . USERPREFIX . "_billing_invoice
+             WHERE invoice_date_creat >= '{$this->start}'
+               AND invoice_date_creat <= '{$this->end}'
+               AND invoice_paysys != 'balance'{$userSql}
+             GROUP BY invoice_paysys
+             ORDER BY created DESC"
+        );
+
+        $data = [];
+
+        while ($row = $this->db->get_row()) {
+            $key = (string) ($row['invoice_paysys'] ?? '');
+            $created = (int) ($row['created'] ?? 0);
+            $paid = (int) ($row['paid'] ?? 0);
+            $unpaid = (int) ($row['unpaid'] ?? 0);
+            $expired = (int) ($row['expired'] ?? 0);
+
+            $data[$key] = [
+                'paysys' => $key,
+                'created' => $created,
+                'paid' => $paid,
+                'unpaid' => $unpaid,
+                'expired' => $expired,
+                'waiting' => max(0, $unpaid - $expired),
+                'created_sum' => (float) ($row['created_sum'] ?? 0),
+                'paid_sum' => (float) ($row['paid_sum'] ?? 0),
+                'unpaid_sum' => (float) ($row['unpaid_sum'] ?? 0),
+                'conversion_rate' => $created > 0 ? round($paid * 100 / $created, 1) : 0.0,
+                'dropoff_rate' => $created > 0 ? round(($created - $paid) * 100 / $created, 1) : 0.0,
+            ];
+        }
+
+        uasort(
+            $data,
+            static fn(array $a, array $b) => $b['dropoff_rate'] <=> $a['dropoff_rate'] ?: $b['created'] <=> $a['created']
+        );
+
+        return $data;
+    }
+
+    public function getInvoiceConversionSeries(?string $userName = null): array
+    {
+        $userSql = $this->invoiceUserWhere($userName);
+        [$groupSelect, $groupBy] = $this->groupParts('invoice_date_creat');
+
+        $this->db->query(
+            "SELECT {$groupSelect},
+                    COUNT(*) AS created,
+                    SUM(CASE WHEN invoice_date_pay != 0 THEN 1 ELSE 0 END) AS paid
+             FROM " . USERPREFIX . "_billing_invoice
+             WHERE invoice_date_creat >= '{$this->start}'
+               AND invoice_date_creat <= '{$this->end}'
+               AND invoice_paysys != 'balance'{$userSql}
+             GROUP BY {$groupBy}
+             ORDER BY {$groupBy}"
+        );
+
+        $dates = [];
+        $created = [];
+        $paid = [];
+        $conversion = [];
+
+        while ($row = $this->db->get_row()) {
+            $dates[] = $this->formatLabel($row);
+            $createdCount = (int) ($row['created'] ?? 0);
+            $paidCount = (int) ($row['paid'] ?? 0);
+
+            $created[] = $createdCount;
+            $paid[] = $paidCount;
+            $conversion[] = $createdCount > 0 ? round($paidCount * 100 / $createdCount, 1) : 0.0;
+        }
+
+        return [
+            'dates' => $dates,
+            'created' => $created,
+            'paid' => $paid,
+            'conversion' => $conversion,
+        ];
+    }
+
     public function getBillingByPaysys(?string $userName = null): array
     {
         $userSql = $userName
@@ -308,6 +446,24 @@ class StatisticsData
         }
 
         return " AND {$column} = '" . $this->db->safesql($userName) . "'";
+    }
+
+    private function invoiceUserWhere(?string $userName): string
+    {
+        if (!$userName) {
+            return '';
+        }
+
+        return " AND invoice_user_name = '" . $this->db->safesql($userName) . "'";
+    }
+
+    private function expiredCountExpr(?int $expireBefore): string
+    {
+        if ($expireBefore === null) {
+            return '0';
+        }
+
+        return "SUM(CASE WHEN invoice_date_pay = 0 AND invoice_date_creat < {$expireBefore} THEN 1 ELSE 0 END)";
     }
 
     /**
