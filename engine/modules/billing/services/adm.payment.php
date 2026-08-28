@@ -63,7 +63,21 @@ Class Payment
         # Текущие настройки модуля
         #
         $Payments = $this->Dashboard->Payments();
+
+        if( ! isset($Payments[$Name]) )
+        {
+            $this->Dashboard->ThemeMsg(
+                $this->Dashboard->lang['error'],
+                $this->Dashboard->lang['paysys_fail_error']
+            );
+        }
+
         $Payment = $Payments[$Name]['config'];
+
+        if( empty($Payment['title']) && ! empty($Payments[$Name]['title']) )
+        {
+            $Payment['title'] = $Payments[$Name]['title'];
+        }
 
         $Content = $this->Dashboard->PanelPlugin('payments/' . $Name, $classPayment->doc );
 

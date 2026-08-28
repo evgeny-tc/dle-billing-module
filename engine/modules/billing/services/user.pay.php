@@ -560,13 +560,22 @@ Class Pay
 
             # .. проверка параметров запроса пс
             #
+            $isPrerequest = in_array('is_prerequest', get_class_methods($Payment))
+                && $Payment->is_prerequest($DATA);
+
             $paymentVerification = $Payment->check_out( $DATA, $this->PaymentsArray[$getPayment]['config'], $Invoice );
 
             if( $paymentVerification === true )
             {
                 $this->logging( 9, '200' );
 
-                if( $this->DevTools->invoiceRegisterPay( $Invoice, $payerRequisites ) )
+                if( $isPrerequest )
+                {
+                    $this->logging( '9.2', 'prerequest' );
+
+                    echo $Payment->check_ok( $DATA );
+                }
+                elseif( $this->DevTools->invoiceRegisterPay( $Invoice, $payerRequisites ) )
                 {
                     $this->logging( 10, $Invoice['invoice_get'] . ' ' . \Billing\Api\Balance::Init()->Declension( $Invoice['invoice_get'] ) );
                     $this->logging( 14 );

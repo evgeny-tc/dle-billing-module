@@ -378,7 +378,9 @@ Class Dashboard
      */
 	public function PanelPlugin( string $path, ?string $link = '', ?string $styles = 'float: right' ) : string
 	{
-		$ini = parse_ini_file( MODULE_PATH . '/' . $path . '/info.ini' );
+		$ini = static::readInfoIni($path);
+		$title = htmlspecialchars((string) ($ini['title'] ?? ''), ENT_QUOTES, 'UTF-8');
+		$desc = (string) ($ini['desc'] ?? '');
 
         if( $link )
         {
@@ -392,7 +394,7 @@ Class Dashboard
         }
 
 		return '<span style="text-align: left">' . $this->MakeMsgInfo(
-                "<span style='float: right; text-align: left'>{$icon}</span><span style=\"font-size: 18px\">{$ini['title']}</span><br />{$ini['desc']}"
+                "<span style='float: right; text-align: left'>{$icon}</span><span style=\"font-size: 18px\">{$title}</span><br />{$desc}"
             ) . '</span>';
 	}
 

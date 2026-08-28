@@ -127,6 +127,38 @@ trait Core
     }
 
     /**
+     * Прочитать info.ini модуля/платежа с поддержкой секции [info]
+     * @param string $path
+     * @return array
+     */
+    protected static function readInfoIni( string $path ) : array
+    {
+        $file = MODULE_PATH . '/' . trim($path, '/') . '/info.ini';
+
+        if( ! is_readable($file) )
+        {
+            return [];
+        }
+
+        $ini = parse_ini_file($file, true, INI_SCANNER_RAW);
+
+        if( ! is_array($ini) )
+        {
+            return [];
+        }
+
+        if( isset($ini['info']) && is_array($ini['info']) )
+        {
+            $info = $ini['info'];
+            unset($ini['info']);
+
+            return array_merge($info, $ini);
+        }
+
+        return $ini;
+    }
+
+    /**
      * Загрузить экземпляр класса платежной системы
      * @param string $payment
      * @return IPayment|null
@@ -473,12 +505,23 @@ trait Core
         {
             if ( in_array($name, array(".", "..", "/", "index.php", ".htaccess")) or ! is_dir(MODULE_PATH . '/payments/' . $name) ) continue;
 
-            $Payments[mb_strtolower($name)] = parse_ini_file( MODULE_PATH . '/payments/' . $name . '/info.ini' );
-            $Payments[mb_strtolower($name)]['config'] = file_exists( MODULE_DATA . '/payment.' . mb_strtolower($name) . '.php' ) ? include MODULE_DATA . '/payment.' . mb_strtolower($name) . '.php' : array();
+            $paymentKey = mb_strtolower($name);
+            $paymentInfo = static::readInfoIni('payments/' . $name);
 
-            if( ! $Payments[mb_strtolower($name)]['title'] )
+            if( ! $paymentInfo )
             {
-                $Payments[mb_strtolower($name)]['title'] = $name;
+                $paymentInfo = [
+                    'title' => $name,
+                    'desc' => '',
+                ];
+            }
+
+            $Payments[$paymentKey] = $paymentInfo;
+            $Payments[$paymentKey]['config'] = file_exists( MODULE_DATA . '/payment.' . $paymentKey . '.php' ) ? include MODULE_DATA . '/payment.' . $paymentKey . '.php' : array();
+
+            if( ! $Payments[$paymentKey]['title'] )
+            {
+                $Payments[$paymentKey]['title'] = $name;
             }
         }
 
