@@ -45,6 +45,7 @@
 - betatransfer.io
 - PayAnyWay
 - enot.io
+- CoinsPay (криптовалюта)
 
 ## Интеграции
 - API для подключения платежей в сторонние модули
